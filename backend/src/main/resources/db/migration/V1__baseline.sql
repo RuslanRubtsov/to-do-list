@@ -1,0 +1,1 @@
+-- Baseline: an empty schema under Flyway control. Feature tables arrive in later migrations.

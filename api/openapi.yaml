@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: To-Do API
+  description: |
+    REST API of the to-do application. This document is the contract: the Spring Boot
+    controller interfaces and the Angular API client are both generated from it (ADR-0001).
+
+    Every error response is an RFC 9457 Problem Details document carrying a stable,
+    machine-readable `code`. The API never returns translated text (ADR-0002).
+  version: 1.0.0
+tags:
+  - name: App Info
+    description: Information about the running application.
+paths:
+  /api/v1/app-info:
+    get:
+      tags: [App Info]
+      operationId: getAppInfo
+      summary: Get the application name and version
+      responses:
+        '200':
+          description: The running application's name and version.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppInfo'
+        default:
+          $ref: '#/components/responses/Problem'
+components:
+  responses:
+    Problem:
+      description: An error, described as RFC 9457 Problem Details.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    AppInfo:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+          example: todo-backend
+        version:
+          type: string
+          example: 0.1.0
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details, extended with a stable error code.
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+          format: uri
+          example: about:blank
+        title:
+          type: string
+          description: Short, human-readable English summary. Clients must not display it; translate `code` instead.
+          example: Bad Request
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        errors:
+          type: array
+          description: Present only when `code` is `VALIDATION_FAILED`.
+          items:
+            $ref: '#/components/schemas/FieldError'
+    ErrorCode:
+      type: string
+      description: Stable, machine-readable error code. Clients translate it for display.
+      enum:
+        - MALFORMED_REQUEST
+        - VALIDATION_FAILED
+        - NOT_FOUND
+        - METHOD_NOT_ALLOWED
+        - NOT_ACCEPTABLE
+        - UNSUPPORTED_MEDIA_TYPE
+        - PAYLOAD_TOO_LARGE
+        - INTERNAL_ERROR
+    FieldError:
+      type: object
+      required: [field, code]
+      properties:
+        field:
+          type: string
+          description: Path of the invalid field in the request, e.g. `name` or `items[0].title`.
+          example: name
+        code:
+          type: string
+          description: |
+            The violated constraint in UPPER_SNAKE_CASE, derived from the Bean Validation
+            constraint name, e.g. `NOT_BLANK`, `SIZE`, `EMAIL`, `PATTERN`.
+          example: NOT_BLANK
