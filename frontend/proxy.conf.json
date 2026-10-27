@@ -1,0 +1,6 @@
+{
+  "/api": { "target": "http://localhost:8080" },
+  "/openapi.yaml": { "target": "http://localhost:8080" },
+  "/swagger-ui": { "target": "http://localhost:8080" },
+  "/webjars": { "target": "http://localhost:8080" }
+}

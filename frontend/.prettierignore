@@ -1,0 +1,7 @@
+src/generated
+.angular
+dist
+coverage
+package-lock.json
+*.inc
+nginx.conf
