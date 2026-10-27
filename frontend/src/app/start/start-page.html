@@ -1,0 +1,28 @@
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>To-Do</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (appInfo.hasValue()) {
+      <dl>
+        <dt>Backend</dt>
+        <dd>{{ appInfo.value().name }}</dd>
+        <dt>Version</dt>
+        <dd>{{ appInfo.value().version }}</dd>
+      </dl>
+    } @else if (appInfo.error()) {
+      <p class="error" role="alert">
+        @if (unreachable()) {
+          <mat-icon aria-hidden="true">cloud_off</mat-icon>
+          Can't reach the server. Check that the backend is running.
+        } @else {
+          <mat-icon aria-hidden="true">error</mat-icon>
+          The server ran into a problem. Try again in a moment.
+        }
+      </p>
+      <button matButton type="button" (click)="appInfo.reload()">Retry</button>
+    } @else {
+      <mat-progress-spinner mode="indeterminate" diameter="32" aria-label="Loading" />
+    }
+  </mat-card-content>
+</mat-card>
