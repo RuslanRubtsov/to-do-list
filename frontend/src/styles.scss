@@ -1,36 +1,40 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+// The app's look comes from Angular Material's theme alone: the palettes and type below feed
+// `mat.theme()`, which sets the system variables (--mat-sys-*) every component and page uses.
+// https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+// Generated from two seeds by `ng generate @angular/material:theme-color`:
+// plum ink #5D2E8C (primary) and marigold #E59E1A (tertiary)
+@use 'theme-colors';
 
 html {
   height: 100%;
+  // Light or dark per the system preference; ThemeService overrides it once one is picked
+  color-scheme: light dark;
+
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: theme-colors.$primary-palette,
+        tertiary: theme-colors.$tertiary-palette,
       ),
-      typography: Roboto,
+      typography: (
+        // Wide and geometric, for display, headline and title text: the app's one loud voice
+        brand-family: 'Unbounded Variable',
+        // Drawn for legible interface text in Cyrillic and Latin alike
+        plain-family: 'Golos Text Variable',
+        bold-weight: 650,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
       density: 0,
     )
   );
 }
 
 body {
-  // Follow the system preference until the theme switcher arrives
-  color-scheme: light dark;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
   margin: 0;
   height: 100%;
 }

@@ -1,6 +1,60 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en">
   <file id="ngi18n" original="ng.template">
+    <unit id="5034473762587110175">
+      <notes>
+        <note category="location">src/app/shell/shell.html:7,8</note>
+        <note category="description">Toolbar button that opens the navigation drawer on phones</note>
+      </notes>
+      <segment>
+        <source>Open navigation</source>
+      </segment>
+    </unit>
+    <unit id="1348774649041038169">
+      <notes>
+        <note category="location">src/app/shell/shell.html:32</note>
+        <note category="description">Accessible name of the navigation drawer</note>
+      </notes>
+      <segment>
+        <source>Navigation</source>
+      </segment>
+    </unit>
+    <unit id="2821179408673282599">
+      <notes>
+        <note category="location">src/app/shell/shell.html:45,47</note>
+        <note category="description">Navigation: link to the start page</note>
+      </notes>
+      <segment>
+        <source>Home</source>
+      </segment>
+    </unit>
+    <unit id="3722967224215437913">
+      <notes>
+        <note category="location">src/app/shell/shell.html:51,55</note>
+        <note category="description">Navigation: link to the REST API&apos;s Swagger UI</note>
+      </notes>
+      <segment>
+        <source>API documentation</source>
+      </segment>
+    </unit>
+    <unit id="6998887300160305812">
+      <notes>
+        <note category="location">src/app/shell/shell.ts:38</note>
+        <note category="description">Toolbar button that turns on the light theme</note>
+      </notes>
+      <segment>
+        <source>Switch to light theme</source>
+      </segment>
+    </unit>
+    <unit id="182622205717568263">
+      <notes>
+        <note category="location">src/app/shell/shell.ts:42</note>
+        <note category="description">Toolbar button that turns on the dark theme</note>
+      </notes>
+      <segment>
+        <source>Switch to dark theme</source>
+      </segment>
+    </unit>
     <unit id="1360286660327265296">
       <notes>
         <note category="location">src/app/start/start-page.html:9,11</note>

@@ -30,7 +30,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "@fontsource-variable/unbounded/index.css",
+              "@fontsource-variable/golos-text/index.css",
+              "src/styles.scss"
+            ],
             "polyfills": ["@angular/localize/init"],
             "localize": true,
             "i18nMissingTranslation": "error"
@@ -87,6 +91,7 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
+            "isolate": true,
             "coverageExclude": ["src/generated/**", "src/testing/**"]
           }
         },

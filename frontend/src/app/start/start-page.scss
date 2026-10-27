@@ -1,13 +1,9 @@
 :host {
-  display: grid;
-  place-items: center;
-  min-height: 100%;
-  padding: 16px;
-  box-sizing: border-box;
+  display: block;
 }
 
 mat-card {
-  width: min(100%, 400px);
+  max-width: 440px;
 }
 
 dl {

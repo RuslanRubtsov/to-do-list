@@ -1,3 +1,4 @@
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -24,21 +25,57 @@ export async function renderRoute(url: string, options: { locale?: Locale } = {}
   await harness.navigateByUrl(url);
   TestBed.tick();
 
+  const root = () => harness.routeNativeElement ?? document.createElement('div');
+  /** Buttons and links: what a person can activate. */
+  const controls = () => Array.from(root().querySelectorAll<HTMLElement>('button, a'));
+  const findControl = (label: string) =>
+    controls().find((control) => accessibleName(control) === label);
+  const control = (label: string): HTMLElement => {
+    const found = findControl(label);
+    if (!found) {
+      const names = controls().map(accessibleName).join('", "');
+      throw new Error(`No button or link labelled "${label}" (found "${names}")`);
+    }
+    return found;
+  };
+
   return {
     http,
+    /** Material's test harnesses, for asking real components about their state. */
+    loader: TestbedHarnessEnvironment.loader(harness.fixture),
     /** Lets the page react to flushed responses, then returns its rendered text. */
     async text(): Promise<string> {
       await harness.fixture.whenStable();
-      return harness.routeNativeElement?.textContent ?? '';
+      return root().textContent ?? '';
     },
-    /** Clicks the button with this label and lets the page start reacting (e.g. send requests). */
-    click(label: string): void {
-      const button = Array.from(harness.routeNativeElement?.querySelectorAll('button') ?? []).find(
-        (candidate) => candidate.textContent?.includes(label),
+    /** Whether a button or link with this accessible name is on the page. */
+    has(label: string): boolean {
+      return findControl(label) !== undefined;
+    },
+    /** The button or link with this accessible name, for checking its ARIA state. */
+    control,
+    /** The navigation landmark with this accessible name, if there is one. */
+    navigation(label: string): HTMLElement | undefined {
+      return Array.from(root().querySelectorAll<HTMLElement>('nav, [role="navigation"]')).find(
+        (landmark) => accessibleName(landmark) === label,
       );
-      if (!button) throw new Error(`No button labelled "${label}"`);
-      button.click();
+    },
+    /**
+     * Clicks the button or link with this accessible name and lets the page start reacting.
+     * Doesn't wait for it to settle: a click may start a request the test has yet to answer.
+     */
+    click(label: string): void {
+      control(label).click();
       TestBed.tick();
     },
   };
+}
+
+/** What a screen reader announces: the aria-label, or else the text it doesn't hide. */
+function accessibleName(element: HTMLElement): string {
+  const label = element.getAttribute('aria-label');
+  if (label !== null) return label.trim();
+  const visible = element.cloneNode(true) as HTMLElement;
+  visible.querySelectorAll('[aria-hidden="true"]').forEach((hidden) => hidden.remove());
+  return (visible.textContent ?? '').trim();
 }

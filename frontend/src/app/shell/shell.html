@@ -1,0 +1,63 @@
+<mat-toolbar>
+  @if (phone()) {
+    <button
+      matIconButton
+      type="button"
+      (click)="drawer.toggle()"
+      aria-label="Open navigation"
+      i18n-aria-label="Toolbar button that opens the navigation drawer on phones"
+      [attr.aria-expanded]="drawer.opened"
+      aria-controls="navigation"
+    >
+      <mat-icon aria-hidden="true">menu</mat-icon>
+    </button>
+  }
+  <!-- The product name, not translated -->
+  <a class="wordmark" routerLink="/">To-Do</a>
+  <span class="spacer"></span>
+  <!-- The language switcher and the signed-in user join the theme switch here -->
+  <button
+    matIconButton
+    type="button"
+    (click)="theme.toggle()"
+    [attr.aria-label]="themeToggle().label"
+  >
+    <mat-icon aria-hidden="true">{{ themeToggle().icon }}</mat-icon>
+  </button>
+</mat-toolbar>
+
+<mat-sidenav-container>
+  <mat-sidenav #drawer id="navigation" [mode]="phone() ? 'over' : 'side'" [opened]="!phone()">
+    <!-- The landmark screen readers jump to; a label on mat-sidenav itself would go unannounced -->
+    <nav aria-label="Navigation" i18n-aria-label="Accessible name of the navigation drawer">
+      <mat-nav-list>
+        <a
+          mat-list-item
+          routerLink="/"
+          routerLinkActive
+          #home="routerLinkActive"
+          [routerLinkActiveOptions]="{ exact: true }"
+          [activated]="home.isActive"
+          [attr.aria-current]="home.isActive ? 'page' : null"
+          (click)="closeDrawerOnPhone()"
+        >
+          <mat-icon matListItemIcon aria-hidden="true">home</mat-icon>
+          <span matListItemTitle i18n="Navigation: link to the start page">Home</span>
+        </a>
+        <!-- Swagger UI is served by the backend, outside this app -->
+        <a mat-list-item href="/swagger-ui/index.html">
+          <mat-icon matListItemIcon aria-hidden="true">api</mat-icon>
+          <span matListItemTitle i18n="Navigation: link to the REST API's Swagger UI"
+            >API documentation</span
+          >
+        </a>
+      </mat-nav-list>
+    </nav>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <main>
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
