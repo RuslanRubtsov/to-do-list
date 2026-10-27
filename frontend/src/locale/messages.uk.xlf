@@ -77,5 +77,59 @@
         <target>Завантаження</target>
       </segment>
     </unit>
+    <unit id="5034473762587110175">
+      <notes>
+        <note category="description">Toolbar button that opens the navigation drawer on phones</note>
+      </notes>
+      <segment state="translated">
+        <source>Open navigation</source>
+        <target>Відкрити навігацію</target>
+      </segment>
+    </unit>
+    <unit id="1348774649041038169">
+      <notes>
+        <note category="description">Accessible name of the navigation drawer</note>
+      </notes>
+      <segment state="translated">
+        <source>Navigation</source>
+        <target>Навігація</target>
+      </segment>
+    </unit>
+    <unit id="2821179408673282599">
+      <notes>
+        <note category="description">Navigation: link to the start page</note>
+      </notes>
+      <segment state="translated">
+        <source>Home</source>
+        <target>Головна</target>
+      </segment>
+    </unit>
+    <unit id="3722967224215437913">
+      <notes>
+        <note category="description">Navigation: link to the REST API&apos;s Swagger UI</note>
+      </notes>
+      <segment state="translated">
+        <source>API documentation</source>
+        <target>Документація API</target>
+      </segment>
+    </unit>
+    <unit id="6998887300160305812">
+      <notes>
+        <note category="description">Toolbar button that turns on the light theme</note>
+      </notes>
+      <segment state="translated">
+        <source>Switch to light theme</source>
+        <target>Увімкнути світлу тему</target>
+      </segment>
+    </unit>
+    <unit id="182622205717568263">
+      <notes>
+        <note category="description">Toolbar button that turns on the dark theme</note>
+      </notes>
+      <segment state="translated">
+        <source>Switch to dark theme</source>
+        <target>Увімкнути темну тему</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

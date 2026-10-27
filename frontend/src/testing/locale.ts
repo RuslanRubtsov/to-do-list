@@ -13,6 +13,11 @@ export type Locale = keyof typeof LOCALE_DATA;
  * Switches `$localize` to a locale's translations, read from the same XLIFF file the production
  * build compiles in (ADR-0002). Tests can't use the compile-time translation the build does, so
  * this loads them at runtime instead. English is the source locale and needs no translations.
+ *
+ * Use one locale per spec file. Angular caches a component's compiled template, translated
+ * attributes included, the first time it renders, so a later test in another locale would see the
+ * first one's text. Spec files run isolated (`isolate` in angular.json) so the cache can't leak
+ * between them.
  */
 export function useLocale(locale: Locale): void {
   clearTranslations();

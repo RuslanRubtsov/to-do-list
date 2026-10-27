@@ -1,0 +1,67 @@
+@use '@angular/material' as mat;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+mat-toolbar {
+  // A quiet bar, so the wordmark carries the colour
+  @include mat.toolbar-overrides(
+    (
+      container-background-color: var(--mat-sys-surface-container),
+      container-text-color: var(--mat-sys-on-surface),
+    )
+  );
+  gap: 4px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.wordmark {
+  font-family: var(--mat-sys-headline-small-font);
+  font-size: var(--mat-sys-title-large-size);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+  padding-inline: 8px;
+  border-radius: var(--mat-sys-corner-small);
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+mat-sidenav-container {
+  flex: 1;
+}
+
+mat-sidenav {
+  @include mat.sidenav-overrides(
+    (
+      container-width: 264px,
+      container-shape: 0,
+      container-divider-color: var(--mat-sys-outline-variant),
+    )
+  );
+  padding-block: 8px;
+}
+
+main {
+  padding: 24px;
+  box-sizing: border-box;
+  max-width: 960px;
+}
+
+// CDK's Breakpoints.XSmall, the PHONE_QUERY the shell switches the drawer at
+@media (max-width: 599.98px) {
+  main {
+    padding: 16px;
+  }
+}
