@@ -1,28 +1,52 @@
 <mat-card appearance="outlined">
   <mat-card-header>
+    <!-- The product name, not translated -->
     <mat-card-title>To-Do</mat-card-title>
   </mat-card-header>
   <mat-card-content>
     @if (appInfo.hasValue()) {
       <dl>
-        <dt>Backend</dt>
+        <dt i18n="Start page: label for the backend service's name">Backend</dt>
         <dd>{{ appInfo.value().name }}</dd>
-        <dt>Version</dt>
+        <dt i18n="Start page: label for the backend's version number">Version</dt>
         <dd>{{ appInfo.value().version }}</dd>
+        <dt i18n="Start page: label for the date the backend was built">Built</dt>
+        <dd>
+          {{ appInfo.value().buildTime | date: 'mediumDate' }}
+          (<ng-container
+            i18n="Start page: how long ago the backend was built, after its build date"
+            >{daysSinceBuild(), plural,
+              =0 {today}
+              =1 {yesterday}
+              other {{{ daysSinceBuild() | number }} days ago}
+            }</ng-container
+          >)
+        </dd>
       </dl>
     } @else if (appInfo.error()) {
       <p class="error" role="alert">
         @if (unreachable()) {
           <mat-icon aria-hidden="true">cloud_off</mat-icon>
-          Can't reach the server. Check that the backend is running.
+          <ng-container i18n="Start page: error when the backend doesn't respond"
+            >Can't reach the server. Check that the backend is running.</ng-container
+          >
         } @else {
           <mat-icon aria-hidden="true">error</mat-icon>
-          The server ran into a problem. Try again in a moment.
+          <ng-container i18n="Start page: error when the backend responds with a failure"
+            >The server ran into a problem. Try again in a moment.</ng-container
+          >
         }
       </p>
-      <button matButton type="button" (click)="appInfo.reload()">Retry</button>
+      <button matButton type="button" (click)="appInfo.reload()" i18n="Button: try loading again">
+        Retry
+      </button>
     } @else {
-      <mat-progress-spinner mode="indeterminate" diameter="32" aria-label="Loading" />
+      <mat-progress-spinner
+        mode="indeterminate"
+        diameter="32"
+        aria-label="Loading"
+        i18n-aria-label="Accessible label for a loading spinner"
+      />
     }
   </mat-card-content>
 </mat-card>

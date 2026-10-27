@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en">
+  <file id="ngi18n" original="ng.template">
+    <unit id="1360286660327265296">
+      <notes>
+        <note category="location">src/app/start/start-page.html:9,11</note>
+        <note category="description">Start page: label for the backend service&apos;s name</note>
+      </notes>
+      <segment>
+        <source>Backend</source>
+      </segment>
+    </unit>
+    <unit id="2724055831234181057">
+      <notes>
+        <note category="location">src/app/start/start-page.html:11,13</note>
+        <note category="description">Start page: label for the backend&apos;s version number</note>
+      </notes>
+      <segment>
+        <source>Version</source>
+      </segment>
+    </unit>
+    <unit id="1212905061360073382">
+      <notes>
+        <note category="location">src/app/start/start-page.html:13,15</note>
+        <note category="description">Start page: label for the date the backend was built</note>
+      </notes>
+      <segment>
+        <source>Built</source>
+      </segment>
+    </unit>
+    <unit id="1454943198600318526">
+      <notes>
+        <note category="location">src/app/start/start-page.html:18,22</note>
+        <note category="description">Start page: how long ago the backend was built, after its build date</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, =0 {today} =1 {yesterday} other {<ph id="0" equiv="INTERPOLATION"/> days ago}}</source>
+      </segment>
+    </unit>
+    <unit id="8787142347012521211">
+      <notes>
+        <note category="location">src/app/start/start-page.html:31,34</note>
+        <note category="description">Start page: error when the backend doesn&apos;t respond</note>
+      </notes>
+      <segment>
+        <source>Can&apos;t reach the server. Check that the backend is running.</source>
+      </segment>
+    </unit>
+    <unit id="5775044510211148825">
+      <notes>
+        <note category="location">src/app/start/start-page.html:36,40</note>
+        <note category="description">Start page: error when the backend responds with a failure</note>
+      </notes>
+      <segment>
+        <source>The server ran into a problem. Try again in a moment.</source>
+      </segment>
+    </unit>
+    <unit id="5171192616638755303">
+      <notes>
+        <note category="location">src/app/start/start-page.html:41,44</note>
+        <note category="description">Button: try loading again</note>
+      </notes>
+      <segment>
+        <source> Retry </source>
+      </segment>
+    </unit>
+    <unit id="7619560701830330401">
+      <notes>
+        <note category="location">src/app/start/start-page.html:48</note>
+        <note category="description">Accessible label for a loading spinner</note>
+      </notes>
+      <segment>
+        <source>Loading</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>
