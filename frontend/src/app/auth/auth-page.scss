@@ -1,0 +1,64 @@
+// Shared by the login and registration pages: one card, centred on the page, outside the shell
+:host {
+  display: block;
+}
+
+main {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+mat-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 24px 24px;
+  box-sizing: border-box;
+}
+
+.wordmark {
+  margin: 0;
+  font-family: var(--mat-sys-headline-small-font);
+  font-size: var(--mat-sys-title-large-size);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--mat-sys-primary);
+}
+
+h1 {
+  margin: 8px 0 24px;
+  font: var(--mat-sys-headline-small);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+button[type='submit'] {
+  margin-top: 8px;
+}
+
+.failure {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 12px;
+  border-radius: var(--mat-sys-corner-small);
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+}
+
+.switch {
+  margin: 24px 0 0;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+
+  a {
+    color: var(--mat-sys-primary);
+  }
+}

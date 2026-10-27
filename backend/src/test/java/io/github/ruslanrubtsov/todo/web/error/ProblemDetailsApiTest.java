@@ -84,8 +84,12 @@ class ProblemDetailsApiTest extends ApiTest {
 
     @Test
     void unknownRouteIsNotFoundProblem() {
+        // Logged in: the API answers anonymous callers 401 before it looks for a route
+        String accessToken = newLoggedInUser().accessToken();
+
         api.get()
                 .uri("/api/v1/does-not-exist")
+                .headers(headers -> headers.setBearerAuth(accessToken))
                 .exchange()
                 .expectStatus()
                 .isNotFound()

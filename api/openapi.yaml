@@ -7,16 +7,29 @@ info:
 
     Every error response is an RFC 9457 Problem Details document carrying a stable,
     machine-readable `code`. The API never returns translated text (ADR-0002).
+
+    Most endpoints need a bearer access token. To try them here, call **login** with
+    **Try it out**, then paste the `accessToken` from its response into **Authorize**.
   version: 1.0.0
 tags:
   - name: App Info
     description: Information about the running application.
+  - name: Auth
+    description: |
+      Registering, logging in and logging out. Logging in returns a short-lived access token in
+      the body and sets a long-lived refresh token as an `httpOnly` cookie that only the session
+      endpoints receive.
+  - name: Users
+    description: The User making the request.
+security:
+  - bearerAuth: []
 paths:
   /api/v1/app-info:
     get:
       tags: [App Info]
       operationId: getAppInfo
       summary: Get the application name and version
+      security: []
       responses:
         '200':
           description: The running application's name and version.
@@ -26,8 +39,155 @@ paths:
                 $ref: '#/components/schemas/AppInfo'
         default:
           $ref: '#/components/responses/Problem'
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      operationId: register
+      summary: Register a new User
+      description: Creates a User without logging them in; log in afterwards.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: The registered User.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: A User with this email is already registered (`EMAIL_TAKEN`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      operationId: login
+      summary: Log in with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Logged in; the refresh token is set as a cookie.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetRefreshTokenCookie'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
+        '401':
+          description: |
+            The email or password is wrong (`INVALID_CREDENTIALS`). The response is the same
+            whether or not the email is registered.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/auth/session/refresh:
+    post:
+      tags: [Auth]
+      operationId: refreshSession
+      summary: Get a new access token with the refresh token cookie
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/RefreshTokenCookie'
+      responses:
+        '200':
+          description: The session is still valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
+        '401':
+          description: No refresh token, or one that is unknown, expired or revoked (`UNAUTHENTICATED`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/auth/session/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: Log out, revoking the refresh token
+      description: Always succeeds, so logging out twice, or without a session, is harmless.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/RefreshTokenCookie'
+      responses:
+        '204':
+          description: Logged out; the refresh token cookie is cleared.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/ClearRefreshTokenCookie'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/users/me:
+    get:
+      tags: [Users]
+      operationId: getCurrentUser
+      summary: Get the User the access token belongs to
+      responses:
+        '200':
+          description: The current User.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        default:
+          $ref: '#/components/responses/Problem'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: The `accessToken` from logging in or refreshing the session.
+  parameters:
+    RefreshTokenCookie:
+      name: todo_refresh
+      in: cookie
+      required: false
+      description: The refresh token set by logging in. Browsers send it automatically.
+      schema:
+        type: string
+  headers:
+    SetRefreshTokenCookie:
+      description: |
+        The refresh token: `todo_refresh=…; Path=/api/v1/auth/session; Max-Age=…; Secure;
+        HttpOnly; SameSite=Strict`.
+      schema:
+        type: string
+    ClearRefreshTokenCookie:
+      description: Expires the refresh token cookie.
+      schema:
+        type: string
   responses:
+    Unauthenticated:
+      description: No valid access token (`UNAUTHENTICATED`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
     Problem:
       description: An error, described as RFC 9457 Problem Details.
       content:
@@ -35,6 +195,82 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
   schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: Logs the User in. No two Users share one, ignoring letter case.
+          example: olena@example.com
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+          pattern: '^(?=.*\p{L})(?=.*\p{N}).*$'
+          description: |
+            8 to 72 characters with at least one letter and one digit (`PATTERN` otherwise). It
+            must also fit in the 72 bytes of UTF-8 that BCrypt hashes (`SIZE` otherwise).
+          example: correct-horse-7
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: '.*\S.*'
+          description: How the User is shown. Must not be blank (`PATTERN` otherwise).
+          example: Olena
+        preferredLanguage:
+          $ref: '#/components/schemas/Language'
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          example: olena@example.com
+        password:
+          type: string
+          example: correct-horse-7
+    AuthSession:
+      type: object
+      required: [accessToken, tokenType, expiresIn, user]
+      properties:
+        accessToken:
+          type: string
+          description: |
+            A signed JWT to send as `Authorization: Bearer …`. Keep it in memory only.
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Seconds until the access token expires.
+          example: 900
+        user:
+          $ref: '#/components/schemas/User'
+    User:
+      type: object
+      required: [id, email, displayName, preferredLanguage]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 42
+        email:
+          type: string
+          example: olena@example.com
+        displayName:
+          type: string
+          example: Olena
+        preferredLanguage:
+          $ref: '#/components/schemas/Language'
+    Language:
+      type: string
+      description: A language the UI is available in.
+      enum: [en, uk]
+      default: en
     AppInfo:
       type: object
       required: [name, version, buildTime]
@@ -84,6 +320,9 @@ components:
       enum:
         - MALFORMED_REQUEST
         - VALIDATION_FAILED
+        - UNAUTHENTICATED
+        - INVALID_CREDENTIALS
+        - EMAIL_TAKEN
         - NOT_FOUND
         - METHOD_NOT_ALLOWED
         - NOT_ACCEPTABLE

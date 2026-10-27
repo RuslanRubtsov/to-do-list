@@ -131,5 +131,266 @@
         <target>Увімкнути темну тему</target>
       </segment>
     </unit>
+    <unit id="2336550011721758066">
+      <notes>
+        <note category="description">Login page: heading</note>
+      </notes>
+      <segment state="translated">
+        <source>Log in</source>
+        <target>Увійти</target>
+      </segment>
+    </unit>
+    <unit id="5680798519867533405">
+      <notes>
+        <note category="description">Login page: error when the email or password is wrong</note>
+      </notes>
+      <segment state="translated">
+        <source>Wrong email or password.</source>
+        <target>Неправильна електронна пошта або пароль.</target>
+      </segment>
+    </unit>
+    <unit id="9139804578905829149">
+      <notes>
+        <note category="description">Login page: error when the backend doesn&apos;t respond</note>
+      </notes>
+      <segment state="translated">
+        <source>Can&apos;t reach the server. Try again in a moment.</source>
+        <target>Не вдається зв’язатися із сервером. Спробуйте ще раз за мить.</target>
+      </segment>
+    </unit>
+    <unit id="3899221092228233582">
+      <notes>
+        <note category="description">Login page: error when the backend responds with a failure</note>
+      </notes>
+      <segment state="translated">
+        <source>Something went wrong. Try again in a moment.</source>
+        <target>Щось пішло не так. Спробуйте ще раз за мить.</target>
+      </segment>
+    </unit>
+    <unit id="4768749765465246664">
+      <notes>
+        <note category="description">Login and registration forms: email field</note>
+      </notes>
+      <segment state="translated">
+        <source>Email</source>
+        <target>Електронна пошта</target>
+      </segment>
+    </unit>
+    <unit id="6084407256586922970">
+      <notes>
+        <note category="description">Login page: error when the email is empty</note>
+      </notes>
+      <segment state="translated">
+        <source>Enter your email.</source>
+        <target>Введіть електронну пошту.</target>
+      </segment>
+    </unit>
+    <unit id="1431416938026210429">
+      <notes>
+        <note category="description">Login and registration forms: password field</note>
+      </notes>
+      <segment state="translated">
+        <source>Password</source>
+        <target>Пароль</target>
+      </segment>
+    </unit>
+    <unit id="7206690825838385338">
+      <notes>
+        <note category="description">Login page: error when the password is empty</note>
+      </notes>
+      <segment state="translated">
+        <source>Enter your password.</source>
+        <target>Введіть пароль.</target>
+      </segment>
+    </unit>
+    <unit id="2715185765061607307">
+      <notes>
+        <note category="description">Button: log in</note>
+      </notes>
+      <segment state="translated">
+        <source> Log in </source>
+        <target> Увійти </target>
+      </segment>
+    </unit>
+    <unit id="4740151139799726429">
+      <notes>
+        <note category="description">Login page: before the link to registration</note>
+      </notes>
+      <segment state="translated">
+        <source>New here?</source>
+        <target>Уперше тут?</target>
+      </segment>
+    </unit>
+    <unit id="2308975396733519902">
+      <notes>
+        <note category="description">Login page: link to registration</note>
+      </notes>
+      <segment state="translated">
+        <source>Create an account</source>
+        <target>Створити обліковий запис</target>
+      </segment>
+    </unit>
+    <unit id="8953033926734869941">
+      <notes>
+        <note category="description">Registration page: field for the name other Users see</note>
+      </notes>
+      <segment state="translated">
+        <source>Name</source>
+        <target>Ім’я</target>
+      </segment>
+    </unit>
+    <unit id="6008489739592125163">
+      <notes>
+        <note category="description">Registration page: error when the name is too long</note>
+      </notes>
+      <segment state="translated">
+        <source>Use at most <ph id="0" equiv="INTERPOLATION" disp="{{ displayNameMaxLength }}"/> characters.</source>
+        <target>Не більше ніж <ph id="0" equiv="INTERPOLATION" disp="{{ displayNameMaxLength }}"/> символів.</target>
+      </segment>
+    </unit>
+    <unit id="7546235570022150987">
+      <notes>
+        <note category="description">Registration page: error when the name is empty</note>
+      </notes>
+      <segment state="translated">
+        <source>Enter your name.</source>
+        <target>Введіть ім’я.</target>
+      </segment>
+    </unit>
+    <unit id="6405892950020399476">
+      <notes>
+        <note category="description">Registration page: error when the email belongs to another User</note>
+      </notes>
+      <segment state="translated">
+        <source>This email is already registered. Log in instead?</source>
+        <target>Ця електронна пошта вже зареєстрована. Може, увійти?</target>
+      </segment>
+    </unit>
+    <unit id="2112768397949905814">
+      <notes>
+        <note category="description">Registration page: error when the email isn&apos;t valid</note>
+      </notes>
+      <segment state="translated">
+        <source>Enter a valid email address.</source>
+        <target>Введіть дійсну адресу електронної пошти.</target>
+      </segment>
+    </unit>
+    <unit id="7224836355808592611">
+      <notes>
+        <note category="description">Registration page: error when the password is empty</note>
+      </notes>
+      <segment state="translated">
+        <source>Choose a password.</source>
+        <target>Придумайте пароль.</target>
+      </segment>
+    </unit>
+    <unit id="4275414735194365891">
+      <notes>
+        <note category="description">Registration page: error when the password is too long</note>
+      </notes>
+      <segment state="translated">
+        <source>This password is too long.</source>
+        <target>Цей пароль задовгий.</target>
+      </segment>
+    </unit>
+    <unit id="8876017871292952665">
+      <notes>
+        <note category="description">Registration page: error when the password breaks a strength rule</note>
+      </notes>
+      <segment state="translated">
+        <source>Choose a password that follows the rules below.</source>
+        <target>Придумайте пароль, що відповідає вимогам нижче.</target>
+      </segment>
+    </unit>
+    <unit id="220362828412309698">
+      <notes>
+        <note category="description">Registration page: accessible name of the password rules checklist</note>
+      </notes>
+      <segment state="translated">
+        <source>Password rules</source>
+        <target>Вимоги до пароля</target>
+      </segment>
+    </unit>
+    <unit id="5241223076967248456">
+      <notes>
+        <note category="description">Registration page: password rule</note>
+      </notes>
+      <segment state="translated">
+        <source>At least 8 characters</source>
+        <target>Щонайменше 8 символів</target>
+      </segment>
+    </unit>
+    <unit id="7013442083671565394">
+      <notes>
+        <note category="description">Registration page: a password rule is met</note>
+      </notes>
+      <segment state="translated">
+        <source>(met)</source>
+        <target>(виконано)</target>
+      </segment>
+    </unit>
+    <unit id="6552512832318649879">
+      <notes>
+        <note category="description">Registration page: password rule</note>
+      </notes>
+      <segment state="translated">
+        <source>At least one letter</source>
+        <target>Щонайменше одна літера</target>
+      </segment>
+    </unit>
+    <unit id="8671549879247666797">
+      <notes>
+        <note category="description">Registration page: password rule</note>
+      </notes>
+      <segment state="translated">
+        <source>At least one digit</source>
+        <target>Щонайменше одна цифра</target>
+      </segment>
+    </unit>
+    <unit id="7504752777131062423">
+      <notes>
+        <note category="description">Button: create an account</note>
+      </notes>
+      <segment state="translated">
+        <source> Create account </source>
+        <target> Створити обліковий запис </target>
+      </segment>
+    </unit>
+    <unit id="5277739594710154939">
+      <notes>
+        <note category="description">Registration page: before the link to logging in</note>
+      </notes>
+      <segment state="translated">
+        <source>Already have an account?</source>
+        <target>Уже маєте обліковий запис?</target>
+      </segment>
+    </unit>
+    <unit id="7507948636555938109">
+      <notes>
+        <note category="description">Toolbar button that logs the User out</note>
+      </notes>
+      <segment state="translated">
+        <source>Log out</source>
+        <target>Вийти</target>
+      </segment>
+    </unit>
+    <unit id="4200230781799182271">
+      <notes>
+        <note category="description">Message when logging out fails</note>
+      </notes>
+      <segment state="translated">
+        <source>Couldn&apos;t log out. Check your connection and try again.</source>
+        <target>Не вдалося вийти. Перевірте з’єднання і спробуйте ще раз.</target>
+      </segment>
+    </unit>
+    <unit id="8998179362936748717">
+      <notes>
+        <note category="description">Dismisses a message</note>
+      </notes>
+      <segment state="translated">
+        <source>OK</source>
+        <target>OK</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

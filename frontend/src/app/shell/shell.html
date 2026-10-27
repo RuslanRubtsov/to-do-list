@@ -15,7 +15,7 @@
   <!-- The product name, not translated -->
   <a class="wordmark" routerLink="/">To-Do</a>
   <span class="spacer"></span>
-  <!-- The language switcher and the signed-in user join the theme switch here -->
+  <!-- The language switcher joins the theme switch here -->
   <button
     matIconButton
     type="button"
@@ -24,6 +24,21 @@
   >
     <mat-icon aria-hidden="true">{{ themeToggle().icon }}</mat-icon>
   </button>
+  @if (session.user(); as user) {
+    <span class="user">
+      <mat-icon aria-hidden="true">account_circle</mat-icon>
+      <span class="user-name">{{ user.displayName }}</span>
+    </span>
+    <button
+      matIconButton
+      type="button"
+      (click)="logOut()"
+      aria-label="Log out"
+      i18n-aria-label="Toolbar button that logs the User out"
+    >
+      <mat-icon aria-hidden="true">logout</mat-icon>
+    </button>
+  }
 </mat-toolbar>
 
 <mat-sidenav-container>

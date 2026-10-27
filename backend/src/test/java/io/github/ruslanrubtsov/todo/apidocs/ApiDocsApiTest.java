@@ -19,6 +19,21 @@ class ApiDocsApiTest extends ApiTest {
     }
 
     @Test
+    void specLetsSwaggerUiAuthoriseWithABearerToken() {
+        api.get()
+                .uri("/openapi.yaml")
+                .exchange()
+                .expectBody(String.class)
+                // A Windows checkout may have CRLF line endings
+                .value(spec -> assertThat(spec.replace("\r\n", "\n")).contains("""
+                                  securitySchemes:
+                                    bearerAuth:
+                                      type: http
+                                      scheme: bearer
+                                """));
+    }
+
+    @Test
     void swaggerUiRendersTheHandWrittenSpec() {
         api.get()
                 .uri("/swagger-ui/index.html")
