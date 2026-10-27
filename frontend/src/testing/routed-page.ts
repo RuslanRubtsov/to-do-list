@@ -1,15 +1,23 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { appConfig } from '../app/app.config';
+import { Locale, useLocale } from './locale';
 
 /**
  * Renders a real routed page with the real app configuration, faking only the HTTP backend
- * beneath the generated API client.
+ * beneath the generated API client. Renders in the source locale (English) unless told otherwise.
  */
-export async function renderRoute(url: string) {
+export async function renderRoute(url: string, options: { locale?: Locale } = {}) {
+  const locale = options.locale ?? 'en';
+  useLocale(locale);
   TestBed.configureTestingModule({
-    providers: [...appConfig.providers, provideHttpClientTesting()],
+    providers: [
+      ...appConfig.providers,
+      provideHttpClientTesting(),
+      { provide: LOCALE_ID, useValue: locale },
+    ],
   });
   const harness = await RouterTestingHarness.create();
   const http = TestBed.inject(HttpTestingController);

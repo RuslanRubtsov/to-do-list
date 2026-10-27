@@ -37,7 +37,7 @@ components:
   schemas:
     AppInfo:
       type: object
-      required: [name, version]
+      required: [name, version, buildTime]
       properties:
         name:
           type: string
@@ -45,6 +45,11 @@ components:
         version:
           type: string
           example: 0.1.0
+        buildTime:
+          type: string
+          format: date-time
+          description: When the running backend was built.
+          example: '2026-10-27T09:35:00Z'
     Problem:
       type: object
       description: RFC 9457 Problem Details, extended with a stable error code.

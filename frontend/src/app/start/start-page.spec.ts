@@ -4,7 +4,12 @@ import { AppInfo } from '@api';
 import { renderRoute } from '../../testing/routed-page';
 
 const APP_INFO_REQUEST = { method: 'GET', url: '/api/v1/app-info' };
-const APP_INFO: AppInfo = { name: 'todo-backend', version: '1.4.2' };
+const APP_INFO: AppInfo = {
+  name: 'todo-backend',
+  version: '1.4.2',
+  buildTime: '2026-10-22T09:00:00Z',
+};
+const NOW = new Date('2026-10-27T12:00:00Z');
 const UNREACHABLE = "Can't reach the server";
 
 function failAsUnreachable(http: HttpTestingController) {
@@ -12,7 +17,15 @@ function failAsUnreachable(http: HttpTestingController) {
 }
 
 describe('Start page', () => {
-  afterEach(() => TestBed.inject(HttpTestingController).verify());
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+  });
+
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
+    vi.useRealTimers();
+  });
 
   it('shows the backend name and version', async () => {
     const page = await renderRoute('/');
@@ -22,6 +35,22 @@ describe('Start page', () => {
     const text = await page.text();
     expect(text).toContain('todo-backend');
     expect(text).toContain('1.4.2');
+  });
+
+  it('shows when the backend was built and how long ago', async () => {
+    const page = await renderRoute('/');
+
+    page.http.expectOne(APP_INFO_REQUEST).flush(APP_INFO);
+
+    expect(await page.text()).toContain('Oct 22, 2026 (5 days ago)');
+  });
+
+  it('says a backend built today was built today', async () => {
+    const page = await renderRoute('/');
+
+    page.http.expectOne(APP_INFO_REQUEST).flush({ ...APP_INFO, buildTime: '2026-10-27T08:00:00Z' });
+
+    expect(await page.text()).toContain('Oct 27, 2026 (today)');
   });
 
   it('shows an error when the backend is unreachable', async () => {

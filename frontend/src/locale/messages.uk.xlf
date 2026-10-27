@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  Ukrainian translations (ADR-0002). Segments with state="translated" were drafted by Claude and
+  await Ruslan's review; mark them state="reviewed" once checked.
+-->
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en" trgLang="uk">
+  <file id="ngi18n" original="ng.template">
+    <unit id="1360286660327265296">
+      <notes>
+        <note category="description">Start page: label for the backend service&apos;s name</note>
+      </notes>
+      <segment state="translated">
+        <source>Backend</source>
+        <target>Бекенд</target>
+      </segment>
+    </unit>
+    <unit id="2724055831234181057">
+      <notes>
+        <note category="description">Start page: label for the backend&apos;s version number</note>
+      </notes>
+      <segment state="translated">
+        <source>Version</source>
+        <target>Версія</target>
+      </segment>
+    </unit>
+    <unit id="1212905061360073382">
+      <notes>
+        <note category="description">Start page: label for the date the backend was built</note>
+      </notes>
+      <segment state="translated">
+        <source>Built</source>
+        <target>Зібрано</target>
+      </segment>
+    </unit>
+    <unit id="1454943198600318526">
+      <notes>
+        <note category="description">Start page: how long ago the backend was built, after its build date</note>
+      </notes>
+      <segment state="translated">
+        <source>{VAR_PLURAL, plural, =0 {today} =1 {yesterday} other {<ph id="0" equiv="INTERPOLATION"/> days ago}}</source>
+        <target>{VAR_PLURAL, plural, =0 {сьогодні} =1 {вчора} one {<ph id="0" equiv="INTERPOLATION"/> день тому} few {<ph id="0" equiv="INTERPOLATION"/> дні тому} many {<ph id="0" equiv="INTERPOLATION"/> днів тому} other {<ph id="0" equiv="INTERPOLATION"/> дня тому}}</target>
+      </segment>
+    </unit>
+    <unit id="8787142347012521211">
+      <notes>
+        <note category="description">Start page: error when the backend doesn&apos;t respond</note>
+      </notes>
+      <segment state="translated">
+        <source>Can&apos;t reach the server. Check that the backend is running.</source>
+        <target>Не вдається зв’язатися із сервером. Перевірте, чи запущено бекенд.</target>
+      </segment>
+    </unit>
+    <unit id="5775044510211148825">
+      <notes>
+        <note category="description">Start page: error when the backend responds with a failure</note>
+      </notes>
+      <segment state="translated">
+        <source>The server ran into a problem. Try again in a moment.</source>
+        <target>На сервері сталася помилка. Спробуйте ще раз за мить.</target>
+      </segment>
+    </unit>
+    <unit id="5171192616638755303">
+      <notes>
+        <note category="description">Button: try loading again</note>
+      </notes>
+      <segment state="translated">
+        <source> Retry </source>
+        <target> Повторити </target>
+      </segment>
+    </unit>
+    <unit id="7619560701830330401">
+      <notes>
+        <note category="description">Accessible label for a loading spinner</note>
+      </notes>
+      <segment state="translated">
+        <source>Loading</source>
+        <target>Завантаження</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

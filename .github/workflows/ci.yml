@@ -56,6 +56,9 @@ jobs:
         run: npm run lint
       - name: Typecheck
         run: npm run typecheck
+      # Fails when any message lacks a Ukrainian translation (ADR-0002)
+      - name: Check translations
+        run: npm run i18n:check
       - name: Test
         run: npm test -- --watch=false --coverage
       - name: Upload coverage report
@@ -65,6 +68,7 @@ jobs:
           name: frontend-coverage
           path: frontend/coverage/
           if-no-files-found: warn
+      # One build per locale; also fails on any message missing from a translation file
       - name: Production build
         run: npm run build
 

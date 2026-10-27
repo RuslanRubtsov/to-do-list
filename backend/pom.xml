@@ -110,6 +110,10 @@
 						<goals>
 							<goal>build-info</goal>
 						</goals>
+						<configuration>
+							<!-- The real build time; it defaults to the fixed reproducible-build timestamp (1980) -->
+							<time>${maven.build.timestamp}</time>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
