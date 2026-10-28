@@ -39,7 +39,7 @@ public class UserEntity {
     public UserEntity(String email, String passwordHash, String displayName, Language preferredLanguage) {
         this.email = normalizeEmail(email);
         this.passwordHash = passwordHash;
-        this.displayName = displayName;
+        this.displayName = displayName.strip();
         this.preferredLanguage = preferredLanguage;
         this.createdAt = Instant.now();
     }
@@ -67,6 +67,14 @@ public class UserEntity {
 
     public Language getPreferredLanguage() {
         return preferredLanguage;
+    }
+
+    void rename(String displayName) {
+        this.displayName = displayName.strip();
+    }
+
+    void preferLanguage(Language language) {
+        this.preferredLanguage = language;
     }
 
     /** Stores the language as its API code ({@code en}, {@code uk}), not the Java constant's name. */

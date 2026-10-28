@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  LOCALE_ID,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,11 +6,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Router, RouterLink } from '@angular/router';
-import { ErrorCode, Language } from '@api';
+import { RouterLink } from '@angular/router';
+import { ErrorCode } from '@api';
 import { map } from 'rxjs';
 import { isUnreachable, problemOf, showFieldErrors } from '../http/problems';
-import { returnUrlTree } from './guards';
+import { Languages } from '../i18n/languages';
+import { Entrance } from './entrance';
 import { checkPasswordRules, passwordRulesValidator } from './password-rules';
 import { Session } from './session';
 
@@ -42,8 +36,8 @@ export const DISPLAY_NAME_MAX_LENGTH = 100;
 })
 export class RegisterPage {
   private readonly session = inject(Session);
-  private readonly router = inject(Router);
-  private readonly locale = inject(LOCALE_ID);
+  private readonly entrance = inject(Entrance);
+  private readonly languages = inject(Languages);
 
   /** The page that sent the visitor to log in, from the `returnUrl` query parameter. */
   readonly returnUrl = input<string>();
@@ -74,10 +68,10 @@ export class RegisterPage {
         email: email.trim(),
         password,
         // The language the User signed up in, until they choose another
-        preferredLanguage: this.locale.startsWith('uk') ? Language.uk : Language.en,
+        preferredLanguage: this.languages.current,
       })
       .subscribe({
-        next: () => void this.router.navigateByUrl(returnUrlTree(this.router, this.returnUrl())),
+        next: () => this.entrance.enter(this.returnUrl()),
         error: (error: unknown) => {
           this.submitting.set(false);
           this.showFailure(error);

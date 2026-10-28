@@ -1,7 +1,9 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { answerAppInfo } from '../../testing/app-info';
 import { DESKTOP, emulateMedia, Media, PHONE } from '../../testing/media';
-import { LOGOUT } from '../../testing/session';
+import { renderRoute } from '../../testing/routed-page';
+import { LOGGED_IN, LOGOUT } from '../../testing/session';
 import { renderShell } from '../../testing/shell';
 import { THEME_STORAGE_KEY as THEME_KEY } from './theme';
 
@@ -53,6 +55,59 @@ describe('App shell', () => {
       // The snack bar opens in an overlay outside the routed page
       expect(document.body.textContent).toContain("Couldn't log out.");
       expect(shell.has('Log out')).toBe(true);
+    });
+  });
+
+  describe('language switcher', () => {
+    const PROFILE_UPDATE = { method: 'PATCH', url: '/api/v1/users/me' };
+
+    async function renderShellAt(url: string) {
+      emulateMedia(DESKTOP);
+      const shell = await renderRoute(url);
+      await answerAppInfo(shell.http);
+      return shell;
+    }
+
+    it('offers the other language, named in that language', async () => {
+      const shell = await renderShellAt('/');
+
+      expect(shell.control('Українська').getAttribute('lang')).toBe('uk');
+    });
+
+    it('saves the preference, then opens the same page in the other language', async () => {
+      const shell = await renderShellAt('/?view=bookmarked');
+
+      shell.click('Українська');
+      const update = shell.http.expectOne(PROFILE_UPDATE);
+      expect(update.request.body).toEqual({ preferredLanguage: 'uk' });
+      expect(shell.pageLoads()).toEqual([]);
+      update.flush({ ...LOGGED_IN.user, preferredLanguage: 'uk' });
+
+      await vi.waitFor(() => expect(shell.pageLoads()).toEqual(['/uk/?view=bookmarked']));
+    });
+
+    it('shows the User as saved, before the page reloads', async () => {
+      const shell = await renderShellAt('/');
+
+      shell.click('Українська');
+      // The profile the backend returns is the one the app shows from now on
+      shell.http
+        .expectOne(PROFILE_UPDATE)
+        .flush({ ...LOGGED_IN.user, displayName: 'Olena K.', preferredLanguage: 'uk' });
+
+      expect(await shell.text()).toContain('Olena K.');
+    });
+
+    it('stays, and says so, when the preference could not be saved', async () => {
+      const shell = await renderShellAt('/');
+
+      shell.click('Українська');
+      shell.http.expectOne(PROFILE_UPDATE).error(new ProgressEvent('error'), { status: 0 });
+      await shell.text();
+
+      expect(shell.pageLoads()).toEqual([]);
+      // The snack bar opens in an overlay outside the routed page
+      expect(document.body.textContent).toContain("Couldn't switch the language.");
     });
   });
 

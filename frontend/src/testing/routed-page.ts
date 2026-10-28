@@ -8,7 +8,9 @@ import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AuthSession } from '@api';
 import { appConfig } from '../app/app.config';
+import { PageLoader } from '../app/i18n/languages';
 import { Locale, useLocale } from './locale';
+import { FakePageLoader } from './page-loads';
 import { answerSessionRefresh, LOGGED_IN } from './session';
 
 /**
@@ -29,6 +31,7 @@ export async function renderRoute(
       ...appConfig.providers,
       provideHttpClientTesting(),
       { provide: LOCALE_ID, useValue: locale },
+      { provide: PageLoader, useClass: FakePageLoader },
     ],
   });
   const harness = await RouterTestingHarness.create();
@@ -67,6 +70,10 @@ export async function renderRoute(
     async url(): Promise<string> {
       await harness.fixture.whenStable();
       return router.url;
+    },
+    /** The full page loads the app made, leaving itself: switching to another locale build. */
+    pageLoads(): string[] {
+      return (TestBed.inject(PageLoader) as FakePageLoader).loaded;
     },
     /** Whether a button or link with this accessible name is on the page. */
     has(label: string): boolean {

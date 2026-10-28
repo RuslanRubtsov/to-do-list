@@ -15,7 +15,12 @@
   <!-- The product name, not translated -->
   <a class="wordmark" routerLink="/">To-Do</a>
   <span class="spacer"></span>
-  <!-- The language switcher joins the theme switch here -->
+  <!-- Each language named in itself, so a reader of it can find it whatever the page's language -->
+  @for (language of languages.others; track language) {
+    <button matButton type="button" [attr.lang]="language" (click)="switchLanguage(language)">
+      {{ languageNames[language] }}
+    </button>
+  }
   <button
     matIconButton
     type="button"

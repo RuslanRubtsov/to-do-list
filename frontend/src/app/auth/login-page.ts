@@ -5,10 +5,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { ErrorCode } from '@api';
 import { isUnreachable, problemOf } from '../http/problems';
-import { returnUrlTree } from './guards';
+import { Entrance } from './entrance';
 import { Session } from './session';
 
 type LoginFailure = 'credentials' | 'unreachable' | 'unexpected';
@@ -30,7 +30,7 @@ type LoginFailure = 'credentials' | 'unreachable' | 'unexpected';
 })
 export class LoginPage {
   private readonly session = inject(Session);
-  private readonly router = inject(Router);
+  private readonly entrance = inject(Entrance);
 
   /** The page that sent the visitor here, from the `returnUrl` query parameter. */
   readonly returnUrl = input<string>();
@@ -47,7 +47,7 @@ export class LoginPage {
     this.submitting.set(true);
     this.failure.set(null);
     this.session.logIn(this.form.getRawValue()).subscribe({
-      next: () => void this.router.navigateByUrl(returnUrlTree(this.router, this.returnUrl())),
+      next: () => this.entrance.enter(this.returnUrl()),
       error: (error: unknown) => {
         this.submitting.set(false);
         this.failure.set(loginFailure(error));

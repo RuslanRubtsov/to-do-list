@@ -392,5 +392,14 @@
         <target>OK</target>
       </segment>
     </unit>
+    <unit id="7692333811704788884">
+      <notes>
+        <note category="description">Message when saving the language preference fails</note>
+      </notes>
+      <segment state="translated">
+        <source>Couldn&apos;t switch the language. Check your connection and try again.</source>
+        <target>Не вдалося змінити мову. Перевірте з’єднання і спробуйте ще раз.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>
