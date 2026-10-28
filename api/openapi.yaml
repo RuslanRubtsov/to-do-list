@@ -374,6 +374,32 @@ paths:
           $ref: '#/components/responses/TaskNotFound'
         default:
           $ref: '#/components/responses/Problem'
+    put:
+      tags: [Tasks]
+      operationId: updateTask
+      summary: Change a Task's details
+      description: |
+        Replaces the title, description, Due Date and Priority; a detail left out or `null` is
+        cleared. Whether the Task is Completed is changed through its completion instead.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskDetails'
+      responses:
+        '200':
+          description: The Task as changed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
     delete:
       tags: [Tasks]
       operationId: deleteTask
@@ -630,9 +656,38 @@ components:
             Stored without surrounding spaces. Must not be blank (`PATTERN` otherwise) or longer
             than 200 characters (`SIZE` otherwise).
           example: Buy milk
+    TaskDetails:
+      type: object
+      required: [title, priority]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: '.*\S.*'
+          description: |
+            Stored without surrounding spaces. Must not be blank (`PATTERN` otherwise) or longer
+            than 200 characters (`SIZE` otherwise).
+          example: Buy milk
+        description:
+          type: string
+          nullable: true
+          maxLength: 2000
+          description: |
+            Stored without surrounding spaces; blank is stored as none. At most 2000 characters
+            (`SIZE` otherwise).
+          example: The oat one, two cartons.
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+          description: The date the Task should be Completed by; none when left out or `null`.
+          example: '2026-11-03'
+        priority:
+          $ref: '#/components/schemas/Priority'
     Task:
       type: object
-      required: [id, title, priority]
+      required: [id, title, priority, overdue]
       properties:
         id:
           type: integer
@@ -641,6 +696,11 @@ components:
         title:
           type: string
           example: Buy milk
+        description:
+          type: string
+          nullable: true
+          description: More about the Task; `null` when it has none.
+          example: The oat one, two cartons.
         priority:
           $ref: '#/components/schemas/Priority'
         dueDate:
@@ -649,6 +709,13 @@ components:
           nullable: true
           description: The date the Task should be Completed by; `null` when it has none.
           example: '2026-11-03'
+        overdue:
+          type: boolean
+          description: |
+            Whether the Due Date has passed while the Task isn't Completed: it is before today, in
+            the time zone the backend is configured with. Derived on every read, never stored, so a
+            Task due today isn't Overdue yet and a Completed Task never is.
+          example: false
         completedAt:
           type: string
           format: date-time

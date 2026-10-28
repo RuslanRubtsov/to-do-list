@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatFormFieldHarness } from '@angular/material/form-field/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AuthSession, Language, TodoList } from '@api';
@@ -72,6 +73,15 @@ export async function renderRoute(
   const loader = TestbedHarnessEnvironment.loader(harness.fixture);
   /** Also finds components in overlays, such as the form fields of a dialog. */
   const documentLoader = TestbedHarnessEnvironment.documentRootLoader(harness.fixture);
+  /** The select of the form field with this label. */
+  const selectIn = async (label: string): Promise<MatSelectHarness> => {
+    const field = await documentLoader.getHarness(
+      MatFormFieldHarness.with({ floatingLabelText: label }),
+    );
+    const select = await field.getControl(MatSelectHarness);
+    if (!select) throw new Error(`The "${label}" field has no select`);
+    return select;
+  };
 
   return {
     http,
@@ -144,6 +154,16 @@ export async function renderRoute(
       const input = await field.getControl(MatInputHarness);
       if (!input) throw new Error(`The "${label}" field has no text input`);
       await input.setValue(value);
+    },
+    /** Chooses the option with this text in the select of the form field with this label. */
+    async choose(label: string, option: string): Promise<void> {
+      const select = await selectIn(label);
+      await select.open();
+      await select.clickOptions({ text: option });
+    },
+    /** The text of the option chosen in the select of the form field with this label. */
+    async chosen(label: string): Promise<string> {
+      return (await selectIn(label)).getValueText();
     },
     /** What the form field with this label holds. */
     async fieldValue(label: string): Promise<string> {

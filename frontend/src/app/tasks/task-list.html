@@ -44,9 +44,12 @@
   </h2>
   <ul class="tasks" aria-labelledby="open-tasks-heading">
     @for (task of open; track task.id) {
-      <li>
-        <mat-checkbox [checked]="false" (change)="complete(task)">{{ task.title }}</mat-checkbox>
-        <ng-container *ngTemplateOutlet="deleteButton; context: { $implicit: task }" />
+      <li [class.overdue]="task.overdue">
+        <div class="line">
+          <mat-checkbox [checked]="false" (change)="complete(task)">{{ task.title }}</mat-checkbox>
+          <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
+        </div>
+        <ng-container *ngTemplateOutlet="details; context: { $implicit: task }" />
       </li>
     }
   </ul>
@@ -72,9 +75,13 @@
       <ul id="completed-tasks" class="tasks completed" aria-labelledby="completed-tasks-heading">
         @for (task of completed(); track task.id) {
           <li>
-            <mat-checkbox [checked]="true" (change)="uncomplete(task)">{{
-              task.title
-            }}</mat-checkbox>
+            <div class="line">
+              <mat-checkbox [checked]="true" (change)="uncomplete(task)">{{
+                task.title
+              }}</mat-checkbox>
+              <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
+            </div>
+            <ng-container *ngTemplateOutlet="details; context: { $implicit: task }" />
             <span
               class="completed-at"
               i18n="When a Completed Task was Completed: a date, then a time of day"
@@ -84,7 +91,6 @@
                 {{ task.completedAt | date: 'shortTime' }}</time
               ></span
             >
-            <ng-container *ngTemplateOutlet="deleteButton; context: { $implicit: task }" />
           </li>
         }
       </ul>
@@ -114,8 +120,49 @@
   />
 }
 
-<ng-template #deleteButton let-task>
+<ng-template #actions let-task>
+  <button matIconButton type="button" (click)="edit(task)" [attr.aria-label]="editLabel(task)">
+    <mat-icon aria-hidden="true">edit</mat-icon>
+  </button>
   <button matIconButton type="button" (click)="delete(task)" [attr.aria-label]="deleteLabel(task)">
     <mat-icon aria-hidden="true">delete</mat-icon>
   </button>
+</ng-template>
+
+<!-- Beneath the title, in line with it -->
+<ng-template #details let-task>
+  @if (task.description) {
+    <p class="description">{{ task.description }}</p>
+  }
+  @if (task.priority !== 'MEDIUM' || task.dueDate) {
+    <p class="meta">
+      @switch (task.priority) {
+        @case ('HIGH') {
+          <span class="priority high">
+            <mat-icon aria-hidden="true">keyboard_double_arrow_up</mat-icon>
+            <ng-container i18n="Marker of a Task with High Priority">High Priority</ng-container>
+          </span>
+        }
+        @case ('LOW') {
+          <span class="priority low">
+            <mat-icon aria-hidden="true">keyboard_double_arrow_down</mat-icon>
+            <ng-container i18n="Marker of a Task with Low Priority">Low Priority</ng-container>
+          </span>
+        }
+      }
+      @if (task.overdue) {
+        <span class="overdue-marker">
+          <mat-icon aria-hidden="true">schedule</mat-icon>
+          <ng-container i18n="Marker of an Overdue Task">Overdue</ng-container>
+        </span>
+      }
+      @if (task.dueDate) {
+        <span
+          class="due"
+          i18n="When a Task is due: a date, or a word for one close by, such as tomorrow"
+          >Due {{ task.dueDate | relativeDate }}</span
+        >
+      }
+    </p>
+  }
 </ng-template>

@@ -704,5 +704,131 @@
         <target>Не вдалося видалити «<ph id="0" equiv="title" disp="task.title"/>». Перевірте з’єднання і спробуйте ще раз.</target>
       </segment>
     </unit>
+    <unit id="922482600342048186">
+      <notes>
+        <note category="description">Dialog heading: changing a Task&apos;s details</note>
+      </notes>
+      <segment state="translated">
+        <source>Edit Task</source>
+        <target>Редагувати завдання</target>
+      </segment>
+    </unit>
+    <unit id="5701618810648052610">
+      <notes>
+        <note category="description">Field for a Task&apos;s title</note>
+      </notes>
+      <segment state="translated">
+        <source>Title</source>
+        <target>Назва</target>
+      </segment>
+    </unit>
+    <unit id="4902817035128594900">
+      <notes>
+        <note category="description">Field for a Task&apos;s description</note>
+      </notes>
+      <segment state="translated">
+        <source>Description</source>
+        <target>Опис</target>
+      </segment>
+    </unit>
+    <unit id="1917979079769004212">
+      <notes>
+        <note category="description">Field for the date a Task should be Completed by</note>
+      </notes>
+      <segment state="translated">
+        <source>Due Date</source>
+        <target>Термін</target>
+      </segment>
+    </unit>
+    <unit id="2773789177061305550">
+      <notes>
+        <note category="description">Error when what was typed as a date can&apos;t be read as one</note>
+      </notes>
+      <segment state="translated">
+        <source>Enter a date such as <ph id="0" equiv="INTERPOLATION" disp="{{ exampleDate }}"/>.</source>
+        <target>Введіть дату, наприклад <ph id="0" equiv="INTERPOLATION" disp="{{ exampleDate }}"/>.</target>
+      </segment>
+    </unit>
+    <unit id="2734022681675842051">
+      <notes>
+        <note category="description">Field for how important a Task is</note>
+      </notes>
+      <segment state="translated">
+        <source>Priority</source>
+        <target>Пріоритет</target>
+      </segment>
+    </unit>
+    <unit id="802458941707537739">
+      <notes>
+        <note category="description">Priority option: Low</note>
+      </notes>
+      <segment state="translated">
+        <source>Low</source>
+        <target>Низький</target>
+      </segment>
+    </unit>
+    <unit id="5982496808088686844">
+      <notes>
+        <note category="description">Priority option: Medium</note>
+      </notes>
+      <segment state="translated">
+        <source>Medium</source>
+        <target>Середній</target>
+      </segment>
+    </unit>
+    <unit id="8063651736083474594">
+      <notes>
+        <note category="description">Priority option: High</note>
+      </notes>
+      <segment state="translated">
+        <source>High</source>
+        <target>Високий</target>
+      </segment>
+    </unit>
+    <unit id="2574688541305190509">
+      <notes>
+        <note category="description">Marker of a Task with High Priority</note>
+      </notes>
+      <segment state="translated">
+        <source>High Priority</source>
+        <target>Високий пріоритет</target>
+      </segment>
+    </unit>
+    <unit id="4071362499864583859">
+      <notes>
+        <note category="description">Marker of a Task with Low Priority</note>
+      </notes>
+      <segment state="translated">
+        <source>Low Priority</source>
+        <target>Низький пріоритет</target>
+      </segment>
+    </unit>
+    <unit id="8547153724791757236">
+      <notes>
+        <note category="description">Marker of an Overdue Task</note>
+      </notes>
+      <segment state="translated">
+        <source>Overdue</source>
+        <target>Прострочено</target>
+      </segment>
+    </unit>
+    <unit id="6913269017372461873">
+      <notes>
+        <note category="description">When a Task is due: a date, or a word for one close by, such as tomorrow</note>
+      </notes>
+      <segment state="translated">
+        <source>Due <ph id="0" equiv="INTERPOLATION" disp="{{ task.dueDate | relativeDate }}"/></source>
+        <target>Термін: <ph id="0" equiv="INTERPOLATION" disp="{{ task.dueDate | relativeDate }}"/></target>
+      </segment>
+    </unit>
+    <unit id="2278548297710434106">
+      <notes>
+        <note category="description">Button that opens a Task&apos;s details to change them, naming the Task by its title</note>
+      </notes>
+      <segment state="translated">
+        <source>Edit “<ph id="0" equiv="title" disp="task.title"/>”</source>
+        <target>Редагувати «<ph id="0" equiv="title" disp="task.title"/>»</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -18,14 +18,66 @@
   list-style: none;
 
   li {
+    overflow-wrap: anywhere;
+  }
+
+  .line {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     column-gap: 8px;
-    overflow-wrap: anywhere;
 
     mat-checkbox {
       flex: 1;
+      min-width: 0;
+    }
+  }
+
+  // In line with the title, past the checkbox
+  .description,
+  .meta,
+  .completed-at {
+    margin: 0 0 4px 40px;
+  }
+
+  .description {
+    font: var(--mat-sys-body-medium);
+    color: var(--mat-sys-on-surface-variant);
+    white-space: pre-line;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    font: var(--mat-sys-body-small);
+    color: var(--mat-sys-on-surface-variant);
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    mat-icon {
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+    }
+  }
+
+  .priority.high {
+    color: var(--mat-sys-error);
+  }
+
+  // The highlight: an accent along the Task, and its marker and Due Date in the error colour
+  li.overdue {
+    border-inline-start: 3px solid var(--mat-sys-error);
+
+    .overdue-marker,
+    .due {
+      color: var(--mat-sys-error);
+      font-weight: 500;
     }
   }
 }
@@ -41,6 +93,7 @@
   }
 
   .completed-at {
+    display: block;
     color: var(--mat-sys-on-surface-variant);
     font: var(--mat-sys-body-small);
   }

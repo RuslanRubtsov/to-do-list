@@ -4,7 +4,10 @@ import static io.github.ruslanrubtsov.todo.web.error.Problems.problem;
 
 import io.github.ruslanrubtsov.todo.api.model.ErrorCode;
 import io.github.ruslanrubtsov.todo.api.model.Task;
+import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
 import io.github.ruslanrubtsov.todo.todolists.TodoListAccess;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -16,17 +19,19 @@ class TaskService {
 
     private final TaskRepository tasks;
     private final TodoListAccess access;
+    private final Clock clock;
 
-    TaskService(TaskRepository tasks, TodoListAccess access) {
+    TaskService(TaskRepository tasks, TodoListAccess access, Clock clock) {
         this.tasks = tasks;
         this.access = access;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
     List<Task> list(long userId, long todoListId) {
         access.requireOwned(userId, todoListId);
         return tasks.findByTodoListIdOrderById(todoListId).stream()
-                .map(TaskService::toApi)
+                .map(this::toApi)
                 .toList();
     }
 
@@ -39,6 +44,13 @@ class TaskService {
     @Transactional(readOnly = true)
     Task get(long userId, long todoListId, long taskId) {
         return toApi(reachable(userId, todoListId, taskId));
+    }
+
+    @Transactional
+    Task change(long userId, long todoListId, long taskId, TaskDetails details) {
+        TaskEntity task = reachable(userId, todoListId, taskId);
+        task.change(details.getTitle(), details.getDescription(), details.getDueDate(), details.getPriority());
+        return toApi(task);
     }
 
     @Transactional
@@ -70,8 +82,10 @@ class TaskService {
                 .orElseThrow(() -> problem(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "No such Task."));
     }
 
-    private static Task toApi(TaskEntity task) {
-        return new Task(task.getId(), task.getTitle(), task.getPriority())
+    /** The Task as the API shows it, Overdue or not as of today. */
+    private Task toApi(TaskEntity task) {
+        return new Task(task.getId(), task.getTitle(), task.getPriority(), task.isOverdueOn(LocalDate.now(clock)))
+                .description(task.getDescription())
                 .dueDate(task.getDueDate())
                 .completedAt(
                         task.getCompletedAt() == null
