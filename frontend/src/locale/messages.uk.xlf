@@ -241,7 +241,7 @@
     </unit>
     <unit id="6008489739592125163">
       <notes>
-        <note category="description">Error when a name is too long</note>
+        <note category="description">Error when the text typed is too long</note>
       </notes>
       <segment state="translated">
         <source>Use at most <ph id="0" equiv="INTERPOLATION" disp="{{ displayNameMaxLength }}"/> characters.</source>
@@ -608,6 +608,100 @@
       <segment state="translated">
         <source>Couldn’t delete “<ph id="0" equiv="name" disp="todoList.name"/>”. Check your connection and try again.</source>
         <target>Не вдалося видалити «<ph id="0" equiv="name" disp="todoList.name"/>». Перевірте з’єднання і спробуйте ще раз.</target>
+      </segment>
+    </unit>
+    <unit id="2282448674304680084">
+      <notes>
+        <note category="description">Field for the title of a Task to add</note>
+      </notes>
+      <segment state="translated">
+        <source>New Task</source>
+        <target>Нове завдання</target>
+      </segment>
+    </unit>
+    <unit id="4017547361670446917">
+      <notes>
+        <note category="description">Error when a Task&apos;s title is empty</note>
+      </notes>
+      <segment state="translated">
+        <source>Enter a title.</source>
+        <target>Введіть назву.</target>
+      </segment>
+    </unit>
+    <unit id="1106209590160342889">
+      <notes>
+        <note category="description">Button that adds the Task typed in</note>
+      </notes>
+      <segment state="translated">
+        <source>Add Task</source>
+        <target>Додати завдання</target>
+      </segment>
+    </unit>
+    <unit id="5073267390410727080">
+      <notes>
+        <note category="description">Heading of the Tasks not Completed</note>
+      </notes>
+      <segment state="translated">
+        <source> Open Tasks </source>
+        <target>Невиконані завдання</target>
+      </segment>
+    </unit>
+    <unit id="8833717328312883023">
+      <notes>
+        <note category="description">Button that shows or hides the Completed Tasks, with how many there are</note>
+      </notes>
+      <segment state="translated">
+        <source>Completed (<ph id="0" equiv="INTERPOLATION" disp="{{ completed().length }}"/>)</source>
+        <target>Виконані (<ph id="0" equiv="INTERPOLATION" disp="{{ completed().length }}"/>)</target>
+      </segment>
+    </unit>
+    <unit id="6896807212013805218">
+      <notes>
+        <note category="description">When a Completed Task was Completed: a date, then a time of day</note>
+      </notes>
+      <segment state="translated">
+        <source>Completed <pc id="0" equivStart="START_TAG_TIME" equivEnd="CLOSE_TAG_TIME" type="other" dispStart="&lt;time [attr.datetime]=&quot;task.completedAt&quot;
+                &gt;" dispEnd="&lt;/time
+              &gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ task.completedAt | date: &apos;mediumDate&apos; }}"/> at <ph id="2" equiv="INTERPOLATION_1" disp="{{ task.completedAt | date: &apos;shortTime&apos; }}"/></pc></source>
+        <target>Виконано <pc id="0" equivStart="START_TAG_TIME" equivEnd="CLOSE_TAG_TIME" type="other" dispStart="&lt;time [attr.datetime]=&quot;task.completedAt&quot;
+                &gt;" dispEnd="&lt;/time
+              &gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ task.completedAt | date: &apos;mediumDate&apos; }}"/> о <ph id="2" equiv="INTERPOLATION_1" disp="{{ task.completedAt | date: &apos;shortTime&apos; }}"/></pc></target>
+      </segment>
+    </unit>
+    <unit id="8157617093372436090">
+      <notes>
+        <note category="description">Message when completing a Task, or taking that back, fails</note>
+      </notes>
+      <segment state="translated">
+        <source>Couldn’t change “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
+        <target>Не вдалося змінити «<ph id="0" equiv="title" disp="task.title"/>». Перевірте з’єднання і спробуйте ще раз.</target>
+      </segment>
+    </unit>
+    <unit id="6497479702796639197">
+      <notes>
+        <note category="description">Button that deletes a Task, named by its title</note>
+      </notes>
+      <segment state="translated">
+        <source>Delete “<ph id="0" equiv="title" disp="task.title"/>”</source>
+        <target>Видалити «<ph id="0" equiv="title" disp="task.title"/>»</target>
+      </segment>
+    </unit>
+    <unit id="8747164780378056534">
+      <notes>
+        <note category="description">Message after deleting a Task, which can still be undone</note>
+      </notes>
+      <segment state="translated">
+        <source>Deleted “<ph id="0" equiv="title" disp="task.title"/>”.</source>
+        <target>Видалено «<ph id="0" equiv="title" disp="task.title"/>».</target>
+      </segment>
+    </unit>
+    <unit id="7720034565258600534">
+      <notes>
+        <note category="description">Message when deleting a Task fails</note>
+      </notes>
+      <segment state="translated">
+        <source>Couldn’t delete “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
+        <target>Не вдалося видалити «<ph id="0" equiv="title" disp="task.title"/>». Перевірте з’єднання і спробуйте ще раз.</target>
       </segment>
     </unit>
   </file>

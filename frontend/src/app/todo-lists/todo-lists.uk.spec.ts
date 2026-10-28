@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { answerAppInfo } from '../../testing/app-info';
 import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute } from '../../testing/routed-page';
-import { CREATE_TODO_LIST, failNameAsInvalid } from '../../testing/todo-lists';
+import { CREATE_TODO_LIST, failFieldAsInvalid } from '../../testing/todo-lists';
 
 /** Locale smoke test: the drawer's Todo Lists and the naming dialog, in Ukrainian. */
 describe('Todo Lists in Ukrainian', () => {
@@ -42,7 +42,7 @@ describe('Todo Lists in Ukrainian', () => {
 
     await page.fill('Назва', 'Покупки');
     page.click('Створити');
-    failNameAsInvalid(page.http.expectOne(CREATE_TODO_LIST), 'SIZE');
+    failFieldAsInvalid(page.http.expectOne(CREATE_TODO_LIST), 'name', 'SIZE');
     expect(await page.fieldErrors('Назва')).toEqual(['Не більше ніж 100 символів.']);
   });
 });

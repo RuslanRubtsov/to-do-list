@@ -25,6 +25,10 @@ tags:
     description: |
       The Todo Lists the User owns. A Todo List the User has no access to responds `404`
       (`NOT_FOUND`), exactly like one that doesn't exist, so its existence is never revealed.
+  - name: Tasks
+    description: |
+      The Tasks of a Todo List. A Task is reached only through its own Todo List: one in another
+      Todo List, or in one the User has no access to, responds `404` (`NOT_FOUND`).
 security:
   - bearerAuth: []
 paths:
@@ -297,6 +301,135 @@ paths:
           $ref: '#/components/responses/TodoListNotFound'
         default:
           $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}/tasks:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+    get:
+      tags: [Tasks]
+      operationId: getTasks
+      summary: List a Todo List's Tasks
+      description: Completed or not, in the order they were added.
+      responses:
+        '200':
+          description: The Todo List's Tasks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Tasks]
+      operationId: createTask
+      summary: Add a Task to a Todo List
+      description: The Task starts open, with Medium Priority and no Due Date.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskDraft'
+      responses:
+        '201':
+          description: The new Task.
+          headers:
+            Location:
+              description: The new Task's URL.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}/tasks/{taskId}:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+      - $ref: '#/components/parameters/TaskId'
+    get:
+      tags: [Tasks]
+      operationId: getTask
+      summary: Get a Task
+      responses:
+        '200':
+          description: The Task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Tasks]
+      operationId: deleteTask
+      summary: Delete a Task
+      description: Permanent. Clients offer an Undo by holding the request back for a few seconds.
+      responses:
+        '204':
+          description: Deleted.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}/tasks/{taskId}/completion:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+      - $ref: '#/components/parameters/TaskId'
+    put:
+      tags: [Tasks]
+      operationId: completeTask
+      summary: Mark a Task Completed
+      description: |
+        Sets `completedAt` to now. Completing a Task that is already Completed changes nothing, so
+        it keeps the time it was first Completed.
+      responses:
+        '200':
+          description: The Completed Task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Tasks]
+      operationId: uncompleteTask
+      summary: Mark a Task as not Completed
+      description: Clears `completedAt`. A Task that isn't Completed stays as it is.
+      responses:
+        '200':
+          description: The Task, open again.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
 components:
   securitySchemes:
     bearerAuth:
@@ -307,6 +440,13 @@ components:
   parameters:
     TodoListId:
       name: todoListId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    TaskId:
+      name: taskId
       in: path
       required: true
       schema:
@@ -341,6 +481,14 @@ components:
       description: |
         No such Todo List, or one the current User has no access to (`NOT_FOUND`). The two are
         indistinguishable.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    TaskNotFound:
+      description: |
+        No such Task in this Todo List, or a Todo List the current User has no access to
+        (`NOT_FOUND`). The two are indistinguishable.
       content:
         application/problem+json:
           schema:
@@ -469,6 +617,48 @@ components:
           type: integer
           description: How many of its Tasks are not Completed.
           example: 3
+    TaskDraft:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: '.*\S.*'
+          description: |
+            Stored without surrounding spaces. Must not be blank (`PATTERN` otherwise) or longer
+            than 200 characters (`SIZE` otherwise).
+          example: Buy milk
+    Task:
+      type: object
+      required: [id, title, priority]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 12
+        title:
+          type: string
+          example: Buy milk
+        priority:
+          $ref: '#/components/schemas/Priority'
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+          description: The date the Task should be Completed by; `null` when it has none.
+          example: '2026-11-03'
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the Task was Completed; `null` while it isn't.
+          example: '2026-10-28T14:05:00Z'
+    Priority:
+      type: string
+      description: How important a Task is relative to others.
+      enum: [LOW, MEDIUM, HIGH]
     AppInfo:
       type: object
       required: [name, version, buildTime]

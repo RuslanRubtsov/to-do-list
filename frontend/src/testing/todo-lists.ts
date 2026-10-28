@@ -33,14 +33,14 @@ export function failAsNotFound(request: TestRequest): void {
   );
 }
 
-/** Answers as the backend does when the Todo List's name breaks a constraint. */
-export function failNameAsInvalid(request: TestRequest, code: string): void {
+/** Answers as the backend does when the field of the request's body breaks a constraint. */
+export function failFieldAsInvalid(request: TestRequest, field: string, code: string): void {
   request.flush(
     {
       status: 400,
       title: 'Bad Request',
       code: 'VALIDATION_FAILED',
-      errors: [{ field: 'name', code }],
+      errors: [{ field, code }],
     },
     { status: 400, statusText: 'Bad Request' },
   );

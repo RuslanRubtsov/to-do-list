@@ -14,14 +14,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { TodoList, TodoListsService } from '@api';
 import { isNotFound, isUnreachable } from '../http/problems';
+import { TaskList } from '../tasks/task-list';
 import { DeleteTodoListDialog } from './delete-todo-list-dialog';
 import { TodoListNameDialog, TodoListNameDialogData } from './todo-list-name-dialog';
 import { TodoLists } from './todo-lists';
 
-/** One Todo List, as its Owner sees it. */
+/** One Todo List and its Tasks, as its Owner sees them. */
 @Component({
   selector: 'app-todo-list-page',
-  imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule, RouterLink],
+  imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule, RouterLink, TaskList],
   templateUrl: './todo-list-page.html',
   styleUrl: './todo-list-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

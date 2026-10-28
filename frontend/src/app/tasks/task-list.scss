@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+.tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 8px;
+    overflow-wrap: anywhere;
+
+    mat-checkbox {
+      flex: 1;
+    }
+  }
+}
+
+.completed-heading {
+  margin: 16px 0 0;
+  font: inherit;
+}
+
+.completed {
+  mat-checkbox {
+    text-decoration: line-through;
+  }
+
+  .completed-at {
+    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-body-small);
+  }
+}
+
+.failure {
+  color: var(--mat-sys-error);
+}

@@ -1,22 +1,19 @@
 package io.github.ruslanrubtsov.todo.todolists;
 
-import static io.github.ruslanrubtsov.todo.web.error.Problems.problem;
-
-import io.github.ruslanrubtsov.todo.api.model.ErrorCode;
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import java.util.List;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.ErrorResponseException;
 
 @Service
 class TodoListService {
 
     private final TodoListRepository todoLists;
+    private final TodoListAccess access;
 
-    TodoListService(TodoListRepository todoLists) {
+    TodoListService(TodoListRepository todoLists, TodoListAccess access) {
         this.todoLists = todoLists;
+        this.access = access;
     }
 
     @Transactional(readOnly = true)
@@ -33,12 +30,12 @@ class TodoListService {
 
     @Transactional(readOnly = true)
     TodoList get(long userId, long todoListId) {
-        return toApi(owned(userId, todoListId));
+        return toApi(access.owned(userId, todoListId));
     }
 
     @Transactional
     TodoList rename(long userId, long todoListId, String name) {
-        TodoListEntity todoList = owned(userId, todoListId);
+        TodoListEntity todoList = access.owned(userId, todoListId);
         todoList.rename(name);
         return toApi(todoList);
     }
@@ -46,19 +43,7 @@ class TodoListService {
     /** Its Tasks go with it: the database cascades the delete. */
     @Transactional
     void delete(long userId, long todoListId) {
-        todoLists.delete(owned(userId, todoListId));
-    }
-
-    /**
-     * The User's own Todo List. Any other, existing or not, is reported the same way, so its existence is
-     * never revealed.
-     */
-    private TodoListEntity owned(long userId, long todoListId) {
-        return todoLists.findByIdAndOwnerId(todoListId, userId).orElseThrow(TodoListService::notFound);
-    }
-
-    private static ErrorResponseException notFound() {
-        return problem(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "No such Todo List.");
+        todoLists.delete(access.owned(userId, todoListId));
     }
 
     private TodoList toApi(TodoListEntity todoList) {

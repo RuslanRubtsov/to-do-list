@@ -3,16 +3,18 @@ import { TestBed } from '@angular/core/testing';
 import { TodoList } from '@api';
 import { answerAppInfo } from '../../testing/app-info';
 import { DESKTOP, emulateMedia } from '../../testing/media';
-import { renderRoute } from '../../testing/routed-page';
+import { renderRoute, snackBarText } from '../../testing/routed-page';
 import { LAZY_ROUTE_WAIT, LOGOUT } from '../../testing/session';
 import {
   CREATE_TODO_LIST,
   failAsNotFound,
-  failNameAsInvalid,
+  failFieldAsInvalid,
   GROCERIES,
   todoListRequest,
   WORK,
 } from '../../testing/todo-lists';
+import { openTask } from '../../testing/tasks';
+import { answerTodoListPage, renderTodoListPage } from '../../testing/todo-list-page';
 
 /** The start page, with the User's Todo Lists in the drawer. */
 async function renderStart(todoLists: TodoList[]) {
@@ -23,26 +25,19 @@ async function renderStart(todoLists: TodoList[]) {
   return page;
 }
 
-/** A Todo List's own page, with it also in the drawer. */
-async function renderTodoList(todoList: TodoList, others: TodoList[] = []) {
-  emulateMedia(DESKTOP);
-  const page = await renderRoute(`/lists/${todoList.id}`, { todoLists: [todoList, ...others] });
-  const request = await vi.waitFor(
-    () => page.http.expectOne(todoListRequest('GET', todoList.id)),
-    LAZY_ROUTE_WAIT,
+/**
+ * A Todo List's own page, with as many open Tasks as its count says, and with it and `others` in
+ * the drawer.
+ */
+function renderTodoList(todoList: TodoList, others: TodoList[] = []) {
+  const tasks = Array.from({ length: todoList.openTaskCount }, (_, i) =>
+    openTask(100 + i, `Task ${i + 1}`),
   );
-  request.flush(todoList);
-  await page.text();
-  return page;
+  return renderTodoListPage(todoList, { others, tasks });
 }
 
 /** Longer than Undo is offered for, with time for the snack bar to leave. */
 const UNDO_TIME = 6000;
-
-/** The text of the snack bar, which opens in an overlay outside the routed page. */
-function snackBarText(): string {
-  return document.querySelector('mat-snack-bar-container')?.textContent ?? '';
-}
 
 describe('Todo Lists', () => {
   afterEach(() => {
@@ -68,9 +63,7 @@ describe('Todo Lists', () => {
       const page = await renderStart([GROCERIES]);
 
       page.click('Groceries, 3 open Tasks');
-      await vi
-        .waitFor(() => page.http.expectOne(todoListRequest('GET', 5)), LAZY_ROUTE_WAIT)
-        .then((request) => request.flush(GROCERIES));
+      await answerTodoListPage(page.http, GROCERIES);
 
       expect(await page.url()).toBe('/lists/5');
       expect(page.heading()).toBe('Groceries');
@@ -87,9 +80,7 @@ describe('Todo Lists', () => {
       const create = page.http.expectOne(CREATE_TODO_LIST);
       expect(create.request.body).toEqual({ name: 'Groceries' });
       create.flush({ ...GROCERIES, openTaskCount: 0 });
-      await vi
-        .waitFor(() => page.http.expectOne(todoListRequest('GET', 5)), LAZY_ROUTE_WAIT)
-        .then((request) => request.flush({ ...GROCERIES, openTaskCount: 0 }));
+      await answerTodoListPage(page.http, { ...GROCERIES, openTaskCount: 0 });
 
       expect(await page.url()).toBe('/lists/5');
       expect(page.heading()).toBe('Groceries');
@@ -113,7 +104,7 @@ describe('Todo Lists', () => {
       page.click('New Todo List');
       await page.fill('Name', 'Groceries');
       page.click('Create');
-      failNameAsInvalid(page.http.expectOne(CREATE_TODO_LIST), 'SIZE');
+      failFieldAsInvalid(page.http.expectOne(CREATE_TODO_LIST), 'name', 'SIZE');
 
       expect(await page.fieldErrors('Name')).toEqual(['Use at most 100 characters.']);
       expect(await page.url()).toBe('/');
@@ -218,9 +209,7 @@ describe('Todo Lists', () => {
       await deleteConfirmed(page);
 
       page.click('Work, no open Tasks');
-      await vi
-        .waitFor(() => page.http.expectOne(todoListRequest('GET', 8)), LAZY_ROUTE_WAIT)
-        .then((request) => request.flush(WORK));
+      await answerTodoListPage(page.http, WORK);
       await page.text();
       await deleteConfirmed(page);
 
