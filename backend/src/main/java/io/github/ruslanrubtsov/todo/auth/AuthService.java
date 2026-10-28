@@ -49,8 +49,8 @@ class AuthService {
         this.unknownUserPasswordHash = passwordEncoder.encode("not-anyone's-password-1");
     }
 
-    /** A logged-in session: what the response body carries, plus the refresh token for the cookie. */
-    record Login(AuthSession session, String refreshToken) {}
+    /** A session logging in or refreshing issued: the response body, plus the refresh token for the cookie. */
+    record IssuedSession(AuthSession session, String refreshToken) {}
 
     @Transactional
     UserEntity register(RegisterRequest request) {
@@ -75,7 +75,7 @@ class AuthService {
     }
 
     @Transactional
-    Login login(LoginRequest request) {
+    IssuedSession login(LoginRequest request) {
         Optional<UserEntity> user = users.findByEmail(UserEntity.normalizeEmail(request.getEmail()));
         String passwordHash = user.map(UserEntity::getPasswordHash).orElse(unknownUserPasswordHash);
         boolean passwordMatches = passwordEncoder.matches(request.getPassword(), passwordHash);
@@ -84,21 +84,26 @@ class AuthService {
             throw Problems.problem(
                     HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_CREDENTIALS, "The email or password is wrong.");
         }
-        return new Login(session(user.get()), refreshTokens.issue(user.get()));
+        return new IssuedSession(session(user.get()), refreshTokens.issue(user.get()));
     }
 
-    @Transactional(readOnly = true)
-    AuthSession refresh(@Nullable String refreshToken) {
+    /**
+     * A new access token, and a new refresh token in place of the presented one. Refusing a replayed
+     * token revokes its session, which must be committed even though the refresh fails: hence no
+     * rollback for the problem it throws.
+     */
+    @Transactional(noRollbackFor = ErrorResponseException.class)
+    IssuedSession refresh(@Nullable String refreshToken) {
         return Optional.ofNullable(refreshToken)
-                .flatMap(refreshTokens::userOf)
-                .map(this::session)
+                .flatMap(refreshTokens::rotate)
+                .map(rotation -> new IssuedSession(session(rotation.user()), rotation.token()))
                 .orElseThrow(() -> Problems.problem(
                         HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHENTICATED, "The session has expired or ended."));
     }
 
     @Transactional
     void logout(String refreshToken) {
-        refreshTokens.revoke(refreshToken);
+        refreshTokens.revokeSession(refreshToken);
     }
 
     private AuthSession session(UserEntity user) {

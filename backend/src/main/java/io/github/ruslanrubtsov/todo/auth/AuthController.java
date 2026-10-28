@@ -37,18 +37,21 @@ class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<AuthSession> login(LoginRequest loginRequest) {
-        AuthService.Login login = authService.login(loginRequest);
-        return ResponseEntity.ok()
-                .header(
-                        HttpHeaders.SET_COOKIE,
-                        refreshTokenCookie(login.refreshToken(), properties.refreshTokenTtl())
-                                .toString())
-                .body(login.session());
+        return withRefreshTokenCookie(authService.login(loginRequest));
     }
 
     @Override
     public ResponseEntity<AuthSession> refreshSession(@Nullable String todoRefresh) {
-        return ResponseEntity.ok(authService.refresh(todoRefresh));
+        return withRefreshTokenCookie(authService.refresh(todoRefresh));
+    }
+
+    private ResponseEntity<AuthSession> withRefreshTokenCookie(AuthService.IssuedSession issued) {
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        refreshTokenCookie(issued.refreshToken(), properties.refreshTokenTtl())
+                                .toString())
+                .body(issued.session());
     }
 
     @Override

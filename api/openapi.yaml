@@ -104,18 +104,27 @@ paths:
       tags: [Auth]
       operationId: refreshSession
       summary: Get a new access token with the refresh token cookie
+      description: |
+        Every refresh rotates the refresh token: the cookie is replaced with a new one and the
+        presented token stops working. Presenting a token that was already rotated means it was
+        copied, so the whole session (every token descended from the same login) is revoked.
       security: []
       parameters:
         - $ref: '#/components/parameters/RefreshTokenCookie'
       responses:
         '200':
-          description: The session is still valid.
+          description: The session is still valid; the refresh token cookie is replaced.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetRefreshTokenCookie'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthSession'
         '401':
-          description: No refresh token, or one that is unknown, expired or revoked (`UNAUTHENTICATED`).
+          description: |
+            No refresh token, or one that is unknown, expired, revoked or already rotated
+            (`UNAUTHENTICATED`).
           content:
             application/problem+json:
               schema:
@@ -126,8 +135,10 @@ paths:
     post:
       tags: [Auth]
       operationId: logout
-      summary: Log out, revoking the refresh token
-      description: Always succeeds, so logging out twice, or without a session, is harmless.
+      summary: Log out, revoking the session
+      description: |
+        Revokes the session the refresh token belongs to, including every token it was rotated to
+        or from. Always succeeds, so logging out twice, or without a session, is harmless.
       security: []
       parameters:
         - $ref: '#/components/parameters/RefreshTokenCookie'

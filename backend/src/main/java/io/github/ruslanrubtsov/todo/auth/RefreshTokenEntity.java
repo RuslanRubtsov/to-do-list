@@ -26,6 +26,10 @@ class RefreshTokenEntity {
     @JoinColumn(name = "user_id", updatable = false)
     private UserEntity user;
 
+    /** The chain of tokens descended, by rotation, from one login. */
+    @Column(updatable = false)
+    private String familyId;
+
     @Column(updatable = false)
     private String tokenHash;
 
@@ -35,12 +39,17 @@ class RefreshTokenEntity {
     @Column(updatable = false)
     private Instant expiresAt;
 
+    /** When a refresh replaced this token with the next one in its family. */
+    private @Nullable Instant rotatedAt;
+
+    /** When its family was revoked, by logging out or because a rotated token was replayed. */
     private @Nullable Instant revokedAt;
 
     protected RefreshTokenEntity() {}
 
-    RefreshTokenEntity(UserEntity user, String tokenHash, Instant createdAt, Instant expiresAt) {
+    RefreshTokenEntity(UserEntity user, String familyId, String tokenHash, Instant createdAt, Instant expiresAt) {
         this.user = user;
+        this.familyId = familyId;
         this.tokenHash = tokenHash;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
@@ -50,13 +59,19 @@ class RefreshTokenEntity {
         return user;
     }
 
-    boolean isUsableAt(Instant now) {
-        return revokedAt == null && now.isBefore(expiresAt);
+    String getFamilyId() {
+        return familyId;
     }
 
-    void revoke(Instant now) {
-        if (revokedAt == null) {
-            revokedAt = now;
-        }
+    boolean isRotated() {
+        return rotatedAt != null;
+    }
+
+    boolean isUsableAt(Instant now) {
+        return rotatedAt == null && revokedAt == null && now.isBefore(expiresAt);
+    }
+
+    void rotate(Instant now) {
+        rotatedAt = now;
     }
 }

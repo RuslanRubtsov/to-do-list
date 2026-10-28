@@ -2,8 +2,8 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { AppInfo } from '@api';
 import { LAZY_ROUTE_WAIT } from './session';
 
-const APP_INFO_REQUEST = { method: 'GET', url: '/api/v1/app-info' };
-const APP_INFO: AppInfo = {
+export const APP_INFO_REQUEST = { method: 'GET', url: '/api/v1/app-info' };
+export const APP_INFO: AppInfo = {
   name: 'todo-backend',
   version: '1.4.2',
   buildTime: '2026-10-22T09:00:00Z',
