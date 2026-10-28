@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { Language } from '@api';
 import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute } from '../../testing/routed-page';
 import { LOGGED_IN } from '../../testing/session';
@@ -17,6 +18,27 @@ describe('Session', () => {
 
     expect(await page.url()).toBe('/');
     expect(await page.text()).toContain(LOGGED_IN.user.displayName);
+  });
+
+  it("is restored in the build for the User's preferred language, at the same page", async () => {
+    // Chosen on another device, say, since this one last loaded the app
+    const prefersUkrainian = {
+      ...LOGGED_IN,
+      user: { ...LOGGED_IN.user, preferredLanguage: Language.uk },
+    };
+
+    const page = await renderRoute('/?view=bookmarked', { session: prefersUkrainian });
+
+    expect(page.pageLoads()).toEqual(['/uk/?view=bookmarked']);
+    // This build shows nothing meanwhile: no start page, so no request of its own
+    page.http.expectNone('/api/v1/app-info');
+  });
+
+  it('stays in this build when the User prefers its language', async () => {
+    const page = await renderRoute('/');
+    page.http.expectOne('/api/v1/app-info').flush(APP_INFO);
+
+    expect(page.pageLoads()).toEqual([]);
   });
 
   it('sends its access token with API requests', async () => {

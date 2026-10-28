@@ -6,7 +6,7 @@ import { MatFormFieldHarness } from '@angular/material/form-field/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { AuthSession } from '@api';
+import { AuthSession, Language } from '@api';
 import { appConfig } from '../app/app.config';
 import { PageLoader } from '../app/i18n/languages';
 import { Locale, useLocale } from './locale';
@@ -18,7 +18,8 @@ import { answerSessionRefresh, LOGGED_IN } from './session';
  * beneath the generated API client. Renders in the source locale (English) unless told otherwise.
  *
  * Like a page load, the first navigation restores the session from the refresh token cookie:
- * `session` is what that answers, a logged-in User unless told otherwise, `null` for a visitor.
+ * `session` is what that answers, `null` for a visitor. Unless told otherwise, it is a logged-in
+ * User who prefers the language being rendered, as a User of that build normally would.
  */
 export async function renderRoute(
   url: string,
@@ -38,7 +39,10 @@ export async function renderRoute(
   const http = TestBed.inject(HttpTestingController);
   const router = TestBed.inject(Router);
   const navigation = harness.navigateByUrl(url);
-  await answerSessionRefresh(http, options.session === undefined ? LOGGED_IN : options.session);
+  await answerSessionRefresh(
+    http,
+    options.session === undefined ? loggedInIn(locale) : options.session,
+  );
   await navigation;
   TestBed.tick();
 
@@ -65,6 +69,10 @@ export async function renderRoute(
     async text(): Promise<string> {
       await harness.fixture.whenStable();
       return root().textContent ?? '';
+    },
+    /** The text of the app shell's toolbar, apart from the page below it. */
+    toolbarText(): string {
+      return root().querySelector('mat-toolbar')?.textContent ?? '';
     },
     /** The URL the app is showing, once it has settled. */
     async url(): Promise<string> {
@@ -118,4 +126,10 @@ function accessibleName(element: HTMLElement): string {
   const visible = element.cloneNode(true) as HTMLElement;
   visible.querySelectorAll('[aria-hidden="true"]').forEach((hidden) => hidden.remove());
   return (visible.textContent ?? '').trim();
+}
+
+/** {@link LOGGED_IN}, preferring the language of the build being rendered. */
+function loggedInIn(locale: Locale): AuthSession {
+  const language = { en: Language.en, uk: Language.uk }[locale];
+  return { ...LOGGED_IN, user: { ...LOGGED_IN.user, preferredLanguage: language } };
 }

@@ -1,0 +1,46 @@
+:host {
+  display: block;
+}
+
+mat-card {
+  max-width: 440px;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 0 0 24px;
+}
+
+dt {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.outcome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--mat-sys-primary);
+}
+
+.failure {
+  color: var(--mat-sys-error);
+}

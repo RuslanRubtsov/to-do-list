@@ -19,6 +19,10 @@ export const routes: Routes = [
     canActivate: [loggedInGuard],
     children: [
       { path: '', loadComponent: () => import('./start/start-page').then((m) => m.StartPage) },
+      {
+        path: 'profile',
+        loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),
+      },
     ],
   },
 ];

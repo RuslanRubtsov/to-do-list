@@ -24,6 +24,7 @@
       <notes>
         <note category="location">src/app/auth/login-page.html:21,25</note>
         <note category="location">src/app/auth/register-page.html:13,17</note>
+        <note category="location">src/app/profile/profile-page.html:40,44</note>
         <note category="description">Login page: error when the backend doesn&apos;t respond</note>
       </notes>
       <segment>
@@ -34,6 +35,7 @@
       <notes>
         <note category="location">src/app/auth/login-page.html:29,35</note>
         <note category="location">src/app/auth/register-page.html:21,27</note>
+        <note category="location">src/app/profile/profile-page.html:48,54</note>
         <note category="description">Login page: error when the backend responds with a failure</note>
       </notes>
       <segment>
@@ -44,6 +46,7 @@
       <notes>
         <note category="location">src/app/auth/login-page.html:36,37</note>
         <note category="location">src/app/auth/register-page.html:49,50</note>
+        <note category="location">src/app/profile/profile-page.html:7,11</note>
         <note category="description">Login and registration forms: email field</note>
       </notes>
       <segment>
@@ -110,6 +113,7 @@
     <unit id="8953033926734869941">
       <notes>
         <note category="location">src/app/auth/register-page.html:28,29</note>
+        <note category="location">src/app/profile/profile-page.html:13,14</note>
         <note category="description">Registration page: field for the name other Users see</note>
       </notes>
       <segment>
@@ -120,6 +124,7 @@
       <notes>
         <note category="location">src/app/auth/register-page.html:34,35</note>
         <note category="location">src/app/auth/register-page.html:43,44</note>
+        <note category="location">src/app/profile/profile-page.html:22,23</note>
         <note category="description">Registration page: error when the name is too long</note>
       </notes>
       <segment>
@@ -129,6 +134,7 @@
     <unit id="7546235570022150987">
       <notes>
         <note category="location">src/app/auth/register-page.html:38,41</note>
+        <note category="location">src/app/profile/profile-page.html:18,20</note>
         <note category="description">Registration page: error when the name is empty</note>
       </notes>
       <segment>
@@ -245,6 +251,34 @@
         <source>Already have an account?</source>
       </segment>
     </unit>
+    <unit id="4915431133669985304">
+      <notes>
+        <note category="location">src/app/profile/profile-page.html:3,4</note>
+        <note category="location">src/app/shell/shell.html:77,79</note>
+        <note category="description">Profile page: heading</note>
+      </notes>
+      <segment>
+        <source>Profile</source>
+      </segment>
+    </unit>
+    <unit id="4133375571603990669">
+      <notes>
+        <note category="location">src/app/profile/profile-page.html:32,36</note>
+        <note category="description">Profile page: confirmation that the new name was saved</note>
+      </notes>
+      <segment>
+        <source>Your name is saved.</source>
+      </segment>
+    </unit>
+    <unit id="3620188369327429839">
+      <notes>
+        <note category="location">src/app/profile/profile-page.html:55,57</note>
+        <note category="description">Button: save changes</note>
+      </notes>
+      <segment>
+        <source> Save </source>
+      </segment>
+    </unit>
     <unit id="5034473762587110175">
       <notes>
         <note category="location">src/app/shell/shell.html:7,8</note>
@@ -274,7 +308,7 @@
     </unit>
     <unit id="2821179408673282599">
       <notes>
-        <note category="location">src/app/shell/shell.html:65,67</note>
+        <note category="location">src/app/shell/shell.html:65,68</note>
         <note category="description">Navigation: link to the start page</note>
       </notes>
       <segment>
@@ -283,7 +317,7 @@
     </unit>
     <unit id="3722967224215437913">
       <notes>
-        <note category="location">src/app/shell/shell.html:71,75</note>
+        <note category="location">src/app/shell/shell.html:83,87</note>
         <note category="description">Navigation: link to the REST API&apos;s Swagger UI</note>
       </notes>
       <segment>

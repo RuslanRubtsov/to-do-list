@@ -17,6 +17,7 @@ describe('App shell in Ukrainian', () => {
     expect(shell.has('Головна')).toBe(true);
     expect(shell.has('Документація API')).toBe(true);
     expect(shell.has('Вийти')).toBe(true);
+    expect(shell.has('Профіль')).toBe(true);
   });
 
   it('switches to English: saves the preference, then opens this page in English', async () => {

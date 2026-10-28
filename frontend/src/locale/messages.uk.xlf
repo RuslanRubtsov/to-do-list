@@ -401,5 +401,32 @@
         <target>Не вдалося змінити мову. Перевірте з’єднання і спробуйте ще раз.</target>
       </segment>
     </unit>
+    <unit id="4915431133669985304">
+      <notes>
+        <note category="description">Profile page: heading</note>
+      </notes>
+      <segment state="translated">
+        <source>Profile</source>
+        <target>Профіль</target>
+      </segment>
+    </unit>
+    <unit id="4133375571603990669">
+      <notes>
+        <note category="description">Profile page: confirmation that the new name was saved</note>
+      </notes>
+      <segment state="translated">
+        <source>Your name is saved.</source>
+        <target>Ваше ім’я збережено.</target>
+      </segment>
+    </unit>
+    <unit id="3620188369327429839">
+      <notes>
+        <note category="description">Button: save changes</note>
+      </notes>
+      <segment state="translated">
+        <source> Save </source>
+        <target> Зберегти </target>
+      </segment>
+    </unit>
   </file>
 </xliff>

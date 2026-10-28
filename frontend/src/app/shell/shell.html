@@ -64,6 +64,18 @@
           <mat-icon matListItemIcon aria-hidden="true">home</mat-icon>
           <span matListItemTitle i18n="Navigation: link to the start page">Home</span>
         </a>
+        <a
+          mat-list-item
+          routerLink="/profile"
+          routerLinkActive
+          #profile="routerLinkActive"
+          [activated]="profile.isActive"
+          [attr.aria-current]="profile.isActive ? 'page' : null"
+          (click)="closeDrawerOnPhone()"
+        >
+          <mat-icon matListItemIcon aria-hidden="true">person</mat-icon>
+          <span matListItemTitle i18n="Navigation: link to the User's profile">Profile</span>
+        </a>
         <!-- Swagger UI is served by the backend, outside this app -->
         <a mat-list-item href="/swagger-ui/index.html">
           <mat-icon matListItemIcon aria-hidden="true">api</mat-icon>

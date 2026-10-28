@@ -6,18 +6,17 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ErrorCode } from '@api';
 import { map } from 'rxjs';
 import { isUnreachable, problemOf, showFieldErrors } from '../http/problems';
 import { Languages } from '../i18n/languages';
-import { Entrance } from './entrance';
+import { DISPLAY_NAME_MAX_LENGTH, displayNameValidators } from '../profile/display-name';
+import { returnUrlTree } from './guards';
 import { checkPasswordRules, passwordRulesValidator } from './password-rules';
 import { Session } from './session';
 
 type RegisterFailure = 'unreachable' | 'unexpected';
-
-export const DISPLAY_NAME_MAX_LENGTH = 100;
 
 @Component({
   selector: 'app-register-page',
@@ -36,7 +35,7 @@ export const DISPLAY_NAME_MAX_LENGTH = 100;
 })
 export class RegisterPage {
   private readonly session = inject(Session);
-  private readonly entrance = inject(Entrance);
+  private readonly router = inject(Router);
   private readonly languages = inject(Languages);
 
   /** The page that sent the visitor to log in, from the `returnUrl` query parameter. */
@@ -44,7 +43,7 @@ export class RegisterPage {
 
   protected readonly displayNameMaxLength = DISPLAY_NAME_MAX_LENGTH;
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    displayName: ['', [Validators.required, Validators.maxLength(DISPLAY_NAME_MAX_LENGTH)]],
+    displayName: ['', displayNameValidators],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordRulesValidator]],
   });
@@ -71,7 +70,7 @@ export class RegisterPage {
         preferredLanguage: this.languages.current,
       })
       .subscribe({
-        next: () => this.entrance.enter(this.returnUrl()),
+        next: () => void this.router.navigateByUrl(returnUrlTree(this.router, this.returnUrl())),
         error: (error: unknown) => {
           this.submitting.set(false);
           this.showFailure(error);
