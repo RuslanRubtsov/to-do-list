@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { answerAppInfo } from '../../testing/app-info';
 import { renderRoute } from '../../testing/routed-page';
 import { LOGIN, REGISTER, LOGGED_IN } from '../../testing/session';
+import { answerTodoLists } from '../../testing/todo-lists';
 
 function validationFailed(...errors: { field: string; code: string }[]) {
   return [
@@ -44,6 +45,7 @@ describe('Registration page', () => {
     expect(login.request.body).toEqual({ email: 'olena@example.com', password: 'correct-horse-7' });
     login.flush(LOGGED_IN);
     await answerAppInfo(page.http);
+    await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/');
     expect(await page.text()).toContain('Olena');
@@ -57,6 +59,7 @@ describe('Registration page', () => {
     page.http.expectOne(REGISTER).flush(LOGGED_IN.user, { status: 201, statusText: 'Created' });
     page.http.expectOne(LOGIN).flush(LOGGED_IN);
     await answerAppInfo(page.http);
+    await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/?view=bookmarked');
   });

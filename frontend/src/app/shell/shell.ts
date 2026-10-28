@@ -1,14 +1,19 @@
 import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Language } from '@api';
+import { Language, TodoList } from '@api';
 import { Session } from '../auth/session';
 import { LANGUAGE_NAMES, Languages } from '../i18n/languages';
+import { TodoListNameDialog, TodoListNameDialogData } from '../todo-lists/todo-list-name-dialog';
+import { TodoLists } from '../todo-lists/todo-lists';
+import { switchMap } from 'rxjs';
 import { mediaMatches, PHONE_QUERY } from './media';
 import { ThemeService } from './theme';
 
@@ -17,6 +22,7 @@ import { ThemeService } from './theme';
   selector: 'app-shell',
   imports: [
     MatButtonModule,
+    MatDividerModule,
     MatIconModule,
     MatListModule,
     MatSidenavModule,
@@ -25,6 +31,8 @@ import { ThemeService } from './theme';
     RouterLinkActive,
     RouterOutlet,
   ],
+  // The pages in the shell's outlet share the drawer's Todo Lists; a new session gets new ones
+  providers: [TodoLists],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +42,8 @@ export class Shell {
   protected readonly session = inject(Session);
   protected readonly languages = inject(Languages);
   protected readonly languageNames = LANGUAGE_NAMES;
+  protected readonly todoLists = inject(TodoLists);
+  private readonly dialogs = inject(MatDialog);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly phone = mediaMatches(PHONE_QUERY);
@@ -67,15 +77,33 @@ export class Shell {
     });
   }
 
+  /** Sends the deletes the User was still offered Undo for, while the session can, then logs out. */
   protected logOut(): void {
-    this.session.logOut().subscribe({
-      next: () => void this.router.navigateByUrl('/login'),
-      error: () =>
-        this.snackBar.open(
-          $localize`:Message when logging out fails:Couldn't log out. Check your connection and try again.`,
-          $localize`:Dismisses a message:OK`,
-        ),
-    });
+    this.todoLists
+      .sendPendingDeletes()
+      .pipe(switchMap(() => this.session.logOut()))
+      .subscribe({
+        next: () => void this.router.navigateByUrl('/login'),
+        error: () =>
+          this.snackBar.open(
+            $localize`:Message when logging out fails:Couldn't log out. Check your connection and try again.`,
+            $localize`:Dismisses a message:OK`,
+          ),
+      });
+  }
+
+  /** Asks for a name, creates the Todo List, then opens it. */
+  protected createTodoList(): void {
+    this.dialogs
+      .open<TodoListNameDialog, TodoListNameDialogData, TodoList>(TodoListNameDialog, {
+        data: { save: (name) => this.todoLists.create(name) },
+      })
+      .afterClosed()
+      .subscribe((created) => {
+        if (!created) return;
+        void this.router.navigate(['/lists', created.id]);
+        this.closeDrawerOnPhone();
+      });
   }
 
   /** On phones the drawer covers the page, so it gets out of the way once a destination is chosen. */

@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { answerAppInfo } from '../../testing/app-info';
 import { renderRoute } from '../../testing/routed-page';
 import { LOGIN, LOGGED_IN } from '../../testing/session';
+import { answerTodoLists } from '../../testing/todo-lists';
 
 async function renderLoginAsVisitor(url = '/login') {
   return renderRoute(url, { session: null });
@@ -22,6 +23,7 @@ describe('Login page', () => {
     expect(login.request.body).toEqual({ email: 'olena@example.com', password: 'correct-horse-7' });
     login.flush(LOGGED_IN);
     await answerAppInfo(page.http);
+    await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/');
     expect(await page.text()).toContain('Olena');
@@ -36,6 +38,7 @@ describe('Login page', () => {
     page.click('Log in');
     page.http.expectOne(LOGIN).flush(LOGGED_IN);
     await answerAppInfo(page.http);
+    await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/?view=bookmarked');
     expect(page.pageLoads()).toEqual([]);
@@ -64,6 +67,7 @@ describe('Login page', () => {
     page.click('Log in');
     page.http.expectOne(LOGIN).flush(LOGGED_IN);
     await answerAppInfo(page.http);
+    await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/');
   });

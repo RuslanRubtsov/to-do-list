@@ -151,7 +151,7 @@
     </unit>
     <unit id="9139804578905829149">
       <notes>
-        <note category="description">Login page: error when the backend doesn&apos;t respond</note>
+        <note category="description">Error when the backend doesn&apos;t respond</note>
       </notes>
       <segment state="translated">
         <source>Can&apos;t reach the server. Try again in a moment.</source>
@@ -160,7 +160,7 @@
     </unit>
     <unit id="3899221092228233582">
       <notes>
-        <note category="description">Login page: error when the backend responds with a failure</note>
+        <note category="description">Error when the backend responds with a failure</note>
       </notes>
       <segment state="translated">
         <source>Something went wrong. Try again in a moment.</source>
@@ -241,7 +241,7 @@
     </unit>
     <unit id="6008489739592125163">
       <notes>
-        <note category="description">Registration page: error when the name is too long</note>
+        <note category="description">Error when a name is too long</note>
       </notes>
       <segment state="translated">
         <source>Use at most <ph id="0" equiv="INTERPOLATION" disp="{{ displayNameMaxLength }}"/> characters.</source>
@@ -426,6 +426,188 @@
       <segment state="translated">
         <source> Save </source>
         <target> Зберегти </target>
+      </segment>
+    </unit>
+    <unit id="1314990206311967763">
+      <notes>
+        <note category="description">Navigation: heading above the User&apos;s Todo Lists</note>
+      </notes>
+      <segment state="translated">
+        <source> Todo Lists </source>
+        <target> Списки справ </target>
+      </segment>
+    </unit>
+    <unit id="3228319593685763348">
+      <notes>
+        <note category="description">Navigation: button that creates a Todo List</note>
+      </notes>
+      <segment state="translated">
+        <source>New Todo List</source>
+        <target>Новий список справ</target>
+      </segment>
+    </unit>
+    <unit id="226708739891169507">
+      <notes>
+        <note category="description">Navigation: how many of a Todo List&apos;s Tasks are open, read out after its name</note>
+      </notes>
+      <segment state="translated">
+        <source>{VAR_PLURAL, plural, =0 {no open Tasks} =1 {1 open Task} other {<ph id="0" equiv="INTERPOLATION"/> open Tasks}}</source>
+        <target>{VAR_PLURAL, plural, =0 {немає невиконаних завдань} =1 {1 невиконане завдання} one {<ph id="0" equiv="INTERPOLATION"/> невиконане завдання} few {<ph id="0" equiv="INTERPOLATION"/> невиконані завдання} many {<ph id="0" equiv="INTERPOLATION"/> невиконаних завдань} other {<ph id="0" equiv="INTERPOLATION"/> невиконаного завдання}}</target>
+      </segment>
+    </unit>
+    <unit id="3723214523395563175">
+      <notes>
+        <note category="description">Navigation: shown when the User has no Todo Lists</note>
+      </notes>
+      <segment state="translated">
+        <source> No Todo Lists yet. </source>
+        <target> Списків справ ще немає. </target>
+      </segment>
+    </unit>
+    <unit id="4304581007425100099">
+      <notes>
+        <note category="description">Navigation: error when the Todo Lists can&apos;t load</note>
+      </notes>
+      <segment state="translated">
+        <source> Couldn’t load your Todo Lists. </source>
+        <target> Не вдалося завантажити ваші списки справ. </target>
+      </segment>
+    </unit>
+    <unit id="7172671530956491177">
+      <notes>
+        <note category="description">Dialog heading: confirming that a Todo List is to be deleted</note>
+      </notes>
+      <segment state="translated">
+        <source> Delete “<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.name }}"/>”?
+</source>
+        <target> Видалити «<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.name }}"/>»? </target>
+      </segment>
+    </unit>
+    <unit id="538706307126409030">
+      <notes>
+        <note category="description">Dialog text: what deleting a Todo List does</note>
+      </notes>
+      <segment state="translated">
+        <source> The Todo List and all its Tasks will be deleted. </source>
+        <target> Список справ і всі його завдання буде видалено. </target>
+      </segment>
+    </unit>
+    <unit id="2330577642930707695">
+      <notes>
+        <note category="description">Button: close a dialog without saving</note>
+      </notes>
+      <segment state="translated">
+        <source> Cancel </source>
+        <target> Скасувати </target>
+      </segment>
+    </unit>
+    <unit id="6660925946511264619">
+      <notes>
+        <note category="description">Button: confirm deleting</note>
+      </notes>
+      <segment state="translated">
+        <source> Delete </source>
+        <target> Видалити </target>
+      </segment>
+    </unit>
+    <unit id="3625289092285717883">
+      <notes>
+        <note category="description">Dialog heading: renaming a Todo List</note>
+      </notes>
+      <segment state="translated">
+        <source>Rename Todo List</source>
+        <target>Перейменувати список справ</target>
+      </segment>
+    </unit>
+    <unit id="6426450365634353089">
+      <notes>
+        <note category="description">Field for a Todo List&apos;s name</note>
+        <note category="meaning">Todo List name</note>
+      </notes>
+      <segment state="translated">
+        <source>Name</source>
+        <target>Назва</target>
+      </segment>
+    </unit>
+    <unit id="3804049063753461354">
+      <notes>
+        <note category="description">Error when a Todo List&apos;s name is empty</note>
+      </notes>
+      <segment state="translated">
+        <source>Enter a name.</source>
+        <target>Введіть назву.</target>
+      </segment>
+    </unit>
+    <unit id="6041115344061899387">
+      <notes>
+        <note category="description">Button: save a Todo List&apos;s new name</note>
+      </notes>
+      <segment state="translated">
+        <source>Rename</source>
+        <target>Перейменувати</target>
+      </segment>
+    </unit>
+    <unit id="5674286808255988565">
+      <notes>
+        <note category="description">Button: create a Todo List</note>
+      </notes>
+      <segment state="translated">
+        <source>Create</source>
+        <target>Створити</target>
+      </segment>
+    </unit>
+    <unit id="5716808069425072351">
+      <notes>
+        <note category="description">Button that deletes the Todo List being shown</note>
+      </notes>
+      <segment state="translated">
+        <source>Delete Todo List</source>
+        <target>Видалити список справ</target>
+      </segment>
+    </unit>
+    <unit id="5842667474521024459">
+      <notes>
+        <note category="description">Todo List page: message for a Todo List that doesn&apos;t exist or isn&apos;t the User&apos;s</note>
+      </notes>
+      <segment state="translated">
+        <source>This Todo List isn’t available. It may have been deleted, or it isn’t yours.</source>
+        <target>Цей список справ недоступний. Можливо, його видалено, або він не ваш.</target>
+      </segment>
+    </unit>
+    <unit id="5754879811372410703">
+      <notes>
+        <note category="description">Link back to the start page</note>
+      </notes>
+      <segment state="translated">
+        <source>Go to the start page</source>
+        <target>На початкову сторінку</target>
+      </segment>
+    </unit>
+    <unit id="6437004822452922232">
+      <notes>
+        <note category="description">Message after deleting a Todo List, which can still be undone</note>
+      </notes>
+      <segment state="translated">
+        <source>Deleted “<ph id="0" equiv="name" disp="todoList.name"/>”.</source>
+        <target>Видалено «<ph id="0" equiv="name" disp="todoList.name"/>».</target>
+      </segment>
+    </unit>
+    <unit id="5775346636203685655">
+      <notes>
+        <note category="description">Button that brings back what was just deleted</note>
+      </notes>
+      <segment state="translated">
+        <source>Undo</source>
+        <target>Повернути</target>
+      </segment>
+    </unit>
+    <unit id="652378484617821492">
+      <notes>
+        <note category="description">Message when deleting a Todo List fails</note>
+      </notes>
+      <segment state="translated">
+        <source>Couldn’t delete “<ph id="0" equiv="name" disp="todoList.name"/>”. Check your connection and try again.</source>
+        <target>Не вдалося видалити «<ph id="0" equiv="name" disp="todoList.name"/>». Перевірте з’єднання і спробуйте ще раз.</target>
       </segment>
     </unit>
   </file>
