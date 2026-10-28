@@ -42,12 +42,19 @@
   <h2 id="open-tasks-heading" class="cdk-visually-hidden" i18n="Heading of the Tasks not Completed">
     Open Tasks
   </h2>
-  <ul class="tasks" aria-labelledby="open-tasks-heading">
+  <ul
+    class="tasks"
+    aria-labelledby="open-tasks-heading"
+    cdkDropList
+    cdkDropListLockAxis="y"
+    (cdkDropListDropped)="drop(open, $event)"
+  >
     @for (task of open; track task.id) {
-      <li [class.overdue]="task.overdue">
+      <li cdkDrag [class.overdue]="task.overdue">
         <div class="line">
           <mat-checkbox [checked]="false" (change)="complete(task)">{{ task.title }}</mat-checkbox>
           <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
+          <mat-icon cdkDragHandle class="drag-handle" aria-hidden="true">drag_indicator</mat-icon>
         </div>
         <ng-container *ngTemplateOutlet="details; context: { $implicit: task }" />
       </li>

@@ -27,8 +27,8 @@
         <note category="location">src/app/profile/profile-page.html:40,43</note>
         <note category="location">src/app/tasks/task-details-dialog.html:75,78</note>
         <note category="location">src/app/tasks/task-list.html:28,32</note>
-        <note category="location">src/app/tasks/task-list.html:103,106</note>
-        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:36,40</note>
+        <note category="location">src/app/tasks/task-list.html:110,113</note>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:36,39</note>
         <note category="location">src/app/todo-lists/todo-list-page.html:39,42</note>
         <note category="description">Error when the backend doesn&apos;t respond</note>
       </notes>
@@ -43,7 +43,7 @@
         <note category="location">src/app/profile/profile-page.html:48,52</note>
         <note category="location">src/app/tasks/task-details-dialog.html:82,87</note>
         <note category="location">src/app/tasks/task-list.html:35,41</note>
-        <note category="location">src/app/tasks/task-list.html:107,111</note>
+        <note category="location">src/app/tasks/task-list.html:114,118</note>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:43,48</note>
         <note category="location">src/app/todo-lists/todo-list-page.html:44,48</note>
         <note category="description">Error when the backend responds with a failure</note>
@@ -380,7 +380,7 @@
       <notes>
         <note category="location">src/app/shell/shell.html:135,138</note>
         <note category="location">src/app/start/start-page.html:41,44</note>
-        <note category="location">src/app/tasks/task-list.html:112,115</note>
+        <note category="location">src/app/tasks/task-list.html:119,122</note>
         <note category="location">src/app/todo-lists/todo-list-page.html:49,52</note>
         <note category="description">Button: try loading again</note>
       </notes>
@@ -428,8 +428,9 @@
       <notes>
         <note category="location">src/app/shell/shell.ts:78</note>
         <note category="location">src/app/shell/shell.ts:93</note>
-        <note category="location">src/app/tasks/task-list.ts:163</note>
-        <note category="location">src/app/tasks/task-list.ts:241</note>
+        <note category="location">src/app/tasks/task-list.ts:167</note>
+        <note category="location">src/app/tasks/task-list.ts:195</note>
+        <note category="location">src/app/tasks/task-list.ts:273</note>
         <note category="location">src/app/todo-lists/todo-lists.ts:86</note>
         <note category="description">Dismisses a message</note>
       </notes>
@@ -503,7 +504,7 @@
     <unit id="7619560701830330401">
       <notes>
         <note category="location">src/app/start/start-page.html:48</note>
-        <note category="location">src/app/tasks/task-list.html:118,119</note>
+        <note category="location">src/app/tasks/task-list.html:126</note>
         <note category="location">src/app/todo-lists/todo-list-page.html:56</note>
         <note category="description">Accessible label for a loading spinner</note>
       </notes>
@@ -642,7 +643,7 @@
     </unit>
     <unit id="5073267390410727080">
       <notes>
-        <note category="location">src/app/tasks/task-list.html:43,45</note>
+        <note category="location">src/app/tasks/task-list.html:43,47</note>
         <note category="description">Heading of the Tasks not Completed</note>
       </notes>
       <segment>
@@ -651,7 +652,7 @@
     </unit>
     <unit id="8833717328312883023">
       <notes>
-        <note category="location">src/app/tasks/task-list.html:70,71</note>
+        <note category="location">src/app/tasks/task-list.html:77,78</note>
         <note category="description">Button that shows or hides the Completed Tasks, with how many there are</note>
       </notes>
       <segment>
@@ -660,7 +661,7 @@
     </unit>
     <unit id="6896807212013805218">
       <notes>
-        <note category="location">src/app/tasks/task-list.html:88,93</note>
+        <note category="location">src/app/tasks/task-list.html:95,100</note>
         <note category="description">When a Completed Task was Completed: a date, then a time of day</note>
       </notes>
       <segment>
@@ -671,7 +672,7 @@
     </unit>
     <unit id="2574688541305190509">
       <notes>
-        <note category="location">src/app/tasks/task-list.html:143,146</note>
+        <note category="location">src/app/tasks/task-list.html:150,153</note>
         <note category="description">Marker of a Task with High Priority</note>
       </notes>
       <segment>
@@ -680,7 +681,7 @@
     </unit>
     <unit id="4071362499864583859">
       <notes>
-        <note category="location">src/app/tasks/task-list.html:149,152</note>
+        <note category="location">src/app/tasks/task-list.html:156,159</note>
         <note category="description">Marker of a Task with Low Priority</note>
       </notes>
       <segment>
@@ -689,7 +690,7 @@
     </unit>
     <unit id="8547153724791757236">
       <notes>
-        <note category="location">src/app/tasks/task-list.html:156,158</note>
+        <note category="location">src/app/tasks/task-list.html:163,165</note>
         <note category="description">Marker of an Overdue Task</note>
       </notes>
       <segment>
@@ -698,7 +699,7 @@
     </unit>
     <unit id="6913269017372461873">
       <notes>
-        <note category="location">src/app/tasks/task-list.html:163,164</note>
+        <note category="location">src/app/tasks/task-list.html:170,172</note>
         <note category="description">When a Task is due: a date, or a word for one close by, such as tomorrow</note>
       </notes>
       <segment>
@@ -707,16 +708,25 @@
     </unit>
     <unit id="8157617093372436090">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:162</note>
+        <note category="location">src/app/tasks/task-list.ts:166</note>
         <note category="description">Message when completing a Task, or taking that back, fails</note>
       </notes>
       <segment>
         <source>Couldn’t change “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
       </segment>
     </unit>
+    <unit id="5819625064329782864">
+      <notes>
+        <note category="location">src/app/tasks/task-list.ts:194</note>
+        <note category="description">Message when moving a Task to another place in its Todo List fails</note>
+      </notes>
+      <segment>
+        <source>Couldn’t move “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
+      </segment>
+    </unit>
     <unit id="2278548297710434106">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:201</note>
+        <note category="location">src/app/tasks/task-list.ts:233</note>
         <note category="description">Button that opens a Task&apos;s details to change them, naming the Task by its title</note>
       </notes>
       <segment>
@@ -725,7 +735,7 @@
     </unit>
     <unit id="6497479702796639197">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:205</note>
+        <note category="location">src/app/tasks/task-list.ts:237</note>
         <note category="description">Button that deletes a Task, named by its title</note>
       </notes>
       <segment>
@@ -734,7 +744,7 @@
     </unit>
     <unit id="8747164780378056534">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:216</note>
+        <note category="location">src/app/tasks/task-list.ts:248</note>
         <note category="description">Message after deleting a Task, which can still be undone</note>
       </notes>
       <segment>
@@ -743,7 +753,7 @@
     </unit>
     <unit id="7720034565258600534">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:240</note>
+        <note category="location">src/app/tasks/task-list.ts:272</note>
         <note category="description">Message when deleting a Task fails</note>
       </notes>
       <segment>
@@ -827,7 +837,7 @@
     </unit>
     <unit id="5674286808255988565">
       <notes>
-        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:57,60</note>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:57,59</note>
         <note category="description">Button: create a Todo List</note>
       </notes>
       <segment>
