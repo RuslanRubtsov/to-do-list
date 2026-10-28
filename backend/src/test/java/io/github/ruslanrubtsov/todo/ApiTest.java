@@ -10,6 +10,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
+import org.springframework.test.web.servlet.client.ExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 /**
@@ -65,10 +66,13 @@ public abstract class ApiTest {
                 .isOk()
                 .expectBody(AuthSession.class)
                 .returnResult();
-        AuthSession session = Objects.requireNonNull(result.getResponseBody());
-        String refreshToken = Objects.requireNonNull(result.getResponseCookies().getFirst(REFRESH_TOKEN_COOKIE))
+        return new LoggedIn(Objects.requireNonNull(result.getResponseBody()), refreshTokenSetBy(result));
+    }
+
+    /** The refresh token a response set as its cookie. */
+    protected static String refreshTokenSetBy(ExchangeResult result) {
+        return Objects.requireNonNull(result.getResponseCookies().getFirst(REFRESH_TOKEN_COOKIE))
                 .getValue();
-        return new LoggedIn(session, refreshToken);
     }
 
     /** A newly registered User, logged in. */

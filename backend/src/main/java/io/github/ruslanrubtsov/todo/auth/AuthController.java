@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -37,18 +38,27 @@ class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<AuthSession> login(LoginRequest loginRequest) {
-        AuthService.Login login = authService.login(loginRequest);
-        return ResponseEntity.ok()
-                .header(
-                        HttpHeaders.SET_COOKIE,
-                        refreshTokenCookie(login.refreshToken(), properties.refreshTokenTtl())
-                                .toString())
-                .body(login.session());
+        return withRefreshTokenCookie(authService.login(loginRequest));
     }
 
     @Override
     public ResponseEntity<AuthSession> refreshSession(@Nullable String todoRefresh) {
-        return ResponseEntity.ok(authService.refresh(todoRefresh));
+        try {
+            return withRefreshTokenCookie(authService.refresh(todoRefresh));
+        } catch (ErrorResponseException refused) {
+            // The token can never work again, so stop the browser sending it
+            refused.getHeaders().add(HttpHeaders.SET_COOKIE, clearedRefreshTokenCookie());
+            throw refused;
+        }
+    }
+
+    private ResponseEntity<AuthSession> withRefreshTokenCookie(AuthService.IssuedSession issued) {
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        refreshTokenCookie(issued.refreshToken(), properties.refreshTokenTtl())
+                                .toString())
+                .body(issued.session());
     }
 
     @Override
@@ -57,10 +67,13 @@ class AuthController implements AuthApi {
             authService.logout(todoRefresh);
         }
         return ResponseEntity.noContent()
-                .header(
-                        HttpHeaders.SET_COOKIE,
-                        refreshTokenCookie("", Duration.ZERO).toString())
+                .header(HttpHeaders.SET_COOKIE, clearedRefreshTokenCookie())
                 .build();
+    }
+
+    /** Expires the browser's refresh token cookie. */
+    private static String clearedRefreshTokenCookie() {
+        return refreshTokenCookie("", Duration.ZERO).toString();
     }
 
     /** JavaScript can't read it, other sites can't make the browser send it, and plain HTTP never carries it. */

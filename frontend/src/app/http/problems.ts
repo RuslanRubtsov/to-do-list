@@ -18,6 +18,11 @@ export function isUnreachable(error: unknown): boolean {
   return status !== undefined && UNREACHABLE_STATUSES.has(status);
 }
 
+/** The backend refused the request for want of valid credentials. */
+export function isUnauthorized(error: unknown): boolean {
+  return httpError(error)?.status === HttpStatusCode.Unauthorized;
+}
+
 const UNREACHABLE_STATUSES = new Set<number>([
   0,
   HttpStatusCode.BadGateway,

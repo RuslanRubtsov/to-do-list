@@ -9,6 +9,9 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Optional;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 class RefreshTokens {
+
+    private static final Logger log = LoggerFactory.getLogger(RefreshTokens.class);
 
     private static final int TOKEN_BYTES = 32;
 
@@ -30,27 +35,57 @@ class RefreshTokens {
         this.properties = properties;
     }
 
-    /** A new refresh token for the User; the returned value is the only copy of it. */
+    /** A token rotated to: the User it belongs to and the new token, the only copy of it. */
+    record Rotation(UserEntity user, String token) {}
+
+    /** The first refresh token of a new session; the returned value is the only copy of it. */
     String issue(UserEntity user) {
+        return issue(user, UUID.randomUUID().toString());
+    }
+
+    /**
+     * Trades a usable token for the next one in its family. A token that was already rotated has
+     * been copied: whoever presents it, the thief or the User, the session can no longer be trusted,
+     * so its whole family is revoked. Callers must commit that revocation even though nothing is
+     * returned.
+     */
+    Optional<Rotation> rotate(String token) {
+        Instant now = Instant.now();
+        Optional<RefreshTokenEntity> found = repository.findLockedByTokenHash(hash(token));
+        if (found.isEmpty()) {
+            return Optional.empty();
+        }
+        RefreshTokenEntity stored = found.get();
+        if (stored.isRotated()) {
+            log.warn(
+                    "Rotated refresh token replayed; revoking session family {} of User {}",
+                    stored.getFamilyId(),
+                    stored.getUser().getId());
+            repository.revokeFamily(stored.getFamilyId(), now);
+            return Optional.empty();
+        }
+        if (!stored.isUsableAt(now)) {
+            return Optional.empty();
+        }
+        stored.rotate(now);
+        return Optional.of(new Rotation(stored.getUser(), issue(stored.getUser(), stored.getFamilyId())));
+    }
+
+    /** Revokes the session the token belongs to, every token in its family; unknown tokens are ignored. */
+    void revokeSession(String token) {
+        repository
+                .findLockedByTokenHash(hash(token))
+                .ifPresent(stored -> repository.revokeFamily(stored.getFamilyId(), Instant.now()));
+    }
+
+    private String issue(UserEntity user, String familyId) {
         byte[] bytes = new byte[TOKEN_BYTES];
         random.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         Instant now = Instant.now();
-        repository.save(new RefreshTokenEntity(user, hash(token), now, now.plus(properties.refreshTokenTtl())));
+        repository.save(
+                new RefreshTokenEntity(user, familyId, hash(token), now, now.plus(properties.refreshTokenTtl())));
         return token;
-    }
-
-    /** The User a token belongs to, if it was issued, hasn't expired and hasn't been revoked. */
-    Optional<UserEntity> userOf(String token) {
-        return repository
-                .findByTokenHash(hash(token))
-                .filter(stored -> stored.isUsableAt(Instant.now()))
-                .map(RefreshTokenEntity::getUser);
-    }
-
-    /** Makes the token unusable; unknown tokens are ignored. */
-    void revoke(String token) {
-        repository.findByTokenHash(hash(token)).ifPresent(stored -> stored.revoke(Instant.now()));
     }
 
     private static String hash(String token) {

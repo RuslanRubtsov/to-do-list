@@ -1,6 +1,22 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AuthService, AuthSession, LoginRequest, RegisterRequest } from '@api';
-import { catchError, firstValueFrom, map, Observable, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  finalize,
+  firstValueFrom,
+  from,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
+import { isUnauthorized } from '../http/problems';
+
+/** The Web Lock tabs take turns refreshing the session under. */
+export const SESSION_REFRESH_LOCK = 'todo.session-refresh';
 
 /**
  * Who is logged in. The access token lives only here, in memory; what survives a reload is the
@@ -11,6 +27,9 @@ export class Session {
   private readonly auth = inject(AuthService);
   private readonly current = signal<AuthSession | null>(null);
   private restored?: Promise<void>;
+  private refreshing?: Observable<string | null>;
+  /** Counts confirmed logouts, so a refresh that was under way at the time can tell. */
+  private logOuts = 0;
 
   /** The logged-in User, or `null` for a visitor. */
   readonly user = computed(() => this.current()?.user ?? null);
@@ -22,14 +41,37 @@ export class Session {
    */
   restore(): Promise<void> {
     this.restored ??= firstValueFrom(
-      this.auth.refreshSession().pipe(
-        tap((session) => this.current.set(session)),
+      this.refreshAccessToken().pipe(
         map(() => undefined),
-        // No session, or none we can reach: either way, a visitor
+        // No session we can reach is no session yet: a visitor
         catchError(() => of(undefined)),
       ),
     );
     return this.restored;
+  }
+
+  /**
+   * Trades the refresh token cookie for a new access token, and the cookie for a new one (the
+   * backend rotates it). A second refresh alongside the first would present the token the first
+   * is rotating, which the backend treats as theft and answers by ending the session. So callers
+   * in this tab share one refresh, and tabs take turns: every tab sends the same cookie, and the
+   * next one in turn sends the cookie the previous one was given.
+   *
+   * Emits the new access token, or `null` when the session has ended, which logs the User out
+   * here too. Fails, keeping the session, when the backend can't be asked.
+   */
+  refreshAccessToken(): Observable<string | null> {
+    const loggedOutBefore = this.logOuts;
+    this.refreshing ??= inTurnWithOtherTabs(() => this.auth.refreshSession()).pipe(
+      // Logging out while the refresh was under way wins: the backend revoked the session
+      map((session) => (this.logOuts === loggedOutBefore ? session : null)),
+      catchError((error: unknown) => (isUnauthorized(error) ? of(null) : throwError(() => error))),
+      tap((session) => this.current.set(session)),
+      map((session) => session?.accessToken ?? null),
+      finalize(() => (this.refreshing = undefined)),
+      shareReplay(1),
+    );
+    return this.refreshing;
   }
 
   logIn(credentials: LoginRequest): Observable<void> {
@@ -53,8 +95,21 @@ export class Session {
    */
   logOut(): Observable<void> {
     return this.auth.logout().pipe(
-      tap(() => this.current.set(null)),
+      tap(() => {
+        this.logOuts++;
+        this.current.set(null);
+      }),
       map(() => undefined),
     );
   }
+}
+
+/**
+ * Runs `request` holding a lock every tab of the app shares, so tabs take turns. Browsers
+ * without the Web Locks API just run it.
+ */
+function inTurnWithOtherTabs<T>(request: () => Observable<T>): Observable<T> {
+  const locks = globalThis.navigator?.locks;
+  if (!locks) return request();
+  return from(locks.request(SESSION_REFRESH_LOCK, () => firstValueFrom(request())));
 }
