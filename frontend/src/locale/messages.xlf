@@ -25,8 +25,9 @@
         <note category="location">src/app/auth/login-page.html:21,24</note>
         <note category="location">src/app/auth/register-page.html:13,17</note>
         <note category="location">src/app/profile/profile-page.html:40,43</note>
+        <note category="location">src/app/tasks/task-list.html:28,32</note>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:27,31</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:38,41</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:39,42</note>
         <note category="description">Error when the backend doesn&apos;t respond</note>
       </notes>
       <segment>
@@ -38,8 +39,9 @@
         <note category="location">src/app/auth/login-page.html:29,33</note>
         <note category="location">src/app/auth/register-page.html:21,27</note>
         <note category="location">src/app/profile/profile-page.html:48,52</note>
+        <note category="location">src/app/tasks/task-list.html:35,41</note>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:34,39</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:43,47</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:44,48</note>
         <note category="description">Error when the backend responds with a failure</note>
       </notes>
       <segment>
@@ -79,7 +81,7 @@
     </unit>
     <unit id="7206690825838385338">
       <notes>
-        <note category="location">src/app/auth/login-page.html:54,58</note>
+        <note category="location">src/app/auth/login-page.html:54,57</note>
         <note category="description">Login page: error when the password is empty</note>
       </notes>
       <segment>
@@ -97,7 +99,7 @@
     </unit>
     <unit id="4740151139799726429">
       <notes>
-        <note category="location">src/app/auth/login-page.html:65,68</note>
+        <note category="location">src/app/auth/login-page.html:65,67</note>
         <note category="description">Login page: before the link to registration</note>
       </notes>
       <segment>
@@ -106,7 +108,7 @@
     </unit>
     <unit id="2308975396733519902">
       <notes>
-        <note category="location">src/app/auth/login-page.html:70,75</note>
+        <note category="location">src/app/auth/login-page.html:70,74</note>
         <note category="location">src/app/auth/register-page.html:5,7</note>
         <note category="description">Login page: link to registration</note>
       </notes>
@@ -129,8 +131,9 @@
         <note category="location">src/app/auth/register-page.html:34,35</note>
         <note category="location">src/app/auth/register-page.html:43,44</note>
         <note category="location">src/app/profile/profile-page.html:22,23</note>
+        <note category="location">src/app/tasks/task-list.html:10,11</note>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:18,19</note>
-        <note category="description">Error when a name is too long</note>
+        <note category="description">Error when the text typed is too long</note>
       </notes>
       <segment>
         <source>Use at most <ph id="0" equiv="INTERPOLATION" disp="{{ displayNameMaxLength }}"/> characters.</source>
@@ -295,7 +298,7 @@
     </unit>
     <unit id="7507948636555938109">
       <notes>
-        <note category="location">src/app/shell/shell.html:42</note>
+        <note category="location">src/app/shell/shell.html:41,42</note>
         <note category="description">Toolbar button that logs the User out</note>
       </notes>
       <segment>
@@ -341,7 +344,7 @@
     </unit>
     <unit id="226708739891169507">
       <notes>
-        <note category="location">src/app/shell/shell.html:104,108</note>
+        <note category="location">src/app/shell/shell.html:104,107</note>
         <note category="description">Navigation: how many of a Todo List&apos;s Tasks are open, read out after its name</note>
       </notes>
       <segment>
@@ -368,9 +371,9 @@
     </unit>
     <unit id="5171192616638755303">
       <notes>
-        <note category="location">src/app/shell/shell.html:135,138</note>
+        <note category="location">src/app/shell/shell.html:135,137</note>
         <note category="location">src/app/start/start-page.html:41,44</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:48,51</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:49,52</note>
         <note category="description">Button: try loading again</note>
       </notes>
       <segment>
@@ -388,7 +391,7 @@
     </unit>
     <unit id="6998887300160305812">
       <notes>
-        <note category="location">src/app/shell/shell.ts:57</note>
+        <note category="location">src/app/shell/shell.ts:60</note>
         <note category="description">Toolbar button that turns on the light theme</note>
       </notes>
       <segment>
@@ -397,7 +400,7 @@
     </unit>
     <unit id="182622205717568263">
       <notes>
-        <note category="location">src/app/shell/shell.ts:61</note>
+        <note category="location">src/app/shell/shell.ts:64</note>
         <note category="description">Toolbar button that turns on the dark theme</note>
       </notes>
       <segment>
@@ -406,7 +409,7 @@
     </unit>
     <unit id="7692333811704788884">
       <notes>
-        <note category="location">src/app/shell/shell.ts:74</note>
+        <note category="location">src/app/shell/shell.ts:77</note>
         <note category="description">Message when saving the language preference fails</note>
       </notes>
       <segment>
@@ -415,9 +418,11 @@
     </unit>
     <unit id="8998179362936748717">
       <notes>
-        <note category="location">src/app/shell/shell.ts:75</note>
-        <note category="location">src/app/shell/shell.ts:90</note>
-        <note category="location">src/app/todo-lists/todo-lists.ts:116</note>
+        <note category="location">src/app/shell/shell.ts:78</note>
+        <note category="location">src/app/shell/shell.ts:93</note>
+        <note category="location">src/app/tasks/task-list.ts:145</note>
+        <note category="location">src/app/tasks/task-list.ts:188</note>
+        <note category="location">src/app/todo-lists/todo-lists.ts:86</note>
         <note category="description">Dismisses a message</note>
       </notes>
       <segment>
@@ -426,7 +431,7 @@
     </unit>
     <unit id="4200230781799182271">
       <notes>
-        <note category="location">src/app/shell/shell.ts:89</note>
+        <note category="location">src/app/shell/shell.ts:92</note>
         <note category="description">Message when logging out fails</note>
       </notes>
       <segment>
@@ -490,11 +495,103 @@
     <unit id="7619560701830330401">
       <notes>
         <note category="location">src/app/start/start-page.html:48</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:55</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:55,56</note>
         <note category="description">Accessible label for a loading spinner</note>
       </notes>
       <segment>
         <source>Loading</source>
+      </segment>
+    </unit>
+    <unit id="2282448674304680084">
+      <notes>
+        <note category="location">src/app/tasks/task-list.html:3,4</note>
+        <note category="description">Field for the title of a Task to add</note>
+      </notes>
+      <segment>
+        <source>New Task</source>
+      </segment>
+    </unit>
+    <unit id="4017547361670446917">
+      <notes>
+        <note category="location">src/app/tasks/task-list.html:7,8</note>
+        <note category="description">Error when a Task&apos;s title is empty</note>
+      </notes>
+      <segment>
+        <source>Enter a title.</source>
+      </segment>
+    </unit>
+    <unit id="1106209590160342889">
+      <notes>
+        <note category="location">src/app/tasks/task-list.html:18,19</note>
+        <note category="description">Button that adds the Task typed in</note>
+      </notes>
+      <segment>
+        <source>Add Task</source>
+      </segment>
+    </unit>
+    <unit id="5073267390410727080">
+      <notes>
+        <note category="location">src/app/tasks/task-list.html:43,45</note>
+        <note category="description">Heading of the Tasks not Completed</note>
+      </notes>
+      <segment>
+        <source> Open Tasks </source>
+      </segment>
+    </unit>
+    <unit id="8833717328312883023">
+      <notes>
+        <note category="location">src/app/tasks/task-list.html:65,66</note>
+        <note category="description">Button that shows or hides the Completed Tasks, with how many there are</note>
+      </notes>
+      <segment>
+        <source>Completed (<ph id="0" equiv="INTERPOLATION" disp="{{ completed().length }}"/>)</source>
+      </segment>
+    </unit>
+    <unit id="6896807212013805218">
+      <notes>
+        <note category="location">src/app/tasks/task-list.html:77,82</note>
+        <note category="description">When a Completed Task was Completed: a date, then a time of day</note>
+      </notes>
+      <segment>
+        <source>Completed <pc id="0" equivStart="START_TAG_TIME" equivEnd="CLOSE_TAG_TIME" type="other" dispStart="&lt;time [attr.datetime]=&quot;task.completedAt&quot;
+                &gt;" dispEnd="&lt;/time
+              &gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ task.completedAt | date: &apos;mediumDate&apos; }}"/> at <ph id="2" equiv="INTERPOLATION_1" disp="{{ task.completedAt | date: &apos;shortTime&apos; }}"/></pc></source>
+      </segment>
+    </unit>
+    <unit id="8157617093372436090">
+      <notes>
+        <note category="location">src/app/tasks/task-list.ts:144</note>
+        <note category="description">Message when completing a Task, or taking that back, fails</note>
+      </notes>
+      <segment>
+        <source>Couldn’t change “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
+      </segment>
+    </unit>
+    <unit id="6497479702796639197">
+      <notes>
+        <note category="location">src/app/tasks/task-list.ts:152</note>
+        <note category="description">Button that deletes a Task, named by its title</note>
+      </notes>
+      <segment>
+        <source>Delete “<ph id="0" equiv="title" disp="task.title"/>”</source>
+      </segment>
+    </unit>
+    <unit id="8747164780378056534">
+      <notes>
+        <note category="location">src/app/tasks/task-list.ts:163</note>
+        <note category="description">Message after deleting a Task, which can still be undone</note>
+      </notes>
+      <segment>
+        <source>Deleted “<ph id="0" equiv="title" disp="task.title"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="7720034565258600534">
+      <notes>
+        <note category="location">src/app/tasks/task-list.ts:187</note>
+        <note category="description">Message when deleting a Task fails</note>
+      </notes>
+      <segment>
+        <source>Couldn’t delete “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
       </segment>
     </unit>
     <unit id="7172671530956491177">
@@ -518,7 +615,7 @@
     </unit>
     <unit id="2330577642930707695">
       <notes>
-        <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:17,21</note>
+        <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:17,20</note>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:42,44</note>
         <note category="description">Button: close a dialog without saving</note>
       </notes>
@@ -528,7 +625,7 @@
     </unit>
     <unit id="6660925946511264619">
       <notes>
-        <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:25,28</note>
+        <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:25,27</note>
         <note category="description">Button: confirm deleting</note>
       </notes>
       <segment>
@@ -593,7 +690,7 @@
     </unit>
     <unit id="5842667474521024459">
       <notes>
-        <note category="location">src/app/todo-lists/todo-list-page.html:29,32</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:30,33</note>
         <note category="description">Todo List page: message for a Todo List that doesn&apos;t exist or isn&apos;t the User&apos;s</note>
       </notes>
       <segment>
@@ -602,7 +699,7 @@
     </unit>
     <unit id="5754879811372410703">
       <notes>
-        <note category="location">src/app/todo-lists/todo-list-page.html:32,34</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:33,35</note>
         <note category="description">Link back to the start page</note>
       </notes>
       <segment>
@@ -611,29 +708,29 @@
     </unit>
     <unit id="6437004822452922232">
       <notes>
-        <note category="location">src/app/todo-lists/todo-lists.ts:73</note>
+        <note category="location">src/app/todo-lists/todo-lists.ts:68</note>
         <note category="description">Message after deleting a Todo List, which can still be undone</note>
       </notes>
       <segment>
         <source>Deleted “<ph id="0" equiv="name" disp="todoList.name"/>”.</source>
       </segment>
     </unit>
-    <unit id="5775346636203685655">
-      <notes>
-        <note category="location">src/app/todo-lists/todo-lists.ts:74</note>
-        <note category="description">Button that brings back what was just deleted</note>
-      </notes>
-      <segment>
-        <source>Undo</source>
-      </segment>
-    </unit>
     <unit id="652378484617821492">
       <notes>
-        <note category="location">src/app/todo-lists/todo-lists.ts:115</note>
+        <note category="location">src/app/todo-lists/todo-lists.ts:85</note>
         <note category="description">Message when deleting a Todo List fails</note>
       </notes>
       <segment>
         <source>Couldn’t delete “<ph id="0" equiv="name" disp="todoList.name"/>”. Check your connection and try again.</source>
+      </segment>
+    </unit>
+    <unit id="5775346636203685655">
+      <notes>
+        <note category="location">src/app/undo/undoable-deletes.ts:43</note>
+        <note category="description">Button that brings back what was just deleted</note>
+      </notes>
+      <segment>
+        <source>Undo</source>
       </segment>
     </unit>
   </file>

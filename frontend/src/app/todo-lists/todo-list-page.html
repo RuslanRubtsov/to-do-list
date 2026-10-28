@@ -21,6 +21,7 @@
       <mat-icon aria-hidden="true">delete</mat-icon>
     </button>
   </header>
+  <app-task-list [todoListId]="current.id" />
 } @else if (notFound()) {
   <p class="missing">
     <mat-icon aria-hidden="true">search_off</mat-icon>

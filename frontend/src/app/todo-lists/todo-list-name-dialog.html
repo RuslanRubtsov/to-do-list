@@ -14,7 +14,7 @@
       @if (name.hasError('required') || name.getError('server') === 'PATTERN') {
         <mat-error i18n="Error when a Todo List's name is empty">Enter a name.</mat-error>
       } @else if (name.hasError('maxlength') || name.hasError('server')) {
-        <mat-error i18n="Error when a name is too long"
+        <mat-error i18n="Error when the text typed is too long"
           >Use at most {{ nameMaxLength }} characters.</mat-error
         >
       }

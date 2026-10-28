@@ -40,6 +40,10 @@ _Avoid_: Todo, item, ticket, note
 The state of a Task that its Owner or an Editor has marked as done. A Task is either completed or not; there are no intermediate states.
 _Avoid_: Done, closed, finished, resolved
 
+**Open**:
+The state of a Task that is not Completed. A Todo List counts its open Tasks to show where work is waiting.
+_Avoid_: Pending, active, to do, incomplete
+
 **Due Date**:
 The optional date by which a Task should be completed.
 _Avoid_: Deadline, due time

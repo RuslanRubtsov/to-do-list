@@ -1,0 +1,121 @@
+<form class="add" [formGroup]="form" (ngSubmit)="add()" novalidate>
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label i18n="Field for the title of a Task to add">New Task</mat-label>
+    <input matInput formControlName="title" autocomplete="off" />
+    @let title = form.controls.title;
+    @if (title.hasError('required') || title.getError('server') === 'PATTERN') {
+      <mat-error i18n="Error when a Task's title is empty">Enter a title.</mat-error>
+    } @else if (title.hasError('maxlength') || title.hasError('server')) {
+      <mat-error i18n="Error when the text typed is too long"
+        >Use at most {{ titleMaxLength }} characters.</mat-error
+      >
+    }
+  </mat-form-field>
+  <button
+    matIconButton
+    type="submit"
+    [disabled]="adding()"
+    aria-label="Add Task"
+    i18n-aria-label="Button that adds the Task typed in"
+  >
+    <mat-icon aria-hidden="true">add</mat-icon>
+  </button>
+</form>
+@switch (addFailure()) {
+  @case ('unreachable') {
+    <p class="failure" role="alert">
+      <ng-container i18n="Error when the backend doesn't respond"
+        >Can't reach the server. Try again in a moment.</ng-container
+      >
+    </p>
+  }
+  @case ('unexpected') {
+    <p class="failure" role="alert">
+      <ng-container i18n="Error when the backend responds with a failure"
+        >Something went wrong. Try again in a moment.</ng-container
+      >
+    </p>
+  }
+}
+
+@if (open(); as open) {
+  <h2 id="open-tasks-heading" class="cdk-visually-hidden" i18n="Heading of the Tasks not Completed">
+    Open Tasks
+  </h2>
+  <ul class="tasks" aria-labelledby="open-tasks-heading">
+    @for (task of open; track task.id) {
+      <li>
+        <mat-checkbox [checked]="false" (change)="complete(task)">{{ task.title }}</mat-checkbox>
+        <ng-container *ngTemplateOutlet="deleteButton; context: { $implicit: task }" />
+      </li>
+    }
+  </ul>
+
+  @if (completed().length) {
+    <h2 id="completed-tasks-heading" class="completed-heading">
+      <button
+        matButton
+        type="button"
+        (click)="showCompleted.set(!showCompleted())"
+        [attr.aria-expanded]="showCompleted()"
+        [attr.aria-controls]="showCompleted() ? 'completed-tasks' : null"
+      >
+        <mat-icon aria-hidden="true">{{
+          showCompleted() ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+        <ng-container i18n="Button that shows or hides the Completed Tasks, with how many there are"
+          >Completed ({{ completed().length }})</ng-container
+        >
+      </button>
+    </h2>
+    @if (showCompleted()) {
+      <ul id="completed-tasks" class="tasks completed" aria-labelledby="completed-tasks-heading">
+        @for (task of completed(); track task.id) {
+          <li>
+            <mat-checkbox [checked]="true" (change)="uncomplete(task)">{{
+              task.title
+            }}</mat-checkbox>
+            <span
+              class="completed-at"
+              i18n="When a Completed Task was Completed: a date, then a time of day"
+              >Completed
+              <time [attr.datetime]="task.completedAt"
+                >{{ task.completedAt | date: 'mediumDate' }} at
+                {{ task.completedAt | date: 'shortTime' }}</time
+              ></span
+            >
+            <ng-container *ngTemplateOutlet="deleteButton; context: { $implicit: task }" />
+          </li>
+        }
+      </ul>
+    }
+  }
+} @else if (tasks.error()) {
+  <p class="failure" role="alert">
+    @if (unreachable()) {
+      <ng-container i18n="Error when the backend doesn't respond"
+        >Can't reach the server. Try again in a moment.</ng-container
+      >
+    } @else {
+      <ng-container i18n="Error when the backend responds with a failure"
+        >Something went wrong. Try again in a moment.</ng-container
+      >
+    }
+  </p>
+  <button matButton type="button" (click)="tasks.reload()" i18n="Button: try loading again">
+    Retry
+  </button>
+} @else {
+  <mat-progress-spinner
+    mode="indeterminate"
+    diameter="32"
+    aria-label="Loading"
+    i18n-aria-label="Accessible label for a loading spinner"
+  />
+}
+
+<ng-template #deleteButton let-task>
+  <button matIconButton type="button" (click)="delete(task)" [attr.aria-label]="deleteLabel(task)">
+    <mat-icon aria-hidden="true">delete</mat-icon>
+  </button>
+</ng-template>

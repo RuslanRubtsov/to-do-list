@@ -1,6 +1,10 @@
 // Runs before every spec file (`setupFiles` in angular.json).
 import { emulateWebLocks } from './web-locks';
 
+// Times show in the time zone the browser is in: one fixed zone, ahead of UTC, so expected times
+// don't depend on the machine the tests run on
+process.env['TZ'] = 'Europe/Kyiv';
+
 // The first test in a file renders lazy-loaded routes cold, which under a parallel run with
 // coverage can take longer than Vitest's default 5 seconds
 vi.setConfig({ testTimeout: 15_000 });

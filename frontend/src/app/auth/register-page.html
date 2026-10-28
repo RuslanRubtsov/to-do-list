@@ -30,7 +30,7 @@
         @let displayName = form.controls.displayName;
         @if (displayName.hasError('required') || displayName.hasError('server')) {
           @if (displayName.getError('server') === 'SIZE') {
-            <mat-error i18n="Error when a name is too long"
+            <mat-error i18n="Error when the text typed is too long"
               >Use at most {{ displayNameMaxLength }} characters.</mat-error
             >
           } @else {
@@ -39,7 +39,7 @@
             >
           }
         } @else if (displayName.hasError('maxlength')) {
-          <mat-error i18n="Error when a name is too long"
+          <mat-error i18n="Error when the text typed is too long"
             >Use at most {{ displayNameMaxLength }} characters.</mat-error
           >
         }

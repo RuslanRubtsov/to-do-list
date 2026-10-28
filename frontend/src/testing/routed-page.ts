@@ -2,6 +2,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LOCALE_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatFormFieldHarness } from '@angular/material/form-field/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { Router } from '@angular/router';
@@ -104,6 +105,23 @@ export async function renderRoute(
     },
     /** The button or link with this accessible name, for checking its ARIA state. */
     control,
+    /** The checkbox with this label, for checking and changing its state. */
+    checkbox(label: string): Promise<MatCheckboxHarness> {
+      return loader.getHarness(MatCheckboxHarness.with({ label }));
+    },
+    /**
+     * What each item of the list labelled by this heading says, as a screen reader reads it;
+     * `undefined` when there is no such list.
+     */
+    listItems(label: string): string[] | undefined {
+      const list = Array.from(root().querySelectorAll<HTMLElement>('ul[aria-labelledby]')).find(
+        (candidate) => {
+          const heading = document.getElementById(candidate.getAttribute('aria-labelledby') ?? '');
+          return heading !== null && accessibleName(heading) === label;
+        },
+      );
+      return list ? Array.from(list.children, (item) => readAloud(item as HTMLElement)) : undefined;
+    },
     /** The navigation landmark with this accessible name, if there is one. */
     navigation(label: string): HTMLElement | undefined {
       return Array.from(root().querySelectorAll<HTMLElement>('nav, [role="navigation"]')).find(
@@ -127,6 +145,15 @@ export async function renderRoute(
       if (!input) throw new Error(`The "${label}" field has no text input`);
       await input.setValue(value);
     },
+    /** What the form field with this label holds. */
+    async fieldValue(label: string): Promise<string> {
+      const field = await documentLoader.getHarness(
+        MatFormFieldHarness.with({ floatingLabelText: label }),
+      );
+      const input = await field.getControl(MatInputHarness);
+      if (!input) throw new Error(`The "${label}" field has no text input`);
+      return input.getValue();
+    },
     /** The error messages the form field with this label shows. */
     async fieldErrors(label: string): Promise<string[]> {
       await harness.fixture.whenStable();
@@ -136,6 +163,21 @@ export async function renderRoute(
       return field.getTextErrors();
     },
   };
+}
+
+/** The text of the snack bar, which opens in an overlay outside the routed page. */
+export function snackBarText(): string {
+  return document.querySelector('mat-snack-bar-container')?.textContent ?? '';
+}
+
+/** The text a screen reader reads out of an element, piece by piece, as one line. */
+function readAloud(element: HTMLElement): string {
+  const visible = element.cloneNode(true) as HTMLElement;
+  visible.querySelectorAll('[aria-hidden="true"]').forEach((hidden) => hidden.remove());
+  const walker = document.createTreeWalker(visible, NodeFilter.SHOW_TEXT);
+  const pieces: string[] = [];
+  while (walker.nextNode()) pieces.push(walker.currentNode.textContent ?? '');
+  return pieces.join(' ').replace(/\s+/g, ' ').trim();
 }
 
 /** What a screen reader announces: the aria-label, or else the text it doesn't hide. */

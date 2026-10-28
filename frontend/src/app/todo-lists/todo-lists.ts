@@ -1,13 +1,10 @@
-import { computed, DestroyRef, inject, Injectable, LOCALE_ID, signal } from '@angular/core';
-import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { computed, inject, Injectable, LOCALE_ID, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TodoList, TodoListsService } from '@api';
-import { MatSnackBarRef, TextOnlySnackBar } from '@angular/material/snack-bar';
-import { catchError, forkJoin, map, Observable, of, Subscription, tap } from 'rxjs';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import { isNotFound } from '../http/problems';
-
-/** How long a deleted Todo List can be brought back before the delete is sent. */
-const UNDO_DURATION_MS = 5000;
+import { UndoableDeletes } from '../undo/undoable-deletes';
 
 /**
  * The User's Todo Lists, as the navigation drawer shows them. Provided by the app shell, so it lives
@@ -18,16 +15,11 @@ export class TodoLists {
   private readonly api = inject(TodoListsService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly collator = new Intl.Collator(inject(LOCALE_ID));
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly deletes = inject(UndoableDeletes);
 
   private readonly loaded = rxResource({ stream: () => this.api.getTodoLists() });
   /** Deleted, but with the delete not sent yet: Undo can still bring them back. */
   private readonly pendingDeletes = signal<ReadonlySet<number>>(new Set());
-  /** The Undo offer of each pending delete, and what sends the delete once it is gone. */
-  private readonly undoOffers = new Map<
-    number,
-    { todoList: TodoList; offer: MatSnackBarRef<TextOnlySnackBar>; onGone: Subscription }
-  >();
 
   /** By name, as the backend sorts them; `undefined` until loaded. */
   readonly all = computed(() => {
@@ -59,46 +51,24 @@ export class TodoLists {
       );
   }
 
+  /** Shows how many of the Todo List's Tasks are open, as the page showing them knows it. */
+  setOpenTaskCount(id: number, openTaskCount: number): void {
+    this.change((todoLists) =>
+      todoLists.map((todoList) => (todoList.id === id ? { ...todoList, openTaskCount } : todoList)),
+    );
+  }
+
   /**
-   * Hides the Todo List at once and offers Undo. The delete is sent only once the offer times out
-   * or gives way to another message; Undo sends nothing. A failed delete brings the Todo List back.
-   *
-   * Logging out sends the deletes still pending first (see {@link sendPendingDeletes}). Leaving
-   * the app shell otherwise, as when the session can no longer be refreshed, can't send them: the
-   * offer is withdrawn and the Todo List kept.
+   * Hides the Todo List at once and offers Undo, holding the delete back meanwhile (see
+   * {@link UndoableDeletes}). A failed delete brings the Todo List back.
    */
   delete(todoList: TodoList): void {
     this.setPending(todoList.id, true);
-    const offer = this.snackBar.open(
-      $localize`:Message after deleting a Todo List, which can still be undone:Deleted “${todoList.name}:name:”.`,
-      $localize`:Button that brings back what was just deleted:Undo`,
-      { duration: UNDO_DURATION_MS },
-    );
-    const withdraw = this.destroyRef.onDestroy(() => offer.dismiss());
-    const onGone = offer
-      .afterDismissed()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(({ dismissedByAction: undone }) => {
-        withdraw();
-        this.undoOffers.delete(todoList.id);
-        if (undone) {
-          this.setPending(todoList.id, false);
-        } else {
-          this.sendDelete(todoList).subscribe();
-        }
-      });
-    this.undoOffers.set(todoList.id, { todoList, offer, onGone });
-  }
-
-  /** Ends every Undo offer still open and sends its delete, completing once they are answered. */
-  sendPendingDeletes(): Observable<void> {
-    const deletes = [...this.undoOffers.values()].map(({ todoList, offer, onGone }) => {
-      onGone.unsubscribe();
-      offer.dismiss();
-      return this.sendDelete(todoList);
+    this.deletes.offer({
+      message: $localize`:Message after deleting a Todo List, which can still be undone:Deleted “${todoList.name}:name:”.`,
+      send: () => this.sendDelete(todoList),
+      undo: () => this.setPending(todoList.id, false),
     });
-    this.undoOffers.clear();
-    return deletes.length ? forkJoin(deletes).pipe(map(() => undefined)) : of(undefined);
   }
 
   /** Sends the delete; a failure brings the Todo List back and says so, then completes. */

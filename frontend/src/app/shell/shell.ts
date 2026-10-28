@@ -13,6 +13,7 @@ import { Session } from '../auth/session';
 import { LANGUAGE_NAMES, Languages } from '../i18n/languages';
 import { TodoListNameDialog, TodoListNameDialogData } from '../todo-lists/todo-list-name-dialog';
 import { TodoLists } from '../todo-lists/todo-lists';
+import { UndoableDeletes } from '../undo/undoable-deletes';
 import { switchMap } from 'rxjs';
 import { mediaMatches, PHONE_QUERY } from './media';
 import { ThemeService } from './theme';
@@ -31,8 +32,9 @@ import { ThemeService } from './theme';
     RouterLinkActive,
     RouterOutlet,
   ],
-  // The pages in the shell's outlet share the drawer's Todo Lists; a new session gets new ones
-  providers: [TodoLists],
+  // The pages in the shell's outlet share the drawer's Todo Lists and the deletes still held for
+  // Undo; a new session gets new ones
+  providers: [TodoLists, UndoableDeletes],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +45,7 @@ export class Shell {
   protected readonly languages = inject(Languages);
   protected readonly languageNames = LANGUAGE_NAMES;
   protected readonly todoLists = inject(TodoLists);
+  private readonly deletes = inject(UndoableDeletes);
   private readonly dialogs = inject(MatDialog);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
@@ -79,8 +82,8 @@ export class Shell {
 
   /** Sends the deletes the User was still offered Undo for, while the session can, then logs out. */
   protected logOut(): void {
-    this.todoLists
-      .sendPendingDeletes()
+    this.deletes
+      .sendAll()
       .pipe(switchMap(() => this.session.logOut()))
       .subscribe({
         next: () => void this.router.navigateByUrl('/login'),

@@ -9,6 +9,8 @@ interface TodoListRepository extends JpaRepository<TodoListEntity, Long> {
 
     Optional<TodoListEntity> findByIdAndOwnerId(long id, long ownerId);
 
+    boolean existsByIdAndOwnerId(long id, long ownerId);
+
     /** The Owner's Todo Lists by name, each with how many of its Tasks are open. */
     @Query(nativeQuery = true, value = """
             SELECT l.id, l.name,
