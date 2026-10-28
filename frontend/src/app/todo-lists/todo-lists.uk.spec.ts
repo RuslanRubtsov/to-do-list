@@ -15,6 +15,7 @@ describe('Todo Lists in Ukrainian', () => {
       id: i + 1,
       name: `Список ${i + 1}`,
       openTaskCount,
+      version: 1,
     }));
     const page = await renderRoute('/', { locale: 'uk', todoLists });
     await answerAppInfo(page.http);

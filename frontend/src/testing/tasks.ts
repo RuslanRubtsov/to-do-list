@@ -5,8 +5,8 @@ export function tasksRequest(method: 'GET' | 'POST', todoListId: number) {
   return { method, url: `/api/v1/todo-lists/${todoListId}/tasks` };
 }
 
-/** Changing a Task's details, or deleting it. */
-export function taskRequest(method: 'PUT' | 'DELETE', todoListId: number, taskId: number) {
+/** Reading a Task, changing its details, or deleting it. */
+export function taskRequest(method: 'GET' | 'PUT' | 'DELETE', todoListId: number, taskId: number) {
   return { method, url: `/api/v1/todo-lists/${todoListId}/tasks/${taskId}` };
 }
 
@@ -25,6 +25,7 @@ export function openTask(id: number, title: string): Task {
     dueDate: null,
     overdue: false,
     completedAt: null,
+    version: 1,
   };
 }
 

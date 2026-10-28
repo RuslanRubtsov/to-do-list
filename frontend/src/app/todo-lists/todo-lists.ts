@@ -39,16 +39,16 @@ export class TodoLists {
       .pipe(tap((created) => this.change((todoLists) => [...todoLists, created])));
   }
 
-  rename(id: number, name: string): Observable<TodoList> {
+  /** Renames the Todo List, as a change to the version of it given. */
+  rename(todoList: TodoList, name: string): Observable<TodoList> {
     return this.api
-      .renameTodoList(id, { name })
-      .pipe(
-        tap((renamed) =>
-          this.change((todoLists) =>
-            todoLists.map((todoList) => (todoList.id === id ? renamed : todoList)),
-          ),
-        ),
-      );
+      .renameTodoList(todoList.id, { name, version: todoList.version })
+      .pipe(tap((renamed) => this.replace(renamed)));
+  }
+
+  /** Reads the Todo List again, as someone else may have changed it, and shows it as it is now. */
+  refresh(id: number): Observable<TodoList> {
+    return this.api.getTodoList(id).pipe(tap((read) => this.replace(read)));
   }
 
   /** Shows how many of the Todo List's Tasks are open, as the page showing them knows it. */
@@ -103,6 +103,12 @@ export class TodoLists {
       else updated.delete(id);
       return updated;
     });
+  }
+
+  private replace(todoList: TodoList): void {
+    this.change((todoLists) =>
+      todoLists.map((each) => (each.id === todoList.id ? todoList : each)),
+    );
   }
 
   /** Applies a change the backend confirmed, keeping the Todo Lists sorted by name. */

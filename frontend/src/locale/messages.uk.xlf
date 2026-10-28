@@ -830,5 +830,23 @@
         <target>Редагувати «<ph id="0" equiv="title" disp="task.title"/>»</target>
       </segment>
     </unit>
+    <unit id="8240028236945009017">
+      <notes>
+        <note category="description">Error when someone else changed a Task while the User was changing it</note>
+      </notes>
+      <segment state="translated">
+        <source>Someone else changed this Task while you were editing it. Here it is as they left it: make your changes again, then save.</source>
+        <target>Хтось інший змінив це завдання, поки ви його редагували. Ось яким його залишили: внесіть свої зміни ще раз і збережіть.</target>
+      </segment>
+    </unit>
+    <unit id="4360834337867036078">
+      <notes>
+        <note category="description">Error when someone else changed a Todo List while the User was renaming it</note>
+      </notes>
+      <segment state="translated">
+        <source>Someone else changed this Todo List while you were renaming it. Here is its latest name: rename it again if you still want to.</source>
+        <target>Хтось інший змінив цей список справ, поки ви його перейменовували. Ось його найновіша назва: перейменуйте його ще раз, якщо досі бажаєте.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

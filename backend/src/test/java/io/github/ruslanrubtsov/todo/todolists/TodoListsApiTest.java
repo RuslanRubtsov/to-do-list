@@ -7,10 +7,12 @@ import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -90,7 +92,7 @@ class TodoListsApiTest extends ApiTest {
         LoggedIn user = newLoggedInUser();
         TodoList todoList = createTodoList(user, "Groceries");
 
-        renaming(user, todoList.getId(), " Shopping ")
+        renaming(user, todoList, " Shopping ")
                 .expectStatus()
                 .isOk()
                 .expectBody()
@@ -107,8 +109,59 @@ class TodoListsApiTest extends ApiTest {
         LoggedIn user = newLoggedInUser();
         TodoList todoList = createTodoList(user, "Groceries");
 
-        refusesName(renaming(user, todoList.getId(), " "), "PATTERN");
+        refusesName(renaming(user, todoList, " "), "PATTERN");
         assertThat(listing(user)).extracting(TodoList::getName).containsExactly("Groceries");
+    }
+
+    @Nested
+    class EditConflicts {
+
+        private LoggedIn user;
+        private TodoList todoList;
+
+        @BeforeEach
+        void createATodoList() {
+            user = newLoggedInUser();
+            todoList = createTodoList(user, "Groceries");
+        }
+
+        @Test
+        void eachRenameMakesANewVersion() {
+            TodoList renamed = rename(user, todoList, "Shopping");
+
+            assertThat(renamed.getVersion()).isNotEqualTo(todoList.getVersion());
+            assertThat(listing(user)).containsExactly(renamed);
+        }
+
+        @Test
+        void aRenameBasedOnAnOlderVersionIsRefused() {
+            TodoList theirs = rename(user, todoList, "Shopping");
+
+            renaming(user, todoList, "Food")
+                    .expectStatus()
+                    .isEqualTo(HttpStatus.CONFLICT)
+                    .expectBody()
+                    .jsonPath("$.code")
+                    .isEqualTo("EDIT_CONFLICT");
+            assertThat(listing(user)).containsExactly(theirs);
+        }
+
+        @Test
+        void aRenameNeedsTheVersionItIsBasedOn() {
+            api.patch()
+                    .uri("/api/v1/todo-lists/{id}", todoList.getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("name", "Shopping"))
+                    .exchange()
+                    .expectStatus()
+                    .isBadRequest()
+                    .expectBody()
+                    .jsonPath("$.errors[0].field")
+                    .isEqualTo("version")
+                    .jsonPath("$.errors[0].code")
+                    .isEqualTo("NOT_NULL");
+        }
     }
 
     @Test
@@ -144,7 +197,7 @@ class TodoListsApiTest extends ApiTest {
 
         @Test
         void cannotBeRenamed() {
-            isNotFound(renaming(stranger, todoList.getId(), "Mine now"));
+            isNotFound(renaming(stranger, todoList, "Mine now"));
             assertThat(listing(owner)).extracting(TodoList::getName).containsExactly("Private");
         }
 
@@ -205,13 +258,23 @@ class TodoListsApiTest extends ApiTest {
                 .exchange();
     }
 
-    private RestTestClient.ResponseSpec renaming(LoggedIn user, long todoListId, String name) {
+    /** Renames the Todo List as last read, sending the version it was read at. */
+    private RestTestClient.ResponseSpec renaming(LoggedIn user, TodoList todoList, String name) {
         return api.patch()
-                .uri("/api/v1/todo-lists/{id}", todoListId)
+                .uri("/api/v1/todo-lists/{id}", todoList.getId())
                 .headers(headers -> headers.setBearerAuth(user.accessToken()))
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("name", name))
+                .body(Map.of("name", name, "version", todoList.getVersion()))
                 .exchange();
+    }
+
+    private TodoList rename(LoggedIn user, TodoList todoList, String name) {
+        return Objects.requireNonNull(renaming(user, todoList, name)
+                .expectStatus()
+                .isOk()
+                .expectBody(TodoList.class)
+                .returnResult()
+                .getResponseBody());
     }
 
     private RestTestClient.ResponseSpec deleting(LoggedIn user, long todoListId) {

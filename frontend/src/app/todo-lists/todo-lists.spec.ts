@@ -7,6 +7,7 @@ import { renderRoute, snackBarText } from '../../testing/routed-page';
 import { LAZY_ROUTE_WAIT, LOGOUT } from '../../testing/session';
 import {
   CREATE_TODO_LIST,
+  failAsEditConflict,
   failAsNotFound,
   failFieldAsInvalid,
   GROCERIES,
@@ -130,12 +131,38 @@ describe('Todo Lists', () => {
       await page.fill('Name', 'Shopping');
       page.click('Rename');
       const rename = page.http.expectOne(todoListRequest('PATCH', 5));
-      expect(rename.request.body).toEqual({ name: 'Shopping' });
+      expect(rename.request.body).toEqual({ name: 'Shopping', version: 1 });
       rename.flush({ ...GROCERIES, name: 'Shopping' });
 
       await vi.waitFor(() => expect(page.heading()).toBe('Shopping'));
       expect(page.has('Shopping, 3 open Tasks')).toBe(true);
       expect(page.has('Groceries, 3 open Tasks')).toBe(false);
+    });
+
+    it('shows the latest name when someone else renamed the Todo List meanwhile', async () => {
+      const page = await renderTodoList(GROCERIES);
+
+      page.click('Rename Todo List');
+      await page.fill('Name', 'Shopping');
+      page.click('Rename');
+      failAsEditConflict(page.http.expectOne(todoListRequest('PATCH', 5)));
+      page.http
+        .expectOne(todoListRequest('GET', 5))
+        .flush({ ...GROCERIES, name: 'Food', version: 2 });
+
+      expect(await page.alerts()).toEqual([
+        'Someone else changed this Todo List while you were renaming it. Here is its latest name: rename it again if you still want to.',
+      ]);
+      expect(await page.fieldValue('Name')).toBe('Food');
+      expect(page.heading()).toBe('Food');
+      expect(page.has('Food, 3 open Tasks')).toBe(true);
+
+      await page.fill('Name', 'Shopping');
+      page.click('Rename');
+      expect(page.http.expectOne(todoListRequest('PATCH', 5)).request.body).toEqual({
+        name: 'Shopping',
+        version: 2,
+      });
     });
 
     it('asks for a name instead of renaming to a blank one', async () => {

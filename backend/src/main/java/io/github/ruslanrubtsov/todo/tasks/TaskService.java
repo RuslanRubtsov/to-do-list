@@ -1,5 +1,6 @@
 package io.github.ruslanrubtsov.todo.tasks;
 
+import static io.github.ruslanrubtsov.todo.web.error.Problems.editConflict;
 import static io.github.ruslanrubtsov.todo.web.error.Problems.problem;
 
 import io.github.ruslanrubtsov.todo.api.model.ErrorCode;
@@ -46,25 +47,29 @@ class TaskService {
         return toApi(reachable(userId, todoListId, taskId));
     }
 
+    /** Refused if someone else changed the Task since the version the details are based on. */
     @Transactional
     Task change(long userId, long todoListId, long taskId, TaskDetails details) {
         TaskEntity task = reachable(userId, todoListId, taskId);
+        if (task.getVersion() != details.getVersion()) {
+            throw editConflict("The Task has changed since that version.");
+        }
         task.change(details.getTitle(), details.getDescription(), details.getDueDate(), details.getPriority());
-        return toApi(task);
+        return flushedToApi(task);
     }
 
     @Transactional
     Task complete(long userId, long todoListId, long taskId) {
         TaskEntity task = reachable(userId, todoListId, taskId);
         task.complete();
-        return toApi(task);
+        return flushedToApi(task);
     }
 
     @Transactional
     Task uncomplete(long userId, long todoListId, long taskId) {
         TaskEntity task = reachable(userId, todoListId, taskId);
         task.uncomplete();
-        return toApi(task);
+        return flushedToApi(task);
     }
 
     @Transactional
@@ -82,9 +87,20 @@ class TaskService {
                 .orElseThrow(() -> problem(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "No such Task."));
     }
 
+    /** The changed Task as the API shows it, with the version saving the change made. */
+    private Task flushedToApi(TaskEntity task) {
+        tasks.flush();
+        return toApi(task);
+    }
+
     /** The Task as the API shows it, Overdue or not as of today. */
     private Task toApi(TaskEntity task) {
-        return new Task(task.getId(), task.getTitle(), task.getPriority(), task.isOverdueOn(LocalDate.now(clock)))
+        return new Task(
+                        task.getId(),
+                        task.getTitle(),
+                        task.getPriority(),
+                        task.isOverdueOn(LocalDate.now(clock)),
+                        task.getVersion())
                 .description(task.getDescription())
                 .dueDate(task.getDueDate())
                 .completedAt(

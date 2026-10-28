@@ -11,7 +11,7 @@ import { Priority, Task, TaskDetails } from '@api';
 import { format } from 'date-fns/format';
 import { parseISO } from 'date-fns/parseISO';
 import { Observable } from 'rxjs';
-import { isUnreachable, problemOf, showFieldErrors } from '../http/problems';
+import { isEditConflict, isUnreachable, problemOf, showFieldErrors } from '../http/problems';
 import { provideLocaleDates } from '../i18n/dates';
 import { TASK_TITLE_MAX_LENGTH, taskTitleValidators } from './task-title';
 
@@ -20,11 +20,26 @@ const DESCRIPTION_MAX_LENGTH = 2000;
 
 export interface TaskDetailsDialogData {
   task: Task;
-  /** Sends the details to the backend. */
-  save: (details: TaskDetails) => Observable<Task>;
+  /** Sends the details to the backend, as a change to the version of the Task last read. */
+  save: (details: Omit<TaskDetails, 'version'>) => Observable<Task>;
+  /** Reads the Task again, once someone else's change has replaced the version last read. */
+  reload: () => Observable<Task>;
 }
 
-/** Changes a Task's details. Closes with the changed Task once the backend has it. */
+/** What the form shows of a Task. */
+function formValue(task: Task) {
+  return {
+    title: task.title,
+    description: task.description ?? '',
+    dueDate: task.dueDate ? parseISO(task.dueDate) : (null as Date | null),
+    priority: task.priority,
+  };
+}
+
+/**
+ * Changes a Task's details. Closes with the changed Task once the backend has it. If someone else
+ * changed the Task meanwhile, shows it as they left it instead, to change again.
+ */
 @Component({
   selector: 'app-task-details-dialog',
   imports: [
@@ -56,14 +71,15 @@ export class TaskDetailsDialog {
     inject(MAT_DATE_FORMATS).display.dateInput,
   );
 
+  private readonly initial = formValue(this.data.task);
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    title: [this.data.task.title, taskTitleValidators],
-    description: [this.data.task.description ?? '', Validators.maxLength(DESCRIPTION_MAX_LENGTH)],
-    dueDate: [this.data.task.dueDate ? parseISO(this.data.task.dueDate) : (null as Date | null)],
-    priority: [this.data.task.priority],
+    title: [this.initial.title, taskTitleValidators],
+    description: [this.initial.description, Validators.maxLength(DESCRIPTION_MAX_LENGTH)],
+    dueDate: [this.initial.dueDate],
+    priority: [this.initial.priority],
   });
   protected readonly saving = signal(false);
-  protected readonly failure = signal<'unreachable' | 'unexpected' | null>(null);
+  protected readonly failure = signal<'conflict' | 'unreachable' | 'unexpected' | null>(null);
 
   protected save(): void {
     if (this.form.invalid || this.saving()) return;
@@ -80,12 +96,26 @@ export class TaskDetailsDialog {
       })
       .subscribe({
         next: (saved) => this.dialog.close(saved),
-        error: (error: unknown) => {
-          this.saving.set(false);
-          if (!showFieldErrors(this.form, problemOf(error))) {
-            this.failure.set(isUnreachable(error) ? 'unreachable' : 'unexpected');
-          }
-        },
+        error: (error: unknown) => (isEditConflict(error) ? this.showLatest() : this.fail(error)),
       });
+  }
+
+  /** Shows the Task as someone else just left it, for the User to make their changes again. */
+  private showLatest(): void {
+    this.data.reload().subscribe({
+      next: (latest) => {
+        this.saving.set(false);
+        this.form.reset(formValue(latest));
+        this.failure.set('conflict');
+      },
+      error: (error: unknown) => this.fail(error),
+    });
+  }
+
+  private fail(error: unknown): void {
+    this.saving.set(false);
+    if (!showFieldErrors(this.form, problemOf(error))) {
+      this.failure.set(isUnreachable(error) ? 'unreachable' : 'unexpected');
+    }
   }
 }

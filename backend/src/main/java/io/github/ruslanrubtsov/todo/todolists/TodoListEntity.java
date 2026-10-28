@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 
 /** A Todo List: a named collection of Tasks with exactly one Owner. */
@@ -21,6 +22,9 @@ class TodoListEntity {
     private long ownerId;
 
     private String name;
+
+    @Version
+    private long version;
 
     @Column(updatable = false)
     private Instant createdAt;
@@ -39,6 +43,10 @@ class TodoListEntity {
 
     String getName() {
         return name;
+    }
+
+    long getVersion() {
+        return version;
     }
 
     void rename(String name) {

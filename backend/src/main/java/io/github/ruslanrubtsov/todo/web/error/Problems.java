@@ -27,6 +27,14 @@ public final class Problems {
     }
 
     /**
+     * A change based on a version of the resource that someone else's change has since replaced, so
+     * making it would silently overwrite theirs.
+     */
+    public static ErrorResponseException editConflict(String detail) {
+        return problem(HttpStatus.CONFLICT, ErrorCode.EDIT_CONFLICT, detail);
+    }
+
+    /**
      * One invalid request field that only the service can judge, reported exactly like a failed Bean
      * Validation constraint.
      */

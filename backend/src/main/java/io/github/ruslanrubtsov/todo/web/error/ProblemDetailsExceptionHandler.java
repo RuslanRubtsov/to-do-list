@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -56,6 +57,17 @@ class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandler {
                 .toList();
         return handleExceptionInternal(
                 ex, Problems.validationProblem(violations), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    /**
+     * Someone else's change was saved between reading the version a change was based on and saving
+     * it: the database's version check catches what the services' own check couldn't yet see.
+     */
+    @ExceptionHandler
+    ResponseEntity<Object> handleOptimisticLocking(OptimisticLockingFailureException ex, WebRequest request) {
+        ProblemDetail problem = Problems.problemDetail(
+                HttpStatus.CONFLICT, ErrorCode.EDIT_CONFLICT, "Someone else changed it meanwhile.");
+        return handleExceptionInternal(ex, problem, new HttpHeaders(), HttpStatus.CONFLICT, request);
     }
 
     /** No valid access token, reported by Spring Security's entry point (see {@code ProblemAuthenticationEntryPoint}). */

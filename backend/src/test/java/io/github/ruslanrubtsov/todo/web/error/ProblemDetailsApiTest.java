@@ -67,6 +67,20 @@ class ProblemDetailsApiTest extends ApiTest {
     }
 
     @Test
+    void changeLosingARaceToAnotherIsEditConflict() {
+        api.get()
+                .uri("/test/problems/concurrent-change")
+                .exchange()
+                .expectStatus()
+                .isEqualTo(409)
+                .expectHeader()
+                .contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+                .expectBody()
+                .jsonPath("$.code")
+                .isEqualTo("EDIT_CONFLICT");
+    }
+
+    @Test
     void unexpectedExceptionIsInternalErrorProblemWithoutInternalDetails() {
         api.get()
                 .uri("/test/problems/failure")

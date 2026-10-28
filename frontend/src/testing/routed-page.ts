@@ -92,6 +92,11 @@ export async function renderRoute(
       await harness.fixture.whenStable();
       return root().textContent ?? '';
     },
+    /** What the alerts on the page and in its overlays, such as dialogs, say. */
+    async alerts(): Promise<string[]> {
+      await harness.fixture.whenStable();
+      return Array.from(document.body.querySelectorAll<HTMLElement>('[role="alert"]'), readAloud);
+    },
     /** The text of the app shell's toolbar, apart from the page below it. */
     toolbarText(): string {
       return root().querySelector('mat-toolbar')?.textContent ?? '';

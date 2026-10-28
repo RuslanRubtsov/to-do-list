@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Priority, Task } from '@api';
 import { MILK, openTask, taskRequest } from '../../testing/tasks';
 import { openDetails, renderTodoListPage } from '../../testing/todo-list-page';
-import { failFieldAsInvalid, GROCERIES } from '../../testing/todo-lists';
+import { failAsEditConflict, failFieldAsInvalid, GROCERIES } from '../../testing/todo-lists';
 
 // The first test renders lazy routes, a dialog, a date picker and a select cold, which under a
 // parallel run takes longer than other files' first tests
@@ -43,6 +43,7 @@ describe('Task details', () => {
         description: 'Two cartons',
         dueDate: '2026-11-03',
         priority: Priority.HIGH,
+        version: 1,
       });
       update.flush({
         ...MILK,
@@ -76,6 +77,7 @@ describe('Task details', () => {
         description: null,
         dueDate: null,
         priority: Priority.LOW,
+        version: 1,
       });
     });
 
@@ -105,6 +107,33 @@ describe('Task details', () => {
       );
 
       expect(await page.fieldErrors('Description')).toEqual(['Use at most 2000 characters.']);
+    });
+
+    it('shows the latest version when someone else changed the Task meanwhile', async () => {
+      const page = await renderOn([MILK]);
+
+      await openDetails(page, 'Edit “Buy milk”');
+      await page.fill('Title', 'Buy soy milk');
+      page.click('Save');
+      failAsEditConflict(page.http.expectOne(taskRequest('PUT', 5, MILK.id)));
+      page.http
+        .expectOne(taskRequest('GET', 5, MILK.id))
+        .flush({ ...MILK, title: 'Buy oat milk', priority: Priority.HIGH, version: 2 });
+
+      expect(await page.alerts()).toEqual([
+        'Someone else changed this Task while you were editing it. Here it is as they left it: make your changes again, then save.',
+      ]);
+      expect(await page.fieldValue('Title')).toBe('Buy oat milk');
+      expect(await page.chosen('Priority')).toBe('High');
+      expect(page.listItems('Open Tasks')).toEqual(['Buy oat milk High Priority']);
+
+      await page.fill('Title', 'Buy soy milk');
+      page.click('Save');
+      expect(page.http.expectOne(taskRequest('PUT', 5, MILK.id)).request.body).toMatchObject({
+        title: 'Buy soy milk',
+        priority: Priority.HIGH,
+        version: 2,
+      });
     });
 
     it('changes nothing when cancelled', async () => {
