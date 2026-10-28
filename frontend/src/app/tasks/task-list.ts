@@ -16,6 +16,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroupDirective, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -26,10 +27,12 @@ import { catchError, map, Observable, of } from 'rxjs';
 import { isNotFound, isUnreachable, problemOf, showFieldErrors } from '../http/problems';
 import { TodoLists } from '../todo-lists/todo-lists';
 import { UndoableDeletes } from '../undo/undoable-deletes';
+import { RelativeDatePipe } from './relative-date.pipe';
+import type { TaskDetailsDialog, TaskDetailsDialogData } from './task-details-dialog';
 import { TASK_TITLE_MAX_LENGTH, taskTitleValidators } from './task-title';
 
 /**
- * A Todo List's Tasks: adding them, open ones first, then a section of the Completed ones. Keeps
+ * A Todo List's Tasks with their details: adding and changing them, open ones first, then a section of the Completed ones. Keeps
  * the navigation drawer's count of open Tasks in step with what it shows.
  */
 @Component({
@@ -44,6 +47,7 @@ import { TASK_TITLE_MAX_LENGTH, taskTitleValidators } from './task-title';
     MatProgressSpinnerModule,
     NgTemplateOutlet,
     ReactiveFormsModule,
+    RelativeDatePipe,
   ],
   templateUrl: './task-list.html',
   styleUrl: './task-list.scss',
@@ -54,6 +58,7 @@ export class TaskList {
   private readonly snackBar = inject(MatSnackBar);
   private readonly deletes = inject(UndoableDeletes);
   private readonly todoLists = inject(TodoLists);
+  private readonly dialogs = inject(MatDialog);
 
   readonly todoListId = input.required<number>();
 
@@ -66,6 +71,8 @@ export class TaskList {
   private readonly pendingDeletes = signal<ReadonlySet<number>>(new Set());
   /** What ends the Undo offer of each pending delete, which sends it. */
   private readonly undoOffers = new Map<number, () => void>();
+  /** Whether the page has gone, as it may while a dialog is still loading. */
+  private destroyed = false;
 
   /** In the order they were added, without those deleted; `undefined` until loaded. */
   private readonly shown = computed(() => {
@@ -101,6 +108,7 @@ export class TaskList {
     // Undo is offered for what this page shows; leaving it ends the offers, sending the deletes.
     // Just after, as ending one changes the snack bar, which mustn't happen mid-render.
     inject(DestroyRef).onDestroy(() => {
+      this.destroyed = true;
       const endOffers = [...this.undoOffers.values()];
       queueMicrotask(() => endOffers.forEach((endOffer) => endOffer()));
     });
@@ -156,6 +164,28 @@ export class TaskList {
         );
       },
     });
+  }
+
+  /**
+   * Opens the Task's details to change them. The dialog loads on first use: it brings the date
+   * picker and date-fns, which listing Tasks doesn't need.
+   */
+  protected async edit(task: Task): Promise<void> {
+    const todoListId = this.todoListId();
+    const { TaskDetailsDialog } = await import('./task-details-dialog');
+    if (this.destroyed) return;
+    this.dialogs
+      .open<TaskDetailsDialog, TaskDetailsDialogData, Task>(TaskDetailsDialog, {
+        data: { task, save: (details) => this.api.updateTask(todoListId, task.id, details) },
+      })
+      .afterClosed()
+      .subscribe((changed) => {
+        if (changed) this.replace(changed);
+      });
+  }
+
+  protected editLabel(task: Task): string {
+    return $localize`:Button that opens a Task's details to change them, naming the Task by its title:Edit “${task.title}:title:”`;
   }
 
   protected deleteLabel(task: Task): string {

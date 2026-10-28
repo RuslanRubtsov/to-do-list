@@ -1,0 +1,18 @@
+mat-form-field {
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 16px;
+
+  mat-form-field {
+    flex: 1 1 180px;
+    width: auto;
+  }
+}
+
+.failure {
+  color: var(--mat-sys-error);
+}

@@ -2,6 +2,7 @@ package io.github.ruslanrubtsov.todo.tasks;
 
 import io.github.ruslanrubtsov.todo.api.TasksApi;
 import io.github.ruslanrubtsov.todo.api.model.Task;
+import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
 import io.github.ruslanrubtsov.todo.api.model.TaskDraft;
 import io.github.ruslanrubtsov.todo.auth.CurrentUser;
 import java.util.List;
@@ -36,6 +37,11 @@ class TasksController implements TasksApi {
     @Override
     public ResponseEntity<Task> getTask(Long todoListId, Long taskId) {
         return ResponseEntity.ok(taskService.get(CurrentUser.id(), todoListId, taskId));
+    }
+
+    @Override
+    public ResponseEntity<Task> updateTask(Long todoListId, Long taskId, TaskDetails taskDetails) {
+        return ResponseEntity.ok(taskService.change(CurrentUser.id(), todoListId, taskId, taskDetails));
     }
 
     @Override

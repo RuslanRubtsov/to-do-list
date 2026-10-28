@@ -5,8 +5,9 @@ export function tasksRequest(method: 'GET' | 'POST', todoListId: number) {
   return { method, url: `/api/v1/todo-lists/${todoListId}/tasks` };
 }
 
-export function deleteTaskRequest(todoListId: number, taskId: number) {
-  return { method: 'DELETE', url: `/api/v1/todo-lists/${todoListId}/tasks/${taskId}` };
+/** Changing a Task's details, or deleting it. */
+export function taskRequest(method: 'PUT' | 'DELETE', todoListId: number, taskId: number) {
+  return { method, url: `/api/v1/todo-lists/${todoListId}/tasks/${taskId}` };
 }
 
 /** `PUT` completes the Task, `DELETE` un-completes it. */
@@ -16,7 +17,15 @@ export function completionRequest(method: 'PUT' | 'DELETE', todoListId: number, 
 
 /** An open Task, as the backend adds one. */
 export function openTask(id: number, title: string): Task {
-  return { id, title, priority: Priority.MEDIUM, dueDate: null, completedAt: null };
+  return {
+    id,
+    title,
+    description: null,
+    priority: Priority.MEDIUM,
+    dueDate: null,
+    overdue: false,
+    completedAt: null,
+  };
 }
 
 export const MILK = openTask(21, 'Buy milk');

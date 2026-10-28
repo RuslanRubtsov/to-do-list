@@ -27,6 +27,8 @@ class TaskEntity {
 
     private String title;
 
+    private String description;
+
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
@@ -55,6 +57,10 @@ class TaskEntity {
         return title;
     }
 
+    String getDescription() {
+        return description;
+    }
+
     Priority getPriority() {
         return priority;
     }
@@ -65,6 +71,19 @@ class TaskEntity {
 
     Instant getCompletedAt() {
         return completedAt;
+    }
+
+    /** Whether its Due Date passed before {@code today} while it isn't Completed. */
+    boolean isOverdueOn(LocalDate today) {
+        return completedAt == null && dueDate != null && dueDate.isBefore(today);
+    }
+
+    /** Replaces its details; a blank description is none. */
+    void change(String title, String description, LocalDate dueDate, Priority priority) {
+        this.title = title.strip();
+        this.description = description == null || description.isBlank() ? null : description.strip();
+        this.dueDate = dueDate;
+        this.priority = priority;
     }
 
     /** Completed now, unless it already was: then it keeps the time it was first Completed. */

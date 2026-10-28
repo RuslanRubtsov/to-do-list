@@ -6,10 +6,10 @@ import { LAZY_ROUTE_WAIT } from '../../testing/session';
 import {
   BREAD,
   completionRequest,
-  deleteTaskRequest,
   EGGS,
   MILK,
   openTask,
+  taskRequest,
   tasksRequest,
 } from '../../testing/tasks';
 import { answerTodoListPage, renderTodoListPage } from '../../testing/todo-list-page';
@@ -203,11 +203,11 @@ describe('Tasks', () => {
       await page.text();
       expect(page.listItems('Open Tasks')).toEqual(['Buy bread']);
       expect(snackBarText()).toContain('Deleted “Buy milk”.');
-      page.http.expectNone(deleteTaskRequest(5, MILK.id));
+      page.http.expectNone(taskRequest('DELETE', 5, MILK.id));
 
       await vi.advanceTimersByTimeAsync(UNDO_TIME);
       page.http
-        .expectOne(deleteTaskRequest(5, MILK.id))
+        .expectOne(taskRequest('DELETE', 5, MILK.id))
         .flush(null, { status: 204, statusText: 'No Content' });
 
       await page.text();
@@ -224,7 +224,7 @@ describe('Tasks', () => {
       await vi.waitFor(() =>
         expect(page.listItems('Open Tasks')).toEqual(['Buy milk', 'Buy bread']),
       );
-      page.http.expectNone(deleteTaskRequest(5, MILK.id));
+      page.http.expectNone(taskRequest('DELETE', 5, MILK.id));
     });
 
     it('deletes Completed Tasks too', async () => {
@@ -239,7 +239,7 @@ describe('Tasks', () => {
       expect(page.has('Completed (1)')).toBe(false);
       await vi.advanceTimersByTimeAsync(UNDO_TIME);
       page.http
-        .expectOne(deleteTaskRequest(5, EGGS.id))
+        .expectOne(taskRequest('DELETE', 5, EGGS.id))
         .flush(null, { status: 204, statusText: 'No Content' });
     });
 
@@ -252,7 +252,7 @@ describe('Tasks', () => {
       await answerTodoListPage(page.http, WORK);
 
       await vi
-        .waitFor(() => page.http.expectOne(deleteTaskRequest(5, MILK.id)))
+        .waitFor(() => page.http.expectOne(taskRequest('DELETE', 5, MILK.id)))
         .then((request) => request.flush(null, { status: 204, statusText: 'No Content' }));
       expect(await page.url()).toBe('/lists/8');
     });
@@ -265,7 +265,7 @@ describe('Tasks', () => {
 
       await vi.advanceTimersByTimeAsync(UNDO_TIME);
       page.http
-        .expectOne(deleteTaskRequest(5, MILK.id))
+        .expectOne(taskRequest('DELETE', 5, MILK.id))
         .error(new ProgressEvent('error'), { status: 0 });
 
       await vi.waitFor(() =>

@@ -5,7 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.ruslanrubtsov.todo.ApiTest;
 import io.github.ruslanrubtsov.todo.api.model.Priority;
 import io.github.ruslanrubtsov.todo.api.model.Task;
+import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -14,12 +17,17 @@ import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 class TasksApiTest extends ApiTest {
+
+    /** What the backend reckons today by. */
+    @Autowired
+    private Clock clock;
 
     @Test
     void addsATaskByTitleWithMediumPriorityAndNoDueDate() {
@@ -42,6 +50,8 @@ class TasksApiTest extends ApiTest {
         assertThat(created.getTitle()).isEqualTo("Buy milk");
         assertThat(created.getPriority()).isEqualTo(Priority.MEDIUM);
         assertThat(created.getDueDate()).isNull();
+        assertThat(created.getDescription()).isNull();
+        assertThat(created.getOverdue()).isFalse();
         assertThat(created.getCompletedAt()).isNull();
     }
 
@@ -190,6 +200,183 @@ class TasksApiTest extends ApiTest {
     }
 
     @Nested
+    class ChangingDetails {
+
+        private LoggedIn user;
+        private TodoList todoList;
+        private Task task;
+
+        @BeforeEach
+        void addATask() {
+            user = newLoggedInUser();
+            todoList = createTodoList(user, "Groceries");
+            task = add(user, todoList.getId(), "Buy milk");
+        }
+
+        @Test
+        void changesTheTitleDescriptionDueDateAndPriority() {
+            LocalDate nextWeek = today().plusWeeks(1);
+
+            Task changed = update(new TaskDetails(" Buy oat milk ", Priority.HIGH)
+                    .description("  Two cartons ")
+                    .dueDate(nextWeek));
+
+            assertThat(changed.getId()).isEqualTo(task.getId());
+            assertThat(changed.getTitle()).isEqualTo("Buy oat milk");
+            assertThat(changed.getDescription()).isEqualTo("Two cartons");
+            assertThat(changed.getDueDate()).isEqualTo(nextWeek);
+            assertThat(changed.getPriority()).isEqualTo(Priority.HIGH);
+            assertThat(listing(user, todoList.getId())).containsExactly(changed);
+        }
+
+        @Test
+        void clearsTheDetailsLeftOut() {
+            update(new TaskDetails("Buy milk", Priority.HIGH)
+                    .description("Two cartons")
+                    .dueDate(today()));
+
+            Task changed = update(new TaskDetails("Buy milk", Priority.LOW));
+
+            assertThat(changed.getDescription()).isNull();
+            assertThat(changed.getDueDate()).isNull();
+            assertThat(changed.getPriority()).isEqualTo(Priority.LOW);
+        }
+
+        @Test
+        void storesABlankDescriptionAsNone() {
+            assertThat(update(new TaskDetails("Buy milk", Priority.MEDIUM).description("   "))
+                            .getDescription())
+                    .isNull();
+        }
+
+        @Test
+        void keepsWhetherTheTaskIsCompleted() {
+            Task completed = completing(user, todoList.getId(), task.getId());
+
+            Task changed = update(new TaskDetails("Buy oat milk", Priority.MEDIUM));
+
+            assertThat(changed.getCompletedAt()).isEqualTo(completed.getCompletedAt());
+        }
+
+        @Test
+        void refusesABlankTitle() {
+            refusesField(updating(new TaskDetails(" ", Priority.MEDIUM)), "title", "PATTERN");
+            assertThat(listing(user, todoList.getId())).containsExactly(task);
+        }
+
+        @Test
+        void refusesADescriptionOfMoreThan2000Characters() {
+            update(new TaskDetails("Buy milk", Priority.MEDIUM).description("x".repeat(2000)));
+
+            refusesField(
+                    updating(new TaskDetails("Buy milk", Priority.MEDIUM).description("x".repeat(2001))),
+                    "description",
+                    "SIZE");
+        }
+
+        @Test
+        void needsAPriority() {
+            api.put()
+                    .uri("/api/v1/todo-lists/{todoListId}/tasks/{taskId}", todoList.getId(), task.getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("title", "Buy milk"))
+                    .exchange()
+                    .expectStatus()
+                    .isBadRequest()
+                    .expectBody()
+                    .jsonPath("$.errors[0].field")
+                    .isEqualTo("priority");
+        }
+
+        @Test
+        void isReachedOnlyThroughItsOwnTodoList() {
+            TodoList work = createTodoList(user, "Work");
+
+            isNotFound(TasksApiTest.this.updating(
+                    user, work.getId(), task.getId(), new TaskDetails("Moved", Priority.MEDIUM)));
+            assertThat(listing(user, todoList.getId())).containsExactly(task);
+        }
+
+        private RestTestClient.ResponseSpec updating(TaskDetails details) {
+            return TasksApiTest.this.updating(user, todoList.getId(), task.getId(), details);
+        }
+
+        private Task update(TaskDetails details) {
+            return Objects.requireNonNull(updating(details)
+                    .expectStatus()
+                    .isOk()
+                    .expectBody(Task.class)
+                    .returnResult()
+                    .getResponseBody());
+        }
+    }
+
+    @Nested
+    class Overdue {
+
+        private LoggedIn user;
+        private TodoList todoList;
+
+        @BeforeEach
+        void createATodoList() {
+            user = newLoggedInUser();
+            todoList = createTodoList(user, "Groceries");
+        }
+
+        @Test
+        void isATaskDueBeforeToday() {
+            assertThat(dueOn(today().minusDays(1)).getOverdue()).isTrue();
+        }
+
+        @Test
+        void isNotATaskDueToday() {
+            assertThat(dueOn(today()).getOverdue()).isFalse();
+        }
+
+        @Test
+        void isNotATaskDueLater() {
+            assertThat(dueOn(today().plusDays(1)).getOverdue()).isFalse();
+        }
+
+        @Test
+        void isNotATaskWithoutADueDate() {
+            assertThat(add(user, todoList.getId(), "Someday").getOverdue()).isFalse();
+        }
+
+        @Test
+        void isNeverACompletedTask() {
+            Task late = dueOn(today().minusDays(1));
+
+            assertThat(completing(user, todoList.getId(), late.getId()).getOverdue())
+                    .isFalse();
+            assertThat(read(changingCompletion(HttpMethod.DELETE, user, todoList.getId(), late.getId()))
+                            .getOverdue())
+                    .isTrue();
+        }
+
+        @Test
+        void isShownWhereverTheTaskIs() {
+            Task late = dueOn(today().minusDays(1));
+
+            assertThat(listing(user, todoList.getId()))
+                    .extracting(Task::getOverdue)
+                    .containsExactly(true);
+            assertThat(read(reading(user, todoList.getId(), late.getId())).getOverdue())
+                    .isTrue();
+        }
+
+        private Task dueOn(LocalDate dueDate) {
+            Task task = add(user, todoList.getId(), "Due " + dueDate);
+            return read(updating(
+                    user,
+                    todoList.getId(),
+                    task.getId(),
+                    new TaskDetails(task.getTitle(), Priority.MEDIUM).dueDate(dueDate)));
+        }
+    }
+
+    @Nested
     class InAnotherUsersTodoList {
 
         private LoggedIn owner;
@@ -232,10 +419,39 @@ class TasksApiTest extends ApiTest {
         }
 
         @Test
+        void aTaskCannotBeChanged() {
+            isNotFound(updating(stranger, todoList.getId(), task.getId(), new TaskDetails("Mine now", Priority.HIGH)));
+            assertThat(listing(owner, todoList.getId())).containsExactly(task);
+        }
+
+        @Test
         void aTaskCannotBeDeleted() {
             isNotFound(deleting(stranger, todoList.getId(), task.getId()));
             assertThat(listing(owner, todoList.getId())).containsExactly(task);
         }
+    }
+
+    /** Today, as the backend reckons it. */
+    private LocalDate today() {
+        return LocalDate.now(clock);
+    }
+
+    private RestTestClient.ResponseSpec updating(LoggedIn user, long todoListId, long taskId, TaskDetails details) {
+        return api.put()
+                .uri("/api/v1/todo-lists/{todoListId}/tasks/{taskId}", todoListId, taskId)
+                .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(details)
+                .exchange();
+    }
+
+    /** The Task a successful response carries. */
+    private static Task read(RestTestClient.ResponseSpec response) {
+        return Objects.requireNonNull(response.expectStatus()
+                .isOk()
+                .expectBody(Task.class)
+                .returnResult()
+                .getResponseBody());
     }
 
     private RestTestClient.ResponseSpec adding(LoggedIn user, long todoListId, String title) {
@@ -325,13 +541,17 @@ class TasksApiTest extends ApiTest {
     }
 
     private static void refusesTitle(RestTestClient.ResponseSpec response, String code) {
+        refusesField(response, "title", code);
+    }
+
+    private static void refusesField(RestTestClient.ResponseSpec response, String field, String code) {
         response.expectStatus()
                 .isBadRequest()
                 .expectBody()
                 .jsonPath("$.code")
                 .isEqualTo("VALIDATION_FAILED")
                 .jsonPath("$.errors[0].field")
-                .isEqualTo("title")
+                .isEqualTo(field)
                 .jsonPath("$.errors[0].code")
                 .isEqualTo(code);
     }

@@ -29,6 +29,22 @@ export async function renderTodoListPage(
   return page;
 }
 
+/**
+ * Clicks the button that opens a Task's details, and waits for the dialog. It loads on first use,
+ * bringing date-fns, which under a parallel run takes longer than a lazy route.
+ */
+export async function openDetails(
+  page: Awaited<ReturnType<typeof renderRoute>>,
+  label: string,
+): Promise<void> {
+  page.click(label);
+  await vi.waitFor(() => {
+    if (!document.querySelector('mat-dialog-container form')) throw new Error('No dialog yet');
+  }, DIALOG_LOAD_WAIT);
+}
+
+const DIALOG_LOAD_WAIT = { ...LAZY_ROUTE_WAIT, timeout: 15_000 };
+
 /** Answers what a Todo List's page asks for as it opens: the Todo List, then its Tasks. */
 export async function answerTodoListPage(
   http: HttpTestingController,

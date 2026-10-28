@@ -1,0 +1,88 @@
+<form [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <h2 mat-dialog-title i18n="Dialog heading: changing a Task's details">Edit Task</h2>
+  <mat-dialog-content>
+    <mat-form-field>
+      <mat-label i18n="Field for a Task's title">Title</mat-label>
+      <input matInput formControlName="title" required cdkFocusInitial />
+      @let title = form.controls.title;
+      @if (title.hasError('required') || title.getError('server') === 'PATTERN') {
+        <mat-error i18n="Error when a Task's title is empty">Enter a title.</mat-error>
+      } @else if (title.hasError('maxlength') || title.hasError('server')) {
+        <mat-error i18n="Error when the text typed is too long"
+          >Use at most {{ titleMaxLength }} characters.</mat-error
+        >
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label i18n="Field for a Task's description">Description</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+      @let description = form.controls.description;
+      @if (description.hasError('maxlength') || description.hasError('server')) {
+        <mat-error i18n="Error when the text typed is too long"
+          >Use at most {{ descriptionMaxLength }} characters.</mat-error
+        >
+      }
+    </mat-form-field>
+
+    <div class="row">
+      <mat-form-field>
+        <mat-label i18n="Field for the date a Task should be Completed by">Due Date</mat-label>
+        <input matInput formControlName="dueDate" [matDatepicker]="dueDatePicker" />
+        <mat-datepicker-toggle matIconSuffix [for]="dueDatePicker" />
+        <mat-datepicker #dueDatePicker />
+        @if (form.controls.dueDate.hasError('matDatepickerParse')) {
+          <mat-error i18n="Error when what was typed as a date can't be read as one"
+            >Enter a date such as {{ exampleDate }}.</mat-error
+          >
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label i18n="Field for how important a Task is">Priority</mat-label>
+        <mat-select formControlName="priority">
+          @for (priority of priorities; track priority) {
+            <mat-option [value]="priority">
+              @switch (priority) {
+                @case ('LOW') {
+                  <ng-container i18n="Priority option: Low">Low</ng-container>
+                }
+                @case ('MEDIUM') {
+                  <ng-container i18n="Priority option: Medium">Medium</ng-container>
+                }
+                @case ('HIGH') {
+                  <ng-container i18n="Priority option: High">High</ng-container>
+                }
+              }
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @switch (failure()) {
+      @case ('unreachable') {
+        <p class="failure" role="alert">
+          <ng-container i18n="Error when the backend doesn't respond"
+            >Can't reach the server. Try again in a moment.</ng-container
+          >
+        </p>
+      }
+      @case ('unexpected') {
+        <p class="failure" role="alert">
+          <ng-container i18n="Error when the backend responds with a failure"
+            >Something went wrong. Try again in a moment.</ng-container
+          >
+        </p>
+      }
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button matButton type="button" mat-dialog-close i18n="Button: close a dialog without saving">
+      Cancel
+    </button>
+    <button matButton="filled" type="submit" [disabled]="saving()" i18n="Button: save changes">
+      Save
+    </button>
+  </mat-dialog-actions>
+</form>
