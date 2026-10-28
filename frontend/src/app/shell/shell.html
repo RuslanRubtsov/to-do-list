@@ -15,7 +15,12 @@
   <!-- The product name, not translated -->
   <a class="wordmark" routerLink="/">To-Do</a>
   <span class="spacer"></span>
-  <!-- The language switcher joins the theme switch here -->
+  <!-- Each language named in itself, so a reader of it can find it whatever the page's language -->
+  @for (language of languages.others; track language) {
+    <button matButton type="button" [attr.lang]="language" (click)="switchLanguage(language)">
+      {{ languageNames[language] }}
+    </button>
+  }
   <button
     matIconButton
     type="button"
@@ -58,6 +63,18 @@
         >
           <mat-icon matListItemIcon aria-hidden="true">home</mat-icon>
           <span matListItemTitle i18n="Navigation: link to the start page">Home</span>
+        </a>
+        <a
+          mat-list-item
+          routerLink="/profile"
+          routerLinkActive
+          #profile="routerLinkActive"
+          [activated]="profile.isActive"
+          [attr.aria-current]="profile.isActive ? 'page' : null"
+          (click)="closeDrawerOnPhone()"
+        >
+          <mat-icon matListItemIcon aria-hidden="true">person</mat-icon>
+          <span matListItemTitle i18n="Navigation: link to the User's profile">Profile</span>
         </a>
         <!-- Swagger UI is served by the backend, outside this app -->
         <a mat-list-item href="/swagger-ui/index.html">

@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  LOCALE_ID,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,16 +7,16 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
-import { ErrorCode, Language } from '@api';
+import { ErrorCode } from '@api';
 import { map } from 'rxjs';
 import { isUnreachable, problemOf, showFieldErrors } from '../http/problems';
+import { Languages } from '../i18n/languages';
+import { DISPLAY_NAME_MAX_LENGTH, displayNameValidators } from '../profile/display-name';
 import { returnUrlTree } from './guards';
 import { checkPasswordRules, passwordRulesValidator } from './password-rules';
 import { Session } from './session';
 
 type RegisterFailure = 'unreachable' | 'unexpected';
-
-export const DISPLAY_NAME_MAX_LENGTH = 100;
 
 @Component({
   selector: 'app-register-page',
@@ -43,14 +36,14 @@ export const DISPLAY_NAME_MAX_LENGTH = 100;
 export class RegisterPage {
   private readonly session = inject(Session);
   private readonly router = inject(Router);
-  private readonly locale = inject(LOCALE_ID);
+  private readonly languages = inject(Languages);
 
   /** The page that sent the visitor to log in, from the `returnUrl` query parameter. */
   readonly returnUrl = input<string>();
 
   protected readonly displayNameMaxLength = DISPLAY_NAME_MAX_LENGTH;
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    displayName: ['', [Validators.required, Validators.maxLength(DISPLAY_NAME_MAX_LENGTH)]],
+    displayName: ['', displayNameValidators],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordRulesValidator]],
   });
@@ -74,7 +67,7 @@ export class RegisterPage {
         email: email.trim(),
         password,
         // The language the User signed up in, until they choose another
-        preferredLanguage: this.locale.startsWith('uk') ? Language.uk : Language.en,
+        preferredLanguage: this.languages.current,
       })
       .subscribe({
         next: () => void this.router.navigateByUrl(returnUrlTree(this.router, this.returnUrl())),

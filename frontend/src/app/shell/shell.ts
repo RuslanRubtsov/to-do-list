@@ -6,11 +6,13 @@ import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Language } from '@api';
 import { Session } from '../auth/session';
+import { LANGUAGE_NAMES, Languages } from '../i18n/languages';
 import { mediaMatches, PHONE_QUERY } from './media';
 import { ThemeService } from './theme';
 
-/** The frame every page lives in: toolbar, navigation drawer and theme switch. */
+/** The frame every page lives in: toolbar, navigation drawer, language and theme switches. */
 @Component({
   selector: 'app-shell',
   imports: [
@@ -30,6 +32,8 @@ import { ThemeService } from './theme';
 export class Shell {
   protected readonly theme = inject(ThemeService);
   protected readonly session = inject(Session);
+  protected readonly languages = inject(Languages);
+  protected readonly languageNames = LANGUAGE_NAMES;
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly phone = mediaMatches(PHONE_QUERY);
@@ -47,6 +51,21 @@ export class Shell {
           label: $localize`:Toolbar button that turns on the dark theme:Switch to dark theme`,
         },
   );
+
+  /**
+   * Saves the language as the User's preference, so the app opens in it on any device, then
+   * reloads this page in it.
+   */
+  protected switchLanguage(language: Language): void {
+    this.session.updateProfile({ preferredLanguage: language }).subscribe({
+      next: () => this.languages.open(language, this.router.url),
+      error: () =>
+        this.snackBar.open(
+          $localize`:Message when saving the language preference fails:Couldn't switch the language. Check your connection and try again.`,
+          $localize`:Dismisses a message:OK`,
+        ),
+    });
+  }
 
   protected logOut(): void {
     this.session.logOut().subscribe({

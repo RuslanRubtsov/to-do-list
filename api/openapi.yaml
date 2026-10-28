@@ -169,6 +169,28 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         default:
           $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Users]
+      operationId: updateCurrentUser
+      summary: Change the current User's display name or preferred language
+      description: Changes only the fields given; the others keep their values.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdate'
+      responses:
+        '200':
+          description: The User as updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        default:
+          $ref: '#/components/responses/Problem'
 components:
   securitySchemes:
     bearerAuth:
@@ -237,6 +259,18 @@ components:
           example: Olena
         preferredLanguage:
           $ref: '#/components/schemas/Language'
+    ProfileUpdate:
+      type: object
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: '.*\S.*'
+          description: How the User is shown. Must not be blank (`PATTERN` otherwise).
+          example: Olena
+        preferredLanguage:
+          $ref: '#/components/schemas/Language'
     LoginRequest:
       type: object
       required: [email, password]
@@ -282,9 +316,10 @@ components:
           $ref: '#/components/schemas/Language'
     Language:
       type: string
-      description: A language the UI is available in.
+      description: |
+        A language the UI is available in. A User's preferred one is what the app opens in after
+        they log in, on any device. Registering without one prefers `en`.
       enum: [en, uk]
-      default: en
     AppInfo:
       type: object
       required: [name, version, buildTime]

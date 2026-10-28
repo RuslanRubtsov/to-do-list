@@ -1,6 +1,7 @@
 package io.github.ruslanrubtsov.todo.users;
 
 import io.github.ruslanrubtsov.todo.api.UsersApi;
+import io.github.ruslanrubtsov.todo.api.model.ProfileUpdate;
 import io.github.ruslanrubtsov.todo.api.model.User;
 import io.github.ruslanrubtsov.todo.auth.CurrentUser;
 import org.springframework.http.ResponseEntity;
@@ -9,16 +10,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 class UsersController implements UsersApi {
 
-    private final UserRepository users;
+    private final UserService userService;
 
-    UsersController(UserRepository users) {
-        this.users = users;
+    UsersController(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
     public ResponseEntity<User> getCurrentUser() {
-        // Users can't be deleted (yet), so a valid access token always names an existing one
-        return ResponseEntity.ok(
-                UserMapper.toApi(users.findById(CurrentUser.id()).orElseThrow()));
+        return ResponseEntity.ok(UserMapper.toApi(userService.get(CurrentUser.id())));
+    }
+
+    @Override
+    public ResponseEntity<User> updateCurrentUser(ProfileUpdate profileUpdate) {
+        return ResponseEntity.ok(UserMapper.toApi(userService.update(CurrentUser.id(), profileUpdate)));
     }
 }

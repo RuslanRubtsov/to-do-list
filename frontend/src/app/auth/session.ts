@@ -1,5 +1,12 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { AuthService, AuthSession, LoginRequest, RegisterRequest } from '@api';
+import {
+  AuthService,
+  AuthSession,
+  LoginRequest,
+  ProfileUpdate,
+  RegisterRequest,
+  UsersService,
+} from '@api';
 import {
   catchError,
   finalize,
@@ -25,6 +32,7 @@ export const SESSION_REFRESH_LOCK = 'todo.session-refresh';
 @Injectable({ providedIn: 'root' })
 export class Session {
   private readonly auth = inject(AuthService);
+  private readonly users = inject(UsersService);
   private readonly current = signal<AuthSession | null>(null);
   private restored?: Promise<void>;
   private refreshing?: Observable<string | null>;
@@ -86,6 +94,14 @@ export class Session {
     return this.auth
       .register(request)
       .pipe(switchMap(() => this.logIn({ email: request.email, password: request.password })));
+  }
+
+  /** Saves changes to the User's profile, which the app shows at once. */
+  updateProfile(update: ProfileUpdate): Observable<void> {
+    return this.users.updateCurrentUser(update).pipe(
+      tap((user) => this.current.update((session) => session && { ...session, user })),
+      map(() => undefined),
+    );
   }
 
   /**

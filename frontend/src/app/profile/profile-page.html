@@ -1,0 +1,59 @@
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title i18n="Profile page: heading">Profile</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <dl>
+      <dt i18n="Profile page: label for the email the User logs in with">Email</dt>
+      <dd>{{ user()?.email }}</dd>
+    </dl>
+
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <mat-form-field>
+        <mat-label i18n="Registration page: field for the name other Users see">Name</mat-label>
+        <input matInput formControlName="displayName" autocomplete="name" required />
+        @let displayName = form.controls.displayName;
+        @if (displayName.hasError('required') || displayName.getError('server') === 'PATTERN') {
+          <mat-error i18n="Registration page: error when the name is empty"
+            >Enter your name.</mat-error
+          >
+        } @else if (displayName.hasError('maxlength') || displayName.hasError('server')) {
+          <mat-error i18n="Registration page: error when the name is too long"
+            >Use at most {{ displayNameMaxLength }} characters.</mat-error
+          >
+        }
+      </mat-form-field>
+
+      @switch (outcome()) {
+        @case ('saved') {
+          <p class="outcome" role="status">
+            <mat-icon aria-hidden="true">check_circle</mat-icon>
+            <ng-container i18n="Profile page: confirmation that the new name was saved"
+              >Your name is saved.</ng-container
+            >
+          </p>
+        }
+        @case ('unreachable') {
+          <p class="outcome failure" role="alert">
+            <mat-icon aria-hidden="true">cloud_off</mat-icon>
+            <ng-container i18n="Login page: error when the backend doesn't respond"
+              >Can't reach the server. Try again in a moment.</ng-container
+            >
+          </p>
+        }
+        @case ('unexpected') {
+          <p class="outcome failure" role="alert">
+            <mat-icon aria-hidden="true">error</mat-icon>
+            <ng-container i18n="Login page: error when the backend responds with a failure"
+              >Something went wrong. Try again in a moment.</ng-container
+            >
+          </p>
+        }
+      }
+
+      <button matButton="filled" type="submit" [disabled]="saving()" i18n="Button: save changes">
+        Save
+      </button>
+    </form>
+  </mat-card-content>
+</mat-card>

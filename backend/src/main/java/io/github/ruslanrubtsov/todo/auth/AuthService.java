@@ -64,7 +64,7 @@ class AuthService {
         UserEntity user = new UserEntity(
                 email,
                 passwordEncoder.encode(request.getPassword()),
-                request.getDisplayName().strip(),
+                request.getDisplayName(),
                 Objects.requireNonNullElse(request.getPreferredLanguage(), Language.EN));
         try {
             return users.saveAndFlush(user);

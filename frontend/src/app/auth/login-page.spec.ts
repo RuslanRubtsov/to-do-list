@@ -38,6 +38,22 @@ describe('Login page', () => {
     await answerAppInfo(page.http);
 
     expect(await page.url()).toBe('/?view=bookmarked');
+    expect(page.pageLoads()).toEqual([]);
+  });
+
+  it("opens the app in the User's preferred language when this build is another one", async () => {
+    const page = await renderLoginAsVisitor('/?view=bookmarked');
+
+    await page.fill('Email', 'olena@example.com');
+    await page.fill('Password', 'correct-horse-7');
+    page.click('Log in');
+    page.http
+      .expectOne(LOGIN)
+      .flush({ ...LOGGED_IN, user: { ...LOGGED_IN.user, preferredLanguage: 'uk' } });
+
+    // The Ukrainian build loads the requested page itself; this one goes nowhere
+    await vi.waitFor(() => expect(page.pageLoads()).toEqual(['/uk/?view=bookmarked']));
+    expect(await page.url()).toMatch(/^\/login/);
   });
 
   it('never returns to another site', async () => {
