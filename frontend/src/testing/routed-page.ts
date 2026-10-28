@@ -6,12 +6,13 @@ import { MatFormFieldHarness } from '@angular/material/form-field/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { AuthSession, Language } from '@api';
+import { AuthSession, Language, TodoList } from '@api';
 import { appConfig } from '../app/app.config';
 import { PageLoader } from '../app/i18n/languages';
 import { Locale, useLocale } from './locale';
 import { FakePageLoader } from './page-loads';
 import { answerSessionRefresh, LOGGED_IN } from './session';
+import { TODO_LISTS } from './todo-lists';
 
 /**
  * Renders a real routed page with the real app configuration, faking only the HTTP backend
@@ -20,10 +21,13 @@ import { answerSessionRefresh, LOGGED_IN } from './session';
  * Like a page load, the first navigation restores the session from the refresh token cookie:
  * `session` is what that answers, `null` for a visitor. Unless told otherwise, it is a logged-in
  * User who prefers the language being rendered, as a User of that build normally would.
+ *
+ * The app shell's navigation drawer loads the User's Todo Lists: `todoLists` is what that
+ * answers, none unless told otherwise.
  */
 export async function renderRoute(
   url: string,
-  options: { locale?: Locale; session?: AuthSession | null } = {},
+  options: { locale?: Locale; session?: AuthSession | null; todoLists?: TodoList[] } = {},
 ) {
   const locale = options.locale ?? 'en';
   useLocale(locale);
@@ -45,10 +49,15 @@ export async function renderRoute(
   );
   await navigation;
   TestBed.tick();
+  for (const request of http.match(TODO_LISTS)) request.flush(options.todoLists ?? []);
+  TestBed.tick();
 
   const root = () => harness.routeNativeElement ?? document.createElement('div');
-  /** Buttons and links: what a person can activate. */
-  const controls = () => Array.from(root().querySelectorAll<HTMLElement>('button, a'));
+  /**
+   * Buttons and links: what a person can activate. Also those in overlays outside the routed
+   * page, such as dialogs and snack bars.
+   */
+  const controls = () => Array.from(document.body.querySelectorAll<HTMLElement>('button, a'));
   const findControl = (label: string) =>
     controls().find((control) => accessibleName(control) === label);
   const control = (label: string): HTMLElement => {
@@ -60,6 +69,8 @@ export async function renderRoute(
     return found;
   };
   const loader = TestbedHarnessEnvironment.loader(harness.fixture);
+  /** Also finds components in overlays, such as the form fields of a dialog. */
+  const documentLoader = TestbedHarnessEnvironment.documentRootLoader(harness.fixture);
 
   return {
     http,
@@ -73,6 +84,10 @@ export async function renderRoute(
     /** The text of the app shell's toolbar, apart from the page below it. */
     toolbarText(): string {
       return root().querySelector('mat-toolbar')?.textContent ?? '';
+    },
+    /** The text of the page's main heading. */
+    heading(): string {
+      return root().querySelector('h1')?.textContent?.trim() ?? '';
     },
     /** The URL the app is showing, once it has settled. */
     async url(): Promise<string> {
@@ -105,7 +120,9 @@ export async function renderRoute(
     },
     /** Types into the form field with this label, replacing what it held. */
     async fill(label: string, value: string): Promise<void> {
-      const field = await loader.getHarness(MatFormFieldHarness.with({ floatingLabelText: label }));
+      const field = await documentLoader.getHarness(
+        MatFormFieldHarness.with({ floatingLabelText: label }),
+      );
       const input = await field.getControl(MatInputHarness);
       if (!input) throw new Error(`The "${label}" field has no text input`);
       await input.setValue(value);
@@ -113,7 +130,9 @@ export async function renderRoute(
     /** The error messages the form field with this label shows. */
     async fieldErrors(label: string): Promise<string[]> {
       await harness.fixture.whenStable();
-      const field = await loader.getHarness(MatFormFieldHarness.with({ floatingLabelText: label }));
+      const field = await documentLoader.getHarness(
+        MatFormFieldHarness.with({ floatingLabelText: label }),
+      );
       return field.getTextErrors();
     },
   };

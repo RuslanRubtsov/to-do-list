@@ -22,10 +22,12 @@
     </unit>
     <unit id="9139804578905829149">
       <notes>
-        <note category="location">src/app/auth/login-page.html:21,25</note>
+        <note category="location">src/app/auth/login-page.html:21,24</note>
         <note category="location">src/app/auth/register-page.html:13,17</note>
-        <note category="location">src/app/profile/profile-page.html:40,44</note>
-        <note category="description">Login page: error when the backend doesn&apos;t respond</note>
+        <note category="location">src/app/profile/profile-page.html:40,43</note>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:27,31</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:38,41</note>
+        <note category="description">Error when the backend doesn&apos;t respond</note>
       </notes>
       <segment>
         <source>Can&apos;t reach the server. Try again in a moment.</source>
@@ -33,10 +35,12 @@
     </unit>
     <unit id="3899221092228233582">
       <notes>
-        <note category="location">src/app/auth/login-page.html:29,35</note>
+        <note category="location">src/app/auth/login-page.html:29,33</note>
         <note category="location">src/app/auth/register-page.html:21,27</note>
-        <note category="location">src/app/profile/profile-page.html:48,54</note>
-        <note category="description">Login page: error when the backend responds with a failure</note>
+        <note category="location">src/app/profile/profile-page.html:48,52</note>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:34,39</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:43,47</note>
+        <note category="description">Error when the backend responds with a failure</note>
       </notes>
       <segment>
         <source>Something went wrong. Try again in a moment.</source>
@@ -125,7 +129,8 @@
         <note category="location">src/app/auth/register-page.html:34,35</note>
         <note category="location">src/app/auth/register-page.html:43,44</note>
         <note category="location">src/app/profile/profile-page.html:22,23</note>
-        <note category="description">Registration page: error when the name is too long</note>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:18,19</note>
+        <note category="description">Error when a name is too long</note>
       </notes>
       <segment>
         <source>Use at most <ph id="0" equiv="INTERPOLATION" disp="{{ displayNameMaxLength }}"/> characters.</source>
@@ -254,7 +259,7 @@
     <unit id="4915431133669985304">
       <notes>
         <note category="location">src/app/profile/profile-page.html:3,4</note>
-        <note category="location">src/app/shell/shell.html:77,79</note>
+        <note category="location">src/app/shell/shell.html:150,152</note>
         <note category="description">Profile page: heading</note>
       </notes>
       <segment>
@@ -315,9 +320,66 @@
         <source>Home</source>
       </segment>
     </unit>
+    <unit id="1314990206311967763">
+      <notes>
+        <note category="location">src/app/shell/shell.html:71,74</note>
+        <note category="description">Navigation: heading above the User&apos;s Todo Lists</note>
+      </notes>
+      <segment>
+        <source> Todo Lists </source>
+      </segment>
+    </unit>
+    <unit id="3228319593685763348">
+      <notes>
+        <note category="location">src/app/shell/shell.html:77,78</note>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:6,9</note>
+        <note category="description">Navigation: button that creates a Todo List</note>
+      </notes>
+      <segment>
+        <source>New Todo List</source>
+      </segment>
+    </unit>
+    <unit id="226708739891169507">
+      <notes>
+        <note category="location">src/app/shell/shell.html:104,108</note>
+        <note category="description">Navigation: how many of a Todo List&apos;s Tasks are open, read out after its name</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, =0 {no open Tasks} =1 {1 open Task} other {<ph id="0" equiv="INTERPOLATION"/> open Tasks}}</source>
+      </segment>
+    </unit>
+    <unit id="3723214523395563175">
+      <notes>
+        <note category="location">src/app/shell/shell.html:120,123</note>
+        <note category="description">Navigation: shown when the User has no Todo Lists</note>
+      </notes>
+      <segment>
+        <source> No Todo Lists yet. </source>
+      </segment>
+    </unit>
+    <unit id="4304581007425100099">
+      <notes>
+        <note category="location">src/app/shell/shell.html:126,129</note>
+        <note category="description">Navigation: error when the Todo Lists can&apos;t load</note>
+      </notes>
+      <segment>
+        <source> Couldn’t load your Todo Lists. </source>
+      </segment>
+    </unit>
+    <unit id="5171192616638755303">
+      <notes>
+        <note category="location">src/app/shell/shell.html:135,138</note>
+        <note category="location">src/app/start/start-page.html:41,44</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:48,51</note>
+        <note category="description">Button: try loading again</note>
+      </notes>
+      <segment>
+        <source> Retry </source>
+      </segment>
+    </unit>
     <unit id="3722967224215437913">
       <notes>
-        <note category="location">src/app/shell/shell.html:83,87</note>
+        <note category="location">src/app/shell/shell.html:156,160</note>
         <note category="description">Navigation: link to the REST API&apos;s Swagger UI</note>
       </notes>
       <segment>
@@ -326,7 +388,7 @@
     </unit>
     <unit id="6998887300160305812">
       <notes>
-        <note category="location">src/app/shell/shell.ts:47</note>
+        <note category="location">src/app/shell/shell.ts:57</note>
         <note category="description">Toolbar button that turns on the light theme</note>
       </notes>
       <segment>
@@ -335,7 +397,7 @@
     </unit>
     <unit id="182622205717568263">
       <notes>
-        <note category="location">src/app/shell/shell.ts:51</note>
+        <note category="location">src/app/shell/shell.ts:61</note>
         <note category="description">Toolbar button that turns on the dark theme</note>
       </notes>
       <segment>
@@ -344,7 +406,7 @@
     </unit>
     <unit id="7692333811704788884">
       <notes>
-        <note category="location">src/app/shell/shell.ts:64</note>
+        <note category="location">src/app/shell/shell.ts:74</note>
         <note category="description">Message when saving the language preference fails</note>
       </notes>
       <segment>
@@ -353,8 +415,9 @@
     </unit>
     <unit id="8998179362936748717">
       <notes>
-        <note category="location">src/app/shell/shell.ts:65</note>
-        <note category="location">src/app/shell/shell.ts:76</note>
+        <note category="location">src/app/shell/shell.ts:75</note>
+        <note category="location">src/app/shell/shell.ts:90</note>
+        <note category="location">src/app/todo-lists/todo-lists.ts:116</note>
         <note category="description">Dismisses a message</note>
       </notes>
       <segment>
@@ -363,7 +426,7 @@
     </unit>
     <unit id="4200230781799182271">
       <notes>
-        <note category="location">src/app/shell/shell.ts:75</note>
+        <note category="location">src/app/shell/shell.ts:89</note>
         <note category="description">Message when logging out fails</note>
       </notes>
       <segment>
@@ -424,22 +487,153 @@
         <source>The server ran into a problem. Try again in a moment.</source>
       </segment>
     </unit>
-    <unit id="5171192616638755303">
-      <notes>
-        <note category="location">src/app/start/start-page.html:41,44</note>
-        <note category="description">Button: try loading again</note>
-      </notes>
-      <segment>
-        <source> Retry </source>
-      </segment>
-    </unit>
     <unit id="7619560701830330401">
       <notes>
         <note category="location">src/app/start/start-page.html:48</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:55</note>
         <note category="description">Accessible label for a loading spinner</note>
       </notes>
       <segment>
         <source>Loading</source>
+      </segment>
+    </unit>
+    <unit id="7172671530956491177">
+      <notes>
+        <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:2,4</note>
+        <note category="description">Dialog heading: confirming that a Todo List is to be deleted</note>
+      </notes>
+      <segment>
+        <source> Delete “<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.name }}"/>”?
+</source>
+      </segment>
+    </unit>
+    <unit id="538706307126409030">
+      <notes>
+        <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:6,9</note>
+        <note category="description">Dialog text: what deleting a Todo List does</note>
+      </notes>
+      <segment>
+        <source> The Todo List and all its Tasks will be deleted. </source>
+      </segment>
+    </unit>
+    <unit id="2330577642930707695">
+      <notes>
+        <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:17,21</note>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:42,44</note>
+        <note category="description">Button: close a dialog without saving</note>
+      </notes>
+      <segment>
+        <source> Cancel </source>
+      </segment>
+    </unit>
+    <unit id="6660925946511264619">
+      <notes>
+        <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:25,28</note>
+        <note category="description">Button: confirm deleting</note>
+      </notes>
+      <segment>
+        <source> Delete </source>
+      </segment>
+    </unit>
+    <unit id="3625289092285717883">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:4,6</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:9,10</note>
+        <note category="description">Dialog heading: renaming a Todo List</note>
+      </notes>
+      <segment>
+        <source>Rename Todo List</source>
+      </segment>
+    </unit>
+    <unit id="6426450365634353089">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:11,12</note>
+        <note category="description">Field for a Todo List&apos;s name</note>
+        <note category="meaning">Todo List name</note>
+      </notes>
+      <segment>
+        <source>Name</source>
+      </segment>
+    </unit>
+    <unit id="3804049063753461354">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:15,16</note>
+        <note category="description">Error when a Todo List&apos;s name is empty</note>
+      </notes>
+      <segment>
+        <source>Enter a name.</source>
+      </segment>
+    </unit>
+    <unit id="6041115344061899387">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:46,48</note>
+        <note category="description">Button: save a Todo List&apos;s new name</note>
+      </notes>
+      <segment>
+        <source>Rename</source>
+      </segment>
+    </unit>
+    <unit id="5674286808255988565">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-name-dialog.html:48,51</note>
+        <note category="description">Button: create a Todo List</note>
+      </notes>
+      <segment>
+        <source>Create</source>
+      </segment>
+    </unit>
+    <unit id="5716808069425072351">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.html:18,19</note>
+        <note category="description">Button that deletes the Todo List being shown</note>
+      </notes>
+      <segment>
+        <source>Delete Todo List</source>
+      </segment>
+    </unit>
+    <unit id="5842667474521024459">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.html:29,32</note>
+        <note category="description">Todo List page: message for a Todo List that doesn&apos;t exist or isn&apos;t the User&apos;s</note>
+      </notes>
+      <segment>
+        <source>This Todo List isn’t available. It may have been deleted, or it isn’t yours.</source>
+      </segment>
+    </unit>
+    <unit id="5754879811372410703">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.html:32,34</note>
+        <note category="description">Link back to the start page</note>
+      </notes>
+      <segment>
+        <source>Go to the start page</source>
+      </segment>
+    </unit>
+    <unit id="6437004822452922232">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-lists.ts:73</note>
+        <note category="description">Message after deleting a Todo List, which can still be undone</note>
+      </notes>
+      <segment>
+        <source>Deleted “<ph id="0" equiv="name" disp="todoList.name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="5775346636203685655">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-lists.ts:74</note>
+        <note category="description">Button that brings back what was just deleted</note>
+      </notes>
+      <segment>
+        <source>Undo</source>
+      </segment>
+    </unit>
+    <unit id="652378484617821492">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-lists.ts:115</note>
+        <note category="description">Message when deleting a Todo List fails</note>
+      </notes>
+      <segment>
+        <source>Couldn’t delete “<ph id="0" equiv="name" disp="todoList.name"/>”. Check your connection and try again.</source>
       </segment>
     </unit>
   </file>

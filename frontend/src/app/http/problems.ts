@@ -23,6 +23,11 @@ export function isUnauthorized(error: unknown): boolean {
   return httpError(error)?.status === HttpStatusCode.Unauthorized;
 }
 
+/** The backend has no such resource, or none the User may know of. */
+export function isNotFound(error: unknown): boolean {
+  return httpError(error)?.status === HttpStatusCode.NotFound;
+}
+
 const UNREACHABLE_STATUSES = new Set<number>([
   0,
   HttpStatusCode.BadGateway,

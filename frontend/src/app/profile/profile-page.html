@@ -18,7 +18,7 @@
             >Enter your name.</mat-error
           >
         } @else if (displayName.hasError('maxlength') || displayName.hasError('server')) {
-          <mat-error i18n="Registration page: error when the name is too long"
+          <mat-error i18n="Error when a name is too long"
             >Use at most {{ displayNameMaxLength }} characters.</mat-error
           >
         }
@@ -36,7 +36,7 @@
         @case ('unreachable') {
           <p class="outcome failure" role="alert">
             <mat-icon aria-hidden="true">cloud_off</mat-icon>
-            <ng-container i18n="Login page: error when the backend doesn't respond"
+            <ng-container i18n="Error when the backend doesn't respond"
               >Can't reach the server. Try again in a moment.</ng-container
             >
           </p>
@@ -44,7 +44,7 @@
         @case ('unexpected') {
           <p class="outcome failure" role="alert">
             <mat-icon aria-hidden="true">error</mat-icon>
-            <ng-container i18n="Login page: error when the backend responds with a failure"
+            <ng-container i18n="Error when the backend responds with a failure"
               >Something went wrong. Try again in a moment.</ng-container
             >
           </p>

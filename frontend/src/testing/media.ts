@@ -76,6 +76,9 @@ function holds(condition: string, media: Media): boolean {
       return media.width <= parseFloat(value);
     case 'prefers-color-scheme':
       return (value === 'dark') === media.prefersDark;
+    case 'forced-colors':
+      // CDK asks to detect Windows high-contrast mode; the fake browser isn't in it
+      return value === 'none';
     case 'prefers-reduced-motion':
       // Material asks to decide on animations; the fake browser has no preference
       return value === 'no-preference';

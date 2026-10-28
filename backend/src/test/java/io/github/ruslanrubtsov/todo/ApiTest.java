@@ -1,6 +1,7 @@
 package io.github.ruslanrubtsov.todo;
 
 import io.github.ruslanrubtsov.todo.api.model.AuthSession;
+import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -80,6 +81,21 @@ public abstract class ApiTest {
         String email = uniqueEmail();
         register(email);
         return logIn(email);
+    }
+
+    /** Creates a Todo List the User owns and returns it. */
+    protected TodoList createTodoList(LoggedIn owner, String name) {
+        return Objects.requireNonNull(api.post()
+                .uri("/api/v1/todo-lists")
+                .headers(headers -> headers.setBearerAuth(owner.accessToken()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("name", name))
+                .exchange()
+                .expectStatus()
+                .isCreated()
+                .expectBody(TodoList.class)
+                .returnResult()
+                .getResponseBody());
     }
 
     /** What logging in gives a client: the response body, and the refresh token from its cookie. */

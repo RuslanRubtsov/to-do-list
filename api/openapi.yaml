@@ -21,6 +21,10 @@ tags:
       endpoints receive.
   - name: Users
     description: The User making the request.
+  - name: Todo Lists
+    description: |
+      The Todo Lists the User owns. A Todo List the User has no access to responds `404`
+      (`NOT_FOUND`), exactly like one that doesn't exist, so its existence is never revealed.
 security:
   - bearerAuth: []
 paths:
@@ -191,6 +195,108 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         default:
           $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists:
+    get:
+      tags: [Todo Lists]
+      operationId: getTodoLists
+      summary: List the current User's Todo Lists
+      description: Sorted by name.
+      responses:
+        '200':
+          description: The User's Todo Lists, each with its count of open Tasks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoList'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Todo Lists]
+      operationId: createTodoList
+      summary: Create a Todo List owned by the current User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoListDraft'
+      responses:
+        '201':
+          description: The new Todo List.
+          headers:
+            Location:
+              description: The new Todo List's URL.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoList'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+    get:
+      tags: [Todo Lists]
+      operationId: getTodoList
+      summary: Get a Todo List
+      responses:
+        '200':
+          description: The Todo List.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoList'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Todo Lists]
+      operationId: renameTodoList
+      summary: Rename a Todo List
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoListDraft'
+      responses:
+        '200':
+          description: The renamed Todo List.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoList'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Todo Lists]
+      operationId: deleteTodoList
+      summary: Delete a Todo List and all its Tasks
+      description: Permanent. Clients offer an Undo by holding the request back for a few seconds.
+      responses:
+        '204':
+          description: Deleted, together with its Tasks.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
 components:
   securitySchemes:
     bearerAuth:
@@ -199,6 +305,13 @@ components:
       bearerFormat: JWT
       description: The `accessToken` from logging in or refreshing the session.
   parameters:
+    TodoListId:
+      name: todoListId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
     RefreshTokenCookie:
       name: todo_refresh
       in: cookie
@@ -220,6 +333,14 @@ components:
   responses:
     Unauthenticated:
       description: No valid access token (`UNAUTHENTICATED`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    TodoListNotFound:
+      description: |
+        No such Todo List, or one the current User has no access to (`NOT_FOUND`). The two are
+        indistinguishable.
       content:
         application/problem+json:
           schema:
@@ -320,6 +441,34 @@ components:
         A language the UI is available in. A User's preferred one is what the app opens in after
         they log in, on any device. Registering without one prefers `en`.
       enum: [en, uk]
+    TodoListDraft:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: '.*\S.*'
+          description: |
+            Stored without surrounding spaces. Must not be blank (`PATTERN` otherwise) or longer
+            than 100 characters (`SIZE` otherwise).
+          example: Groceries
+    TodoList:
+      type: object
+      required: [id, name, openTaskCount]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 7
+        name:
+          type: string
+          example: Groceries
+        openTaskCount:
+          type: integer
+          description: How many of its Tasks are not Completed.
+          example: 3
     AppInfo:
       type: object
       required: [name, version, buildTime]

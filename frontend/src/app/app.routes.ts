@@ -23,6 +23,10 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),
       },
+      {
+        path: 'lists/:todoListId',
+        loadComponent: () => import('./todo-lists/todo-list-page').then((m) => m.TodoListPage),
+      },
     ],
   },
 ];

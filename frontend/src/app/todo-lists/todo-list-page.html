@@ -1,0 +1,57 @@
+@if (todoList.hasValue()) {
+  @let current = todoList.value();
+  <header>
+    <h1>{{ current.name }}</h1>
+    <button
+      matIconButton
+      type="button"
+      (click)="rename(current)"
+      aria-label="Rename Todo List"
+      i18n-aria-label="Button that renames the Todo List being shown"
+    >
+      <mat-icon aria-hidden="true">edit</mat-icon>
+    </button>
+    <button
+      matIconButton
+      type="button"
+      (click)="delete(current)"
+      aria-label="Delete Todo List"
+      i18n-aria-label="Button that deletes the Todo List being shown"
+    >
+      <mat-icon aria-hidden="true">delete</mat-icon>
+    </button>
+  </header>
+} @else if (notFound()) {
+  <p class="missing">
+    <mat-icon aria-hidden="true">search_off</mat-icon>
+    <ng-container
+      i18n="Todo List page: message for a Todo List that doesn't exist or isn't the User's"
+      >This Todo List isn’t available. It may have been deleted, or it isn’t yours.</ng-container
+    >
+  </p>
+  <a matButton routerLink="/" i18n="Link back to the start page">Go to the start page</a>
+} @else if (todoList.error()) {
+  <p class="error" role="alert">
+    @if (unreachable()) {
+      <mat-icon aria-hidden="true">cloud_off</mat-icon>
+      <ng-container i18n="Error when the backend doesn't respond"
+        >Can't reach the server. Try again in a moment.</ng-container
+      >
+    } @else {
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <ng-container i18n="Error when the backend responds with a failure"
+        >Something went wrong. Try again in a moment.</ng-container
+      >
+    }
+  </p>
+  <button matButton type="button" (click)="todoList.reload()" i18n="Button: try loading again">
+    Retry
+  </button>
+} @else {
+  <mat-progress-spinner
+    mode="indeterminate"
+    diameter="32"
+    aria-label="Loading"
+    i18n-aria-label="Accessible label for a loading spinner"
+  />
+}

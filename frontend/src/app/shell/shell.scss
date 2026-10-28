@@ -69,6 +69,34 @@ mat-sidenav {
   padding-block: 8px;
 }
 
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 16px 4px;
+
+  h2 {
+    margin: 0;
+    font: var(--mat-sys-title-small);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.open-count {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.drawer-note {
+  margin: 8px 16px;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.drawer-retry {
+  margin-inline: 8px;
+}
+
 main {
   padding: 24px;
   box-sizing: border-box;
