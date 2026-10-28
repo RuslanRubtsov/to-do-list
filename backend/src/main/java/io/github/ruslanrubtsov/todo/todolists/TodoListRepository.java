@@ -13,7 +13,7 @@ interface TodoListRepository extends JpaRepository<TodoListEntity, Long> {
 
     /** The Owner's Todo Lists by name, each with how many of its Tasks are open. */
     @Query(nativeQuery = true, value = """
-            SELECT l.id, l.name,
+            SELECT l.id, l.name, l.version,
                    (SELECT COUNT(*) FROM tasks t WHERE t.todo_list_id = l.id AND t.completed_at IS NULL)
                        AS openTaskCount
             FROM todo_lists l
@@ -32,6 +32,8 @@ interface TodoListRepository extends JpaRepository<TodoListEntity, Long> {
         long getId();
 
         String getName();
+
+        long getVersion();
 
         int getOpenTaskCount();
     }

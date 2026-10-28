@@ -1,6 +1,9 @@
 package io.github.ruslanrubtsov.todo.todolists;
 
+import static io.github.ruslanrubtsov.todo.web.error.Problems.editConflict;
+
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
+import io.github.ruslanrubtsov.todo.api.model.TodoListRename;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +22,8 @@ class TodoListService {
     @Transactional(readOnly = true)
     List<TodoList> list(long userId) {
         return todoLists.findSummariesByOwnerId(userId).stream()
-                .map(summary -> new TodoList(summary.getId(), summary.getName(), summary.getOpenTaskCount()))
+                .map(summary -> new TodoList(
+                        summary.getId(), summary.getName(), summary.getOpenTaskCount(), summary.getVersion()))
                 .toList();
     }
 
@@ -33,10 +37,16 @@ class TodoListService {
         return toApi(access.owned(userId, todoListId));
     }
 
+    /** Refused if someone else changed the Todo List since the version the rename is based on. */
     @Transactional
-    TodoList rename(long userId, long todoListId, String name) {
+    TodoList rename(long userId, long todoListId, TodoListRename rename) {
         TodoListEntity todoList = access.owned(userId, todoListId);
-        todoList.rename(name);
+        if (todoList.getVersion() != rename.getVersion()) {
+            throw editConflict("The Todo List has changed since that version.");
+        }
+        todoList.rename(rename.getName());
+        // So the response carries the version saving the rename makes
+        todoLists.flush();
         return toApi(todoList);
     }
 
@@ -47,6 +57,10 @@ class TodoListService {
     }
 
     private TodoList toApi(TodoListEntity todoList) {
-        return new TodoList(todoList.getId(), todoList.getName(), todoLists.countOpenTasks(todoList.getId()));
+        return new TodoList(
+                todoList.getId(),
+                todoList.getName(),
+                todoLists.countOpenTasks(todoList.getId()),
+                todoList.getVersion());
     }
 }

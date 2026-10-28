@@ -61,6 +61,14 @@
     </div>
 
     @switch (failure()) {
+      @case ('conflict') {
+        <p class="failure" role="alert">
+          <ng-container i18n="Error when someone else changed a Task while the User was changing it"
+            >Someone else changed this Task while you were editing it. Here it is as they left it:
+            make your changes again, then save.</ng-container
+          >
+        </p>
+      }
       @case ('unreachable') {
         <p class="failure" role="alert">
           <ng-container i18n="Error when the backend doesn't respond"

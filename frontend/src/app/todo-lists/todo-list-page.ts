@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { TodoList, TodoListsService } from '@api';
+import { tap } from 'rxjs';
 import { isNotFound, isUnreachable } from '../http/problems';
 import { TaskList } from '../tasks/task-list';
 import { DeleteTodoListDialog } from './delete-todo-list-dialog';
@@ -44,9 +45,21 @@ export class TodoListPage {
   protected readonly unreachable = computed(() => isUnreachable(this.todoList.error()));
 
   protected rename(todoList: TodoList): void {
+    // The version the rename is based on
+    let latest = todoList;
     this.dialogs
       .open<TodoListNameDialog, TodoListNameDialogData, TodoList>(TodoListNameDialog, {
-        data: { todoList, save: (name) => this.todoLists.rename(todoList.id, name) },
+        data: {
+          todoList,
+          save: (name) => this.todoLists.rename(latest, name),
+          reload: () =>
+            this.todoLists.refresh(todoList.id).pipe(
+              tap((read) => {
+                latest = read;
+                this.todoList.set(read);
+              }),
+            ),
+        },
       })
       .afterClosed()
       .subscribe((renamed) => {

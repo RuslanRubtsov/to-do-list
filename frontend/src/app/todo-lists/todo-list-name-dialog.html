@@ -21,6 +21,15 @@
     </mat-form-field>
 
     @switch (failure()) {
+      @case ('conflict') {
+        <p class="failure" role="alert">
+          <ng-container
+            i18n="Error when someone else changed a Todo List while the User was renaming it"
+            >Someone else changed this Todo List while you were renaming it. Here is its latest
+            name: rename it again if you still want to.</ng-container
+          >
+        </p>
+      }
       @case ('unreachable') {
         <p class="failure" role="alert">
           <ng-container i18n="Error when the backend doesn't respond"

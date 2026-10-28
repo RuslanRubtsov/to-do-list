@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +34,12 @@ class ProblemTriggerController {
     @GetMapping("/failure")
     void fail() {
         throw new IllegalStateException("internal detail that must not leak");
+    }
+
+    /** Someone else's change saved in the moment between checking a version and saving. */
+    @GetMapping("/concurrent-change")
+    void loseARaceToAnotherChange() {
+        throw new OptimisticLockingFailureException("Row was updated by another transaction");
     }
 
     /** A constraint broken by our own code rather than by the client's request. */

@@ -23,7 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Task, TasksService } from '@api';
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import { isNotFound, isUnreachable, problemOf, showFieldErrors } from '../http/problems';
 import { TodoLists } from '../todo-lists/todo-lists';
 import { UndoableDeletes } from '../undo/undoable-deletes';
@@ -174,9 +174,22 @@ export class TaskList {
     const todoListId = this.todoListId();
     const { TaskDetailsDialog } = await import('./task-details-dialog');
     if (this.destroyed) return;
+    // The version the changes are based on
+    let latest = task;
     this.dialogs
       .open<TaskDetailsDialog, TaskDetailsDialogData, Task>(TaskDetailsDialog, {
-        data: { task, save: (details) => this.api.updateTask(todoListId, task.id, details) },
+        data: {
+          task,
+          save: (details) =>
+            this.api.updateTask(todoListId, task.id, { ...details, version: latest.version }),
+          reload: () =>
+            this.api.getTask(todoListId, task.id).pipe(
+              tap((read) => {
+                latest = read;
+                this.replace(read);
+              }),
+            ),
+        },
       })
       .afterClosed()
       .subscribe((changed) => {

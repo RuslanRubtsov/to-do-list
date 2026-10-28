@@ -268,12 +268,13 @@ paths:
       tags: [Todo Lists]
       operationId: renameTodoList
       summary: Rename a Todo List
+      description: Refused if someone else changed the Todo List since its `version` was read.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TodoListDraft'
+              $ref: '#/components/schemas/TodoListRename'
       responses:
         '200':
           description: The renamed Todo List.
@@ -285,6 +286,8 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '404':
           $ref: '#/components/responses/TodoListNotFound'
+        '409':
+          $ref: '#/components/responses/EditConflict'
         default:
           $ref: '#/components/responses/Problem'
     delete:
@@ -380,7 +383,8 @@ paths:
       summary: Change a Task's details
       description: |
         Replaces the title, description, Due Date and Priority; a detail left out or `null` is
-        cleared. Whether the Task is Completed is changed through its completion instead.
+        cleared. Whether the Task is Completed is changed through its completion instead. Refused
+        if someone else changed the Task since its `version` was read.
       requestBody:
         required: true
         content:
@@ -398,6 +402,8 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '404':
           $ref: '#/components/responses/TaskNotFound'
+        '409':
+          $ref: '#/components/responses/EditConflict'
         default:
           $ref: '#/components/responses/Problem'
     delete:
@@ -424,7 +430,8 @@ paths:
       summary: Mark a Task Completed
       description: |
         Sets `completedAt` to now. Completing a Task that is already Completed changes nothing, so
-        it keeps the time it was first Completed.
+        it keeps the time it was first Completed. Needs no `version`: it sets the Task's state
+        rather than replacing what someone else wrote, so it can't overwrite their change.
       responses:
         '200':
           description: The Completed Task.
@@ -442,7 +449,9 @@ paths:
       tags: [Tasks]
       operationId: uncompleteTask
       summary: Mark a Task as not Completed
-      description: Clears `completedAt`. A Task that isn't Completed stays as it is.
+      description: |
+        Clears `completedAt`. A Task that isn't Completed stays as it is. Like completing, it needs
+        no `version`.
       responses:
         '200':
           description: The Task, open again.
@@ -515,6 +524,14 @@ components:
       description: |
         No such Task in this Todo List, or a Todo List the current User has no access to
         (`NOT_FOUND`). The two are indistinguishable.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    EditConflict:
+      description: |
+        Someone else changed it since the `version` sent was read (`EDIT_CONFLICT`). Nothing was
+        changed; read it again for the latest version.
       content:
         application/problem+json:
           schema:
@@ -628,9 +645,24 @@ components:
             Stored without surrounding spaces. Must not be blank (`PATTERN` otherwise) or longer
             than 100 characters (`SIZE` otherwise).
           example: Groceries
+    TodoListRename:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: '.*\S.*'
+          description: |
+            Stored without surrounding spaces. Must not be blank (`PATTERN` otherwise) or longer
+            than 100 characters (`SIZE` otherwise).
+          example: Shopping
+        version:
+          $ref: '#/components/schemas/Version'
     TodoList:
       type: object
-      required: [id, name, openTaskCount]
+      required: [id, name, openTaskCount, version]
       properties:
         id:
           type: integer
@@ -643,6 +675,16 @@ components:
           type: integer
           description: How many of its Tasks are not Completed.
           example: 3
+        version:
+          $ref: '#/components/schemas/Version'
+    Version:
+      type: integer
+      format: int64
+      description: |
+        Which version of a Todo List or Task this is; every change to it makes a new one. A change
+        sends the version it was based on, and is refused with `409 Conflict` (`EDIT_CONFLICT`) if
+        that is no longer the latest, so no one silently overwrites someone else's change.
+      example: 3
     TaskDraft:
       type: object
       required: [title]
@@ -658,7 +700,7 @@ components:
           example: Buy milk
     TaskDetails:
       type: object
-      required: [title, priority]
+      required: [title, priority, version]
       properties:
         title:
           type: string
@@ -685,9 +727,11 @@ components:
           example: '2026-11-03'
         priority:
           $ref: '#/components/schemas/Priority'
+        version:
+          $ref: '#/components/schemas/Version'
     Task:
       type: object
-      required: [id, title, priority, overdue]
+      required: [id, title, priority, overdue, version]
       properties:
         id:
           type: integer
@@ -722,6 +766,8 @@ components:
           nullable: true
           description: When the Task was Completed; `null` while it isn't.
           example: '2026-10-28T14:05:00Z'
+        version:
+          $ref: '#/components/schemas/Version'
     Priority:
       type: string
       description: How important a Task is relative to others.
@@ -779,6 +825,7 @@ components:
         - INVALID_CREDENTIALS
         - EMAIL_TAKEN
         - NOT_FOUND
+        - EDIT_CONFLICT
         - METHOD_NOT_ALLOWED
         - NOT_ACCEPTABLE
         - UNSUPPORTED_MEDIA_TYPE

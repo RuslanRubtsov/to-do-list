@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -140,8 +141,12 @@ class TasksApiTest extends ApiTest {
                 .returnResult()
                 .getResponseBody();
 
-        assertThat(reopened).isEqualTo(task);
-        assertThat(listing(user, todoList.getId())).containsExactly(task);
+        // As it was before it was Completed, apart from the versions completing and reopening made
+        assertThat(reopened)
+                .usingRecursiveComparison()
+                .ignoringFields("version")
+                .isEqualTo(task);
+        assertThat(listing(user, todoList.getId())).containsExactly(reopened);
     }
 
     @Test
@@ -217,7 +222,7 @@ class TasksApiTest extends ApiTest {
         void changesTheTitleDescriptionDueDateAndPriority() {
             LocalDate nextWeek = today().plusWeeks(1);
 
-            Task changed = update(new TaskDetails(" Buy oat milk ", Priority.HIGH)
+            Task changed = update(details(" Buy oat milk ", Priority.HIGH)
                     .description("  Two cartons ")
                     .dueDate(nextWeek));
 
@@ -231,11 +236,9 @@ class TasksApiTest extends ApiTest {
 
         @Test
         void clearsTheDetailsLeftOut() {
-            update(new TaskDetails("Buy milk", Priority.HIGH)
-                    .description("Two cartons")
-                    .dueDate(today()));
+            update(details("Buy milk", Priority.HIGH).description("Two cartons").dueDate(today()));
 
-            Task changed = update(new TaskDetails("Buy milk", Priority.LOW));
+            Task changed = update(details("Buy milk", Priority.LOW));
 
             assertThat(changed.getDescription()).isNull();
             assertThat(changed.getDueDate()).isNull();
@@ -244,7 +247,7 @@ class TasksApiTest extends ApiTest {
 
         @Test
         void storesABlankDescriptionAsNone() {
-            assertThat(update(new TaskDetails("Buy milk", Priority.MEDIUM).description("   "))
+            assertThat(update(details("Buy milk", Priority.MEDIUM).description("   "))
                             .getDescription())
                     .isNull();
         }
@@ -252,24 +255,25 @@ class TasksApiTest extends ApiTest {
         @Test
         void keepsWhetherTheTaskIsCompleted() {
             Task completed = completing(user, todoList.getId(), task.getId());
+            task = completed;
 
-            Task changed = update(new TaskDetails("Buy oat milk", Priority.MEDIUM));
+            Task changed = update(details("Buy oat milk", Priority.MEDIUM));
 
             assertThat(changed.getCompletedAt()).isEqualTo(completed.getCompletedAt());
         }
 
         @Test
         void refusesABlankTitle() {
-            refusesField(updating(new TaskDetails(" ", Priority.MEDIUM)), "title", "PATTERN");
+            refusesField(updating(details(" ", Priority.MEDIUM)), "title", "PATTERN");
             assertThat(listing(user, todoList.getId())).containsExactly(task);
         }
 
         @Test
         void refusesADescriptionOfMoreThan2000Characters() {
-            update(new TaskDetails("Buy milk", Priority.MEDIUM).description("x".repeat(2000)));
+            update(details("Buy milk", Priority.MEDIUM).description("x".repeat(2000)));
 
             refusesField(
-                    updating(new TaskDetails("Buy milk", Priority.MEDIUM).description("x".repeat(2001))),
+                    updating(details("Buy milk", Priority.MEDIUM).description("x".repeat(2001))),
                     "description",
                     "SIZE");
         }
@@ -280,7 +284,7 @@ class TasksApiTest extends ApiTest {
                     .uri("/api/v1/todo-lists/{todoListId}/tasks/{taskId}", todoList.getId(), task.getId())
                     .headers(headers -> headers.setBearerAuth(user.accessToken()))
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("title", "Buy milk"))
+                    .body(Map.of("title", "Buy milk", "version", task.getVersion()))
                     .exchange()
                     .expectStatus()
                     .isBadRequest()
@@ -293,22 +297,97 @@ class TasksApiTest extends ApiTest {
         void isReachedOnlyThroughItsOwnTodoList() {
             TodoList work = createTodoList(user, "Work");
 
-            isNotFound(TasksApiTest.this.updating(
-                    user, work.getId(), task.getId(), new TaskDetails("Moved", Priority.MEDIUM)));
+            isNotFound(TasksApiTest.this.updating(user, work.getId(), task.getId(), details("Moved", Priority.MEDIUM)));
             assertThat(listing(user, todoList.getId())).containsExactly(task);
+        }
+
+        /** Details based on the Task as last read. */
+        private TaskDetails details(String title, Priority priority) {
+            return new TaskDetails(title, priority, task.getVersion());
         }
 
         private RestTestClient.ResponseSpec updating(TaskDetails details) {
             return TasksApiTest.this.updating(user, todoList.getId(), task.getId(), details);
         }
 
+        /** Changes the Task, which then is as last read. */
         private Task update(TaskDetails details) {
-            return Objects.requireNonNull(updating(details)
+            task = Objects.requireNonNull(updating(details)
                     .expectStatus()
                     .isOk()
                     .expectBody(Task.class)
                     .returnResult()
                     .getResponseBody());
+            return task;
+        }
+    }
+
+    @Nested
+    class EditConflicts {
+
+        private LoggedIn user;
+        private TodoList todoList;
+        private Task task;
+
+        @BeforeEach
+        void addATask() {
+            user = newLoggedInUser();
+            todoList = createTodoList(user, "Groceries");
+            task = add(user, todoList.getId(), "Buy milk");
+        }
+
+        @Test
+        void eachChangeMakesANewVersion() {
+            Task changed = read(updating(new TaskDetails("Buy oat milk", Priority.MEDIUM, task.getVersion())));
+            Task completed = completing(user, todoList.getId(), task.getId());
+
+            assertThat(changed.getVersion()).isNotEqualTo(task.getVersion());
+            assertThat(completed.getVersion()).isNotIn(task.getVersion(), changed.getVersion());
+            assertThat(read(reading(user, todoList.getId(), task.getId())).getVersion())
+                    .isEqualTo(completed.getVersion());
+        }
+
+        @Test
+        void aChangeBasedOnAnOlderVersionIsRefused() {
+            Task theirs = read(updating(new TaskDetails("Buy oat milk", Priority.HIGH, task.getVersion())));
+
+            updating(new TaskDetails("Buy soy milk", Priority.LOW, task.getVersion()))
+                    .expectStatus()
+                    .isEqualTo(HttpStatus.CONFLICT)
+                    .expectBody()
+                    .jsonPath("$.code")
+                    .isEqualTo("EDIT_CONFLICT");
+            assertThat(listing(user, todoList.getId())).containsExactly(theirs);
+        }
+
+        @Test
+        void aChangeBasedOnTheVersionBeforeCompletingIsRefused() {
+            completing(user, todoList.getId(), task.getId());
+
+            updating(new TaskDetails("Buy oat milk", Priority.MEDIUM, task.getVersion()))
+                    .expectStatus()
+                    .isEqualTo(HttpStatus.CONFLICT);
+        }
+
+        @Test
+        void aChangeNeedsTheVersionItIsBasedOn() {
+            api.put()
+                    .uri("/api/v1/todo-lists/{todoListId}/tasks/{taskId}", todoList.getId(), task.getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("title", "Buy milk", "priority", "HIGH"))
+                    .exchange()
+                    .expectStatus()
+                    .isBadRequest()
+                    .expectBody()
+                    .jsonPath("$.errors[0].field")
+                    .isEqualTo("version")
+                    .jsonPath("$.errors[0].code")
+                    .isEqualTo("NOT_NULL");
+        }
+
+        private RestTestClient.ResponseSpec updating(TaskDetails details) {
+            return TasksApiTest.this.updating(user, todoList.getId(), task.getId(), details);
         }
     }
 
@@ -372,7 +451,7 @@ class TasksApiTest extends ApiTest {
                     user,
                     todoList.getId(),
                     task.getId(),
-                    new TaskDetails(task.getTitle(), Priority.MEDIUM).dueDate(dueDate)));
+                    new TaskDetails(task.getTitle(), Priority.MEDIUM, task.getVersion()).dueDate(dueDate)));
         }
     }
 
@@ -420,7 +499,11 @@ class TasksApiTest extends ApiTest {
 
         @Test
         void aTaskCannotBeChanged() {
-            isNotFound(updating(stranger, todoList.getId(), task.getId(), new TaskDetails("Mine now", Priority.HIGH)));
+            isNotFound(updating(
+                    stranger,
+                    todoList.getId(),
+                    task.getId(),
+                    new TaskDetails("Mine now", Priority.HIGH, task.getVersion())));
             assertThat(listing(owner, todoList.getId())).containsExactly(task);
         }
 

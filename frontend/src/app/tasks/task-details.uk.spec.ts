@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Priority } from '@api';
 import { MILK, openTask, taskRequest } from '../../testing/tasks';
 import { openDetails, renderTodoListPage } from '../../testing/todo-list-page';
-import { GROCERIES } from '../../testing/todo-lists';
+import { failAsEditConflict, GROCERIES } from '../../testing/todo-lists';
 
 // The first test renders lazy routes, a dialog, a date picker and a select cold
 vi.setConfig({ testTimeout: 30_000 });
@@ -47,6 +47,20 @@ describe('Task details in Ukrainian', () => {
     page.click('Зберегти');
 
     expect(await page.fieldErrors('Термін')).toEqual(['Введіть дату, наприклад 31.12.2026.']);
+  });
+
+  it('says in Ukrainian that someone else changed the Task meanwhile', async () => {
+    const page = await renderOn();
+
+    await openDetails(page, 'Редагувати «Buy milk»');
+    await page.fill('Назва', 'Buy oat milk');
+    page.click('Зберегти');
+    failAsEditConflict(page.http.expectOne(taskRequest('PUT', 5, MILK.id)));
+    page.http.expectOne(taskRequest('GET', 5, MILK.id)).flush({ ...MILK, version: 2 });
+
+    expect(await page.alerts()).toEqual([
+      'Хтось інший змінив це завдання, поки ви його редагували. Ось яким його залишили: внесіть свої зміни ще раз і збережіть.',
+    ]);
   });
 
   it('shows Overdue Tasks and farther Due Dates in Ukrainian', async () => {

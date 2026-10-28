@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -35,6 +36,9 @@ class TaskEntity {
     private LocalDate dueDate;
 
     private Instant completedAt;
+
+    @Version
+    private long version;
 
     @Column(updatable = false)
     private Instant createdAt;
@@ -71,6 +75,10 @@ class TaskEntity {
 
     Instant getCompletedAt() {
         return completedAt;
+    }
+
+    long getVersion() {
+        return version;
     }
 
     /** Whether its Due Date passed before {@code today} while it isn't Completed. */

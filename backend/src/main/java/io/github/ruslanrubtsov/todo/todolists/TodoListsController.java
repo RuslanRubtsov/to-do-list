@@ -3,6 +3,7 @@ package io.github.ruslanrubtsov.todo.todolists;
 import io.github.ruslanrubtsov.todo.api.TodoListsApi;
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import io.github.ruslanrubtsov.todo.api.model.TodoListDraft;
+import io.github.ruslanrubtsov.todo.api.model.TodoListRename;
 import io.github.ruslanrubtsov.todo.auth.CurrentUser;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +40,8 @@ class TodoListsController implements TodoListsApi {
     }
 
     @Override
-    public ResponseEntity<TodoList> renameTodoList(Long todoListId, TodoListDraft todoListDraft) {
-        return ResponseEntity.ok(todoListService.rename(CurrentUser.id(), todoListId, todoListDraft.getName()));
+    public ResponseEntity<TodoList> renameTodoList(Long todoListId, TodoListRename todoListRename) {
+        return ResponseEntity.ok(todoListService.rename(CurrentUser.id(), todoListId, todoListRename));
     }
 
     @Override

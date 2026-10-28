@@ -22,14 +22,22 @@ export async function answerTodoLists(
   request.flush(todoLists);
 }
 
-export const GROCERIES: TodoList = { id: 5, name: 'Groceries', openTaskCount: 3 };
-export const WORK: TodoList = { id: 8, name: 'Work', openTaskCount: 0 };
+export const GROCERIES: TodoList = { id: 5, name: 'Groceries', openTaskCount: 3, version: 1 };
+export const WORK: TodoList = { id: 8, name: 'Work', openTaskCount: 0, version: 1 };
 
 /** Answers as the backend does for a Todo List that doesn't exist or isn't the User's. */
 export function failAsNotFound(request: TestRequest): void {
   request.flush(
     { status: 404, title: 'Not Found', code: 'NOT_FOUND' },
     { status: 404, statusText: 'Not Found' },
+  );
+}
+
+/** Answers as the backend does for a change based on a version someone else has since replaced. */
+export function failAsEditConflict(request: TestRequest): void {
+  request.flush(
+    { status: 409, title: 'Conflict', code: 'EDIT_CONFLICT' },
+    { status: 409, statusText: 'Conflict' },
   );
 }
 

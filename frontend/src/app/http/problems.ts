@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 import { FormGroup } from '@angular/forms';
-import { Problem } from '@api';
+import { ErrorCode, Problem } from '@api';
 
 /** The HTTP error behind a failed request, also when a resource has wrapped it. */
 function httpError(error: unknown): HttpErrorResponse | undefined {
@@ -26,6 +26,11 @@ export function isUnauthorized(error: unknown): boolean {
 /** The backend has no such resource, or none the User may know of. */
 export function isNotFound(error: unknown): boolean {
   return httpError(error)?.status === HttpStatusCode.NotFound;
+}
+
+/** The backend refused a change based on a version that someone else's change has replaced. */
+export function isEditConflict(error: unknown): boolean {
+  return problemOf(error)?.code === ErrorCode.EDIT_CONFLICT;
 }
 
 const UNREACHABLE_STATUSES = new Set<number>([
