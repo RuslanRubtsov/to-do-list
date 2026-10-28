@@ -1,6 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { DESKTOP, emulateMedia, Media, PHONE } from '../../testing/media';
+import { LOGOUT } from '../../testing/session';
 import { renderShell } from '../../testing/shell';
 import { THEME_STORAGE_KEY as THEME_KEY } from './theme';
 
@@ -21,6 +22,38 @@ describe('App shell', () => {
     const shell = await renderShell();
 
     expect(await shell.text()).toContain('To-Do');
+  });
+
+  describe('logged-in User', () => {
+    it('is named in the toolbar', async () => {
+      emulateMedia(DESKTOP);
+      const shell = await renderShell();
+
+      expect(await shell.text()).toContain('Olena');
+    });
+
+    it('logs out, ending the session on the server, and lands on the login page', async () => {
+      emulateMedia(DESKTOP);
+      const shell = await renderShell();
+
+      shell.click('Log out');
+      shell.http.expectOne(LOGOUT).flush(null, { status: 204, statusText: 'No Content' });
+
+      expect(await shell.url()).toBe('/login');
+    });
+
+    it('stays logged in, and says so, when the server could not end the session', async () => {
+      emulateMedia(DESKTOP);
+      const shell = await renderShell();
+
+      shell.click('Log out');
+      shell.http.expectOne(LOGOUT).error(new ProgressEvent('error'), { status: 0 });
+
+      expect(await shell.url()).toBe('/');
+      // The snack bar opens in an overlay outside the routed page
+      expect(document.body.textContent).toContain("Couldn't log out.");
+      expect(shell.has('Log out')).toBe(true);
+    });
   });
 
   describe('navigation drawer', () => {

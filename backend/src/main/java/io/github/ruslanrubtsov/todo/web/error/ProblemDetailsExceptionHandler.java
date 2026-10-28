@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,16 +33,13 @@ class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ProblemDetailsExceptionHandler.class);
 
-    private static final String CODE = "code";
-    private static final String ERRORS = "errors";
-
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         List<FieldError> violations = ex.getFieldErrors().stream()
                 .map(error -> new FieldError(error.getField(), constraintCode(error.getCode())))
                 .toList();
-        return handleExceptionInternal(ex, validationProblem(violations), headers, status, request);
+        return handleExceptionInternal(ex, Problems.validationProblem(violations), headers, status, request);
     }
 
     /**
@@ -57,7 +55,15 @@ class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(violation -> new FieldError(parameterPath(violation.getPropertyPath()), constraintCode(violation)))
                 .toList();
         return handleExceptionInternal(
-                ex, validationProblem(violations), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+                ex, Problems.validationProblem(violations), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    /** No valid access token, reported by Spring Security's entry point (see {@code ProblemAuthenticationEntryPoint}). */
+    @ExceptionHandler
+    ResponseEntity<Object> handleAuthentication(AuthenticationException ex, WebRequest request) {
+        ProblemDetail problem = Problems.problemDetail(
+                HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHENTICATED, "Authentication is required.");
+        return handleExceptionInternal(ex, problem, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
 
     /** Anything unanticipated: logged in full here, but nothing about it reaches the client. */
@@ -83,14 +89,6 @@ class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandler {
         return AnnotatedElementUtils.hasAnnotation(violation.getRootBeanClass(), Controller.class);
     }
 
-    private static ProblemDetail validationProblem(List<FieldError> violations) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        problem.setDetail("The request has invalid fields.");
-        problem.setProperty(CODE, ErrorCode.VALIDATION_FAILED.getValue());
-        problem.setProperty(ERRORS, violations);
-        return problem;
-    }
-
     /** {@code getTasks.size} becomes {@code size}: the client knows the parameter, not the Java method. */
     private static String parameterPath(Path propertyPath) {
         String path = propertyPath.toString();
@@ -114,8 +112,8 @@ class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private static void withDefaultCode(ProblemDetail problem, HttpStatusCode status) {
-        if (problem.getProperties() == null || !problem.getProperties().containsKey(CODE)) {
-            problem.setProperty(CODE, codeFor(status).getValue());
+        if (problem.getProperties() == null || !problem.getProperties().containsKey(Problems.CODE)) {
+            problem.setProperty(Problems.CODE, codeFor(status).getValue());
         }
     }
 

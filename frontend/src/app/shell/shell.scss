@@ -38,6 +38,22 @@ mat-toolbar {
   flex: 1;
 }
 
+.user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 8px;
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.user-name {
+  max-width: 24ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 mat-sidenav-container {
   flex: 1;
 }
@@ -63,5 +79,14 @@ main {
 @media (max-width: 599.98px) {
   main {
     padding: 16px;
+  }
+
+  // Room is short on phones: the name keeps its place, shorter
+  .user-name {
+    max-width: 12ch;
+  }
+
+  .user mat-icon {
+    display: none;
   }
 }

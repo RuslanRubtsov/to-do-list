@@ -15,5 +15,6 @@ describe('App shell in Ukrainian', () => {
     expect(shell.has('Увімкнути темну тему')).toBe(true);
     expect(shell.has('Головна')).toBe(true);
     expect(shell.has('Документація API')).toBe(true);
+    expect(shell.has('Вийти')).toBe(true);
   });
 });

@@ -3,8 +3,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Session } from '../auth/session';
 import { mediaMatches, PHONE_QUERY } from './media';
 import { ThemeService } from './theme';
 
@@ -27,6 +29,9 @@ import { ThemeService } from './theme';
 })
 export class Shell {
   protected readonly theme = inject(ThemeService);
+  protected readonly session = inject(Session);
+  private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
   protected readonly phone = mediaMatches(PHONE_QUERY);
   private readonly drawer = viewChild.required(MatSidenav);
 
@@ -42,6 +47,17 @@ export class Shell {
           label: $localize`:Toolbar button that turns on the dark theme:Switch to dark theme`,
         },
   );
+
+  protected logOut(): void {
+    this.session.logOut().subscribe({
+      next: () => void this.router.navigateByUrl('/login'),
+      error: () =>
+        this.snackBar.open(
+          $localize`:Message when logging out fails:Couldn't log out. Check your connection and try again.`,
+          $localize`:Dismisses a message:OK`,
+        ),
+    });
+  }
 
   /** On phones the drawer covers the page, so it gets out of the way once a destination is chosen. */
   protected closeDrawerOnPhone(): void {

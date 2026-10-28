@@ -92,6 +92,7 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "isolate": true,
+            "setupFiles": ["src/testing/setup.ts"],
             "coverageExclude": ["src/generated/**", "src/testing/**"]
           }
         },
