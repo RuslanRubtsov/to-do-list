@@ -124,7 +124,10 @@ paths:
         '401':
           description: |
             No refresh token, or one that is unknown, expired, revoked or already rotated
-            (`UNAUTHENTICATED`).
+            (`UNAUTHENTICATED`). The cookie is cleared, since the token can never work again.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/ClearRefreshTokenCookie'
           content:
             application/problem+json:
               schema:

@@ -357,6 +357,40 @@ class AuthApiTest extends ApiTest {
                     .jsonPath("$.code")
                     .isEqualTo("UNAUTHENTICATED");
         }
+
+        @Test
+        void clearsTheCookieOfASessionThatHasEnded() {
+            LoggedIn user = newLoggedInUser();
+            loggingOut(user.refreshToken());
+
+            // Otherwise the browser would keep sending a token that can never work again
+            refreshing(user.refreshToken())
+                    .expectStatus()
+                    .isUnauthorized()
+                    .expectHeader()
+                    .value(
+                            HttpHeaders.SET_COOKIE,
+                            cookie -> assertThat(cookie)
+                                    .startsWith(REFRESH_TOKEN_COOKIE + "=;")
+                                    .contains("Path=/api/v1/auth/session;")
+                                    .contains("Max-Age=0;"));
+        }
+
+        @Test
+        void clearsTheCookieWhenAReplayEndsTheSession() {
+            LoggedIn user = newLoggedInUser();
+            rotate(user.refreshToken());
+
+            refreshing(user.refreshToken())
+                    .expectStatus()
+                    .isUnauthorized()
+                    .expectHeader()
+                    .value(
+                            HttpHeaders.SET_COOKIE,
+                            cookie -> assertThat(cookie)
+                                    .startsWith(REFRESH_TOKEN_COOKIE + "=;")
+                                    .contains("Max-Age=0;"));
+        }
     }
 
     /** Refreshes successfully, returning the new refresh token the response rotated to. */
