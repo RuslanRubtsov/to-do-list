@@ -31,7 +31,12 @@ export class TodoListEvents {
     let streams = 0;
     return defer(() => {
       const again = streams++ > 0;
-      return this.api.getTodoListEvents(todoListId, 'events', true).pipe(updatesFrom(again));
+      return (
+        this.api
+          // The stream, by name: left to choose, the client would ask for the errors' JSON instead
+          .getTodoListEvents(todoListId, 'events', true, { httpHeaderAccept: 'text/event-stream' })
+          .pipe(updatesFrom(again))
+      );
     }).pipe(
       repeat({ delay: () => timer(delayBefore(1)) }),
       retry({

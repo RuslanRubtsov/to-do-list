@@ -44,6 +44,11 @@ h2 {
     margin: 0 0 4px 40px;
     font: var(--mat-sys-body-small);
     color: var(--mat-sys-on-surface-variant);
+
+    // In the theme's colour, not the browser's default blue; still underlined, so it reads as a link
+    a {
+      color: var(--mat-sys-primary);
+    }
   }
 
   li.overdue .due {

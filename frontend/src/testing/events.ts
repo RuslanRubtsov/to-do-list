@@ -49,14 +49,20 @@ export class FakeEventStream {
   }
 }
 
-/** Waits for the app to follow the Todo List's events, and starts the stream. */
+/**
+ * Waits for the app to follow the Todo List's events, as a stream the backend accepts, and starts
+ * the stream.
+ */
 export async function answerEvents(
   http: HttpTestingController,
   todoListId: number,
 ): Promise<FakeEventStream> {
-  const stream = new FakeEventStream(
-    await vi.waitFor(() => http.expectOne(eventsRequest(todoListId))),
-  );
+  const request = await vi.waitFor(() => http.expectOne(eventsRequest(todoListId)));
+  // As the backend needs it, or it refuses the request: a stream, read as text as it arrives
+  expect(request.request.headers.get('Accept')).toBe('text/event-stream');
+  expect(request.request.responseType).toBe('text');
+  expect(request.request.reportProgress).toBe(true);
+  const stream = new FakeEventStream(request);
   stream.connect();
   return stream;
 }
