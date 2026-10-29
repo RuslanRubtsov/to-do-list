@@ -1017,8 +1017,4 @@ class TasksApiTest extends ApiTest {
                 .jsonPath("$.errors[0].code")
                 .isEqualTo(code);
     }
-
-    private static void isNotFound(RestTestClient.ResponseSpec response) {
-        response.expectStatus().isNotFound().expectBody().jsonPath("$.code").isEqualTo("NOT_FOUND");
-    }
 }

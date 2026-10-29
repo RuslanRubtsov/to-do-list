@@ -23,8 +23,20 @@ tags:
     description: The User making the request.
   - name: Todo Lists
     description: |
-      The Todo Lists the User owns. A Todo List the User has no access to responds `404`
-      (`NOT_FOUND`), exactly like one that doesn't exist, so its existence is never revealed.
+      The Todo Lists the User can access: those they own, and those Shared with them. A Todo List
+      the User has no access to responds `404` (`NOT_FOUND`), exactly like one that doesn't
+      exist, so its existence is never revealed. An action the User's role on it doesn't allow
+      responds `403` (`FORBIDDEN`):
+
+      | Action | Owner | Editor | Viewer |
+      |---|---|---|---|
+      | See the Todo List and its Tasks | yes | yes | yes |
+      | Add, change, complete, move or delete Tasks | yes | yes | no |
+      | Rename or delete the Todo List | yes | no | no |
+      | Share the Todo List | yes | no | no |
+  - name: Sharing
+    description: |
+      Sharing a Todo List with other Users, as Viewers or Editors. Only its Owner Shares it.
   - name: Tasks
     description: |
       The Tasks of a Todo List. A Task is reached only through its own Todo List: one in another
@@ -203,8 +215,10 @@ paths:
     get:
       tags: [Todo Lists]
       operationId: getTodoLists
-      summary: List the current User's Todo Lists
-      description: Sorted by name.
+      summary: List the Todo Lists the current User can access
+      description: |
+        Those they own and those Shared with them, sorted by name. Each says the User's role on it
+        and who owns it.
       responses:
         '200':
           description: The User's Todo Lists, each with its count of open Tasks.
@@ -284,6 +298,8 @@ paths:
                 $ref: '#/components/schemas/TodoList'
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TodoListNotFound'
         '409':
@@ -300,6 +316,49 @@ paths:
           description: Deleted, together with its Tasks.
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}/shares:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+    post:
+      tags: [Sharing]
+      operationId: createShare
+      summary: Share a Todo List with another User
+      description: |
+        Gives the registered User with this email the role of Viewer or Editor on the Todo List,
+        with immediate effect: it is among their Todo Lists from then on. Only the Owner Shares a
+        Todo List.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareDraft'
+      responses:
+        '201':
+          description: The new Share.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Share'
+        '400':
+          description: |
+            A field is invalid (`VALIDATION_FAILED`). Besides the constraints of the fields, the
+            `email` may be refused as `NOT_REGISTERED`, when no User has it; `OWNER`, when it is the
+            Owner's own; or `ALREADY_SHARED`, when the Todo List is already Shared with that User.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TodoListNotFound'
         default:
@@ -418,6 +477,8 @@ paths:
                 $ref: '#/components/schemas/Task'
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TodoListNotFound'
         default:
@@ -466,6 +527,8 @@ paths:
                 $ref: '#/components/schemas/Task'
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TaskNotFound'
         '409':
@@ -482,6 +545,8 @@ paths:
           description: Deleted.
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TaskNotFound'
         default:
@@ -521,6 +586,8 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TaskNotFound'
         default:
@@ -546,6 +613,8 @@ paths:
                 $ref: '#/components/schemas/Task'
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TaskNotFound'
         default:
@@ -566,6 +635,8 @@ paths:
                 $ref: '#/components/schemas/Task'
         '401':
           $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TaskNotFound'
         default:
@@ -629,6 +700,14 @@ components:
       description: |
         No such Task in this Todo List, or a Todo List the current User has no access to
         (`NOT_FOUND`). The two are indistinguishable.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: |
+        The current User's role on the Todo List doesn't allow this (`FORBIDDEN`): Viewers only
+        read, and only the Owner renames, deletes or Shares a Todo List.
       content:
         application/problem+json:
           schema:
@@ -767,7 +846,7 @@ components:
           $ref: '#/components/schemas/Version'
     TodoList:
       type: object
-      required: [id, name, openTaskCount, version]
+      required: [id, name, openTaskCount, version, role, ownerDisplayName]
       properties:
         id:
           type: integer
@@ -782,6 +861,49 @@ components:
           example: 3
         version:
           $ref: '#/components/schemas/Version'
+        role:
+          $ref: '#/components/schemas/TodoListRole'
+        ownerDisplayName:
+          type: string
+          description: The display name of the User who owns it.
+          example: Olena
+    TodoListRole:
+      type: string
+      description: |
+        What the current User may do with a Todo List: `OWNER`, everything; `EDITOR`, change its
+        Tasks; `VIEWER`, only read it.
+      enum: [OWNER, EDITOR, VIEWER]
+    ShareRole:
+      type: string
+      description: The role a Share gives, `VIEWER` (read only) or `EDITOR` (changes Tasks).
+      enum: [VIEWER, EDITOR]
+    ShareDraft:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+          maxLength: 254
+          description: The email of the registered User to Share with, ignoring letter case.
+          example: taras@example.com
+        role:
+          $ref: '#/components/schemas/ShareRole'
+    Share:
+      type: object
+      required: [userId, email, displayName, role]
+      properties:
+        userId:
+          type: integer
+          format: int64
+          example: 12
+        email:
+          type: string
+          example: taras@example.com
+        displayName:
+          type: string
+          example: Taras
+        role:
+          $ref: '#/components/schemas/ShareRole'
     Version:
       type: integer
       format: int64
@@ -976,6 +1098,7 @@ components:
         - UNAUTHENTICATED
         - INVALID_CREDENTIALS
         - EMAIL_TAKEN
+        - FORBIDDEN
         - NOT_FOUND
         - EDIT_CONFLICT
         - METHOD_NOT_ALLOWED

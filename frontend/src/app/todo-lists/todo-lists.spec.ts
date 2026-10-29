@@ -10,8 +10,10 @@ import {
   failAsEditConflict,
   failAsNotFound,
   failFieldAsInvalid,
+  GARDEN,
   GROCERIES,
   todoListRequest,
+  TRIP,
   WORK,
 } from '../../testing/todo-lists';
 import { openTask } from '../../testing/tasks';
@@ -37,6 +39,12 @@ function renderTodoList(todoList: TodoList, others: TodoList[] = []) {
   return renderTodoListPage(todoList, { others, tasks });
 }
 
+/** The text of the heading of the drawer's list a link is in. */
+function listHeading(link: HTMLElement): string | undefined {
+  const id = link.closest('[aria-labelledby]')?.getAttribute('aria-labelledby');
+  return id ? document.getElementById(id)?.textContent?.trim() : undefined;
+}
+
 /** Longer than Undo is offered for, with time for the snack bar to leave. */
 const UNDO_TIME = 6000;
 
@@ -52,6 +60,25 @@ describe('Todo Lists', () => {
 
       expect(page.control('Groceries, 3 open Tasks').getAttribute('href')).toBe('/lists/5');
       expect(page.control('Work, no open Tasks').getAttribute('href')).toBe('/lists/8');
+    });
+
+    it('lists those Shared with the User apart, with their Owner and the User’s role', async () => {
+      const page = await renderStart([GARDEN, GROCERIES, TRIP]);
+
+      const garden = page.control('Garden, 2 open Tasks, Taras · Editor');
+      expect(garden.getAttribute('href')).toBe('/lists/11');
+      expect(listHeading(garden)).toBe('Shared with me');
+      expect(listHeading(page.control('Trip, 2 open Tasks, Taras · Viewer'))).toBe(
+        'Shared with me',
+      );
+      expect(listHeading(page.control('Groceries, 3 open Tasks'))).toBe('Todo Lists');
+    });
+
+    it('says nothing of having none when only those Shared with the User are there', async () => {
+      const page = await renderStart([GARDEN]);
+
+      expect(page.has('Garden, 2 open Tasks, Taras · Editor')).toBe(true);
+      expect(await page.text()).not.toContain('No Todo Lists yet.');
     });
 
     it('says when the User has none yet', async () => {

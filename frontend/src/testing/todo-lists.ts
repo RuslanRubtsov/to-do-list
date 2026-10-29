@@ -1,5 +1,5 @@
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
-import { TodoList } from '@api';
+import { TodoList, TodoListRole } from '@api';
 import { LAZY_ROUTE_WAIT } from './session';
 
 export const TODO_LISTS = { method: 'GET', url: '/api/v1/todo-lists' };
@@ -22,8 +22,27 @@ export async function answerTodoLists(
   request.flush(todoLists);
 }
 
-export const GROCERIES: TodoList = { id: 5, name: 'Groceries', openTaskCount: 3, version: 1 };
-export const WORK: TodoList = { id: 8, name: 'Work', openTaskCount: 0, version: 1 };
+/** Todo Lists the logged-in User, Olena, owns. */
+export const GROCERIES: TodoList = {
+  id: 5,
+  name: 'Groceries',
+  openTaskCount: 3,
+  version: 1,
+  role: TodoListRole.OWNER,
+  ownerDisplayName: 'Olena',
+};
+export const WORK: TodoList = { ...GROCERIES, id: 8, name: 'Work', openTaskCount: 0 };
+
+/** Todo Lists Taras Shared with Olena: as an Editor, and as a Viewer. */
+export const GARDEN: TodoList = {
+  id: 11,
+  name: 'Garden',
+  openTaskCount: 2,
+  version: 1,
+  role: TodoListRole.EDITOR,
+  ownerDisplayName: 'Taras',
+};
+export const TRIP: TodoList = { ...GARDEN, id: 12, name: 'Trip', role: TodoListRole.VIEWER };
 
 /** Answers as the backend does for a Todo List that doesn't exist or isn't the User's. */
 export function failAsNotFound(request: TestRequest): void {

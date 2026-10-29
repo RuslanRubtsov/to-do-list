@@ -4,6 +4,9 @@ import static io.github.ruslanrubtsov.todo.web.error.Problems.editConflict;
 
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import io.github.ruslanrubtsov.todo.api.model.TodoListRename;
+import io.github.ruslanrubtsov.todo.api.model.TodoListRole;
+import io.github.ruslanrubtsov.todo.todolists.TodoListAccess.Action;
+import io.github.ruslanrubtsov.todo.todolists.TodoListRepository.TodoListSummary;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,48 +22,59 @@ class TodoListService {
         this.access = access;
     }
 
+    /** Those the User owns and those Shared with them. */
     @Transactional(readOnly = true)
     List<TodoList> list(long userId) {
-        return todoLists.findSummariesByOwnerId(userId).stream()
-                .map(summary -> new TodoList(
-                        summary.getId(), summary.getName(), summary.getOpenTaskCount(), summary.getVersion()))
+        return todoLists.findSummaries(userId).stream()
+                .map(TodoListService::toApi)
                 .toList();
     }
 
     @Transactional
     TodoList create(long userId, String name) {
-        return toApi(todoLists.save(new TodoListEntity(userId, name)));
+        TodoListEntity todoList = todoLists.saveAndFlush(new TodoListEntity(userId, name));
+        return summary(userId, todoList.getId());
     }
 
     @Transactional(readOnly = true)
     TodoList get(long userId, long todoListId) {
-        return toApi(access.owned(userId, todoListId));
+        access.require(userId, todoListId, Action.READ);
+        return summary(userId, todoListId);
     }
 
     /** Refused if someone else changed the Todo List since the version the rename is based on. */
     @Transactional
     TodoList rename(long userId, long todoListId, TodoListRename rename) {
-        TodoListEntity todoList = access.owned(userId, todoListId);
+        TodoListEntity todoList = access.todoList(userId, todoListId, Action.RENAME);
         if (todoList.getVersion() != rename.getVersion()) {
             throw editConflict("The Todo List has changed since that version.");
         }
         todoList.rename(rename.getName());
         // So the response carries the version saving the rename makes
         todoLists.flush();
-        return toApi(todoList);
+        return summary(userId, todoListId);
     }
 
-    /** Its Tasks go with it: the database cascades the delete. */
+    /** Its Tasks and Shares go with it: the database cascades the delete. */
     @Transactional
     void delete(long userId, long todoListId) {
-        todoLists.delete(access.owned(userId, todoListId));
+        todoLists.delete(access.todoList(userId, todoListId, Action.DELETE));
     }
 
-    private TodoList toApi(TodoListEntity todoList) {
+    private TodoList summary(long userId, long todoListId) {
+        return todoLists
+                .findSummary(userId, todoListId)
+                .map(TodoListService::toApi)
+                .orElseThrow(TodoListAccess::notFound);
+    }
+
+    private static TodoList toApi(TodoListSummary summary) {
         return new TodoList(
-                todoList.getId(),
-                todoList.getName(),
-                todoLists.countOpenTasks(todoList.getId()),
-                todoList.getVersion());
+                summary.getId(),
+                summary.getName(),
+                summary.getOpenTaskCount(),
+                summary.getVersion(),
+                TodoListRole.fromValue(summary.getRole()),
+                summary.getOwnerDisplayName());
     }
 }

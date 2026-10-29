@@ -80,47 +80,33 @@
           <mat-icon aria-hidden="true">add</mat-icon>
         </button>
       </div>
-      @if (todoLists.all(); as all) {
+      @if (owned(); as owned) {
         <mat-nav-list aria-labelledby="todo-lists-heading">
-          @for (todoList of all; track todoList.id) {
-            <a
-              mat-list-item
-              [routerLink]="['/lists', todoList.id]"
-              routerLinkActive
-              #listLink="routerLinkActive"
-              [activated]="listLink.isActive"
-              [attr.aria-current]="listLink.isActive ? 'page' : null"
-              (click)="closeDrawerOnPhone()"
-            >
-              <mat-icon matListItemIcon aria-hidden="true">checklist</mat-icon>
-              <span matListItemTitle
-                >{{ todoList.name
-                }}<span class="cdk-visually-hidden"
-                  >,
-                  <ng-container
-                    i18n="
-                      Navigation: how many of a Todo List's Tasks are open, read out after its name
-                    "
-                    >{todoList.openTaskCount, plural,
-                      =0 {no open Tasks}
-                      =1 {1 open Task}
-                      other {{{ todoList.openTaskCount }} open Tasks}
-                    }</ng-container
-                  ></span
-                ></span
-              >
-              @if (todoList.openTaskCount > 0) {
-                <span matListItemMeta class="open-count" aria-hidden="true">{{
-                  todoList.openTaskCount
-                }}</span>
-              }
-            </a>
+          @for (todoList of owned; track todoList.id) {
+            <ng-container *ngTemplateOutlet="todoListLink; context: { $implicit: todoList }" />
           } @empty {
-            <p class="drawer-note" i18n="Navigation: shown when the User has no Todo Lists">
-              No Todo Lists yet.
-            </p>
+            @if (!shared()?.length) {
+              <p class="drawer-note" i18n="Navigation: shown when the User has no Todo Lists">
+                No Todo Lists yet.
+              </p>
+            }
           }
         </mat-nav-list>
+        @if (shared()?.length) {
+          <div class="section-heading">
+            <h2
+              id="shared-todo-lists-heading"
+              i18n="Navigation: heading above the Todo Lists other Users Shared with the User"
+            >
+              Shared with me
+            </h2>
+          </div>
+          <mat-nav-list aria-labelledby="shared-todo-lists-heading">
+            @for (todoList of shared(); track todoList.id) {
+              <ng-container *ngTemplateOutlet="todoListLink; context: { $implicit: todoList }" />
+            }
+          </mat-nav-list>
+        }
       } @else if (todoLists.loadFailed()) {
         <p class="drawer-note" role="alert" i18n="Navigation: error when the Todo Lists can't load">
           Couldn’t load your Todo Lists.
@@ -166,3 +152,47 @@
     </main>
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+<ng-template #todoListLink let-todoList>
+  <a
+    mat-list-item
+    [routerLink]="['/lists', todoList.id]"
+    routerLinkActive
+    #listLink="routerLinkActive"
+    [activated]="listLink.isActive"
+    [attr.aria-current]="listLink.isActive ? 'page' : null"
+    (click)="closeDrawerOnPhone()"
+  >
+    <mat-icon matListItemIcon aria-hidden="true">{{
+      todoList.role === 'OWNER' ? 'checklist' : 'group'
+    }}</mat-icon>
+    <span matListItemTitle
+      >{{ todoList.name
+      }}<span class="cdk-visually-hidden"
+        >,
+        <ng-container
+          i18n="Navigation: how many of a Todo List's Tasks are open, read out after its name"
+          >{todoList.openTaskCount, plural,
+            =0 {no open Tasks}
+            =1 {1 open Task}
+            other {{{ todoList.openTaskCount }} open Tasks}
+          }</ng-container
+        ></span
+      ></span
+    >
+    @if (todoList.role !== 'OWNER') {
+      <span matListItemLine class="shared-by"
+        ><span class="cdk-visually-hidden">, </span
+        ><ng-container
+          i18n="Navigation: who owns a Todo List Shared with the User, and the User's role on it"
+          >{{ todoList.ownerDisplayName }} ·
+          {todoList.role, select, EDITOR {Editor} VIEWER {Viewer} other {}}</ng-container
+      ></span>
+    }
+    @if (todoList.openTaskCount > 0) {
+      <span matListItemMeta class="open-count" aria-hidden="true">{{
+        todoList.openTaskCount
+      }}</span>
+    }
+  </a>
+</ng-template>

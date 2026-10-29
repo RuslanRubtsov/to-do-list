@@ -82,6 +82,11 @@ mat-sidenav {
   }
 }
 
+.shared-by {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
 .open-count {
   font: var(--mat-sys-label-medium);
   color: var(--mat-sys-on-surface-variant);
