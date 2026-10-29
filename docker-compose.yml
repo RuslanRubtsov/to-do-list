@@ -23,6 +23,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/todo
       SPRING_DATASOURCE_USERNAME: todo
       SPRING_DATASOURCE_PASSWORD: todo
+      # Seeds the demo Users and their Todo Lists into an empty database (docs/demo-data.md)
+      SPRING_PROFILES_ACTIVE: demo
     ports:
       - "8080:8080"
     depends_on:

@@ -10,7 +10,7 @@ import org.testcontainers.utility.DockerImageName;
 public class TestcontainersConfiguration {
 
     // Keep in step with the image in docker-compose.yml
-    private static final DockerImageName MYSQL_IMAGE = DockerImageName.parse("mysql:9.7");
+    public static final DockerImageName MYSQL_IMAGE = DockerImageName.parse("mysql:9.7");
 
     // One container for the whole test run, even when tests need differently configured contexts
     private static final MySQLContainer MYSQL = new MySQLContainer(MYSQL_IMAGE);
