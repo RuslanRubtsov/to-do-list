@@ -47,6 +47,17 @@ export class TodoLists {
       .pipe(tap((renamed) => this.replace(renamed)));
   }
 
+  /** Shows the Todo List by the name someone else gave it, as its page learned. */
+  showRenamed(todoList: TodoList): void {
+    this.change((todoLists) =>
+      todoLists.map((each) =>
+        each.id === todoList.id
+          ? { ...each, name: todoList.name, version: todoList.version }
+          : each,
+      ),
+    );
+  }
+
   /** Reads the Todo List again, as someone else may have changed it, and shows it as it is now. */
   refresh(id: number): Observable<TodoList> {
     return this.api.getTodoList(id).pipe(tap((read) => this.replace(read)));

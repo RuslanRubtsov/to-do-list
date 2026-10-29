@@ -355,6 +355,12 @@ export class TaskList {
     );
   }
 
+  /** Reads the Tasks again, as someone else changed them. */
+  refresh(): void {
+    this.main.reload();
+    this.completedSection.reload();
+  }
+
   /**
    * If the change failed for finding something gone, says so and reloads the Tasks, and returns
    * `true`; otherwise returns `false`.

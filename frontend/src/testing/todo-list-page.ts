@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { Task, TodoList } from '@api';
+import { answerEvents, FakeEventStream } from './events';
 import { Locale } from './locale';
 import { DESKTOP, emulateMedia } from './media';
 import { renderRoute } from './routed-page';
@@ -26,9 +27,9 @@ export async function renderTodoListPage(
     locale,
     todoLists: [todoList, ...others],
   });
-  await answerTodoListPage(page.http, todoList, tasks);
+  const events = await answerTodoListPage(page.http, todoList, tasks);
   await page.text();
-  return page;
+  return Object.assign(page, { events });
 }
 
 /**
@@ -50,13 +51,14 @@ const DIALOG_LOAD_WAIT = { ...LAZY_ROUTE_WAIT, timeout: 15_000 };
 /**
  * Answers what a Todo List's page asks for as it opens in a view that shows both open and
  * Completed Tasks: the Todo List, then its open Tasks and its Completed ones, each in one page,
- * whatever else the view asks for.
+ * whatever else the view asks for. Last, it follows the Todo List's events: that stream is returned,
+ * started, for tests to send events on.
  */
 export async function answerTodoListPage(
   http: HttpTestingController,
   todoList: TodoList,
   tasks: Task[] = [],
-): Promise<void> {
+): Promise<FakeEventStream> {
   await vi
     .waitFor(() => http.expectOne(todoListRequest('GET', todoList.id)), LAZY_ROUTE_WAIT)
     .then((request) => request.flush(todoList));
@@ -77,4 +79,5 @@ export async function answerTodoListPage(
       )
       .then((request) => request.flush(pageOf(tasksOf)));
   }
+  return answerEvents(http, todoList.id);
 }

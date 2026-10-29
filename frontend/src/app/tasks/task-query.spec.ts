@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { answerEvents } from '../../testing/events';
 import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute } from '../../testing/routed-page';
 import { LAZY_ROUTE_WAIT } from '../../testing/session';
@@ -20,6 +21,8 @@ describe('Querying Tasks', () => {
     await vi
       .waitFor(() => page.http.expectOne(todoListRequest('GET', 5)), LAZY_ROUTE_WAIT)
       .then((request) => request.flush(GROCERIES));
+    // Once loaded, the page follows the Todo List's events
+    await answerEvents(page.http, 5);
     return page;
   }
 

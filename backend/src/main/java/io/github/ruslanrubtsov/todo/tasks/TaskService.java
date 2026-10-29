@@ -10,6 +10,8 @@ import io.github.ruslanrubtsov.todo.api.model.Task;
 import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
 import io.github.ruslanrubtsov.todo.api.model.TaskMove;
 import io.github.ruslanrubtsov.todo.api.model.TaskPage;
+import io.github.ruslanrubtsov.todo.api.model.TodoListEvent.TypeEnum;
+import io.github.ruslanrubtsov.todo.events.TodoListChange;
 import io.github.ruslanrubtsov.todo.todolists.TodoListAccess;
 import io.github.ruslanrubtsov.todo.todolists.TodoListAccess.Action;
 import java.time.Clock;
@@ -18,6 +20,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalLong;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -30,11 +33,13 @@ class TaskService {
     private final TaskRepository tasks;
     private final TodoListAccess access;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
-    TaskService(TaskRepository tasks, TodoListAccess access, Clock clock) {
+    TaskService(TaskRepository tasks, TodoListAccess access, Clock clock, ApplicationEventPublisher events) {
         this.tasks = tasks;
         this.access = access;
         this.clock = clock;
+        this.events = events;
     }
 
     /** A page of the Todo List's Tasks that match the query, Overdue or not as of today. */
@@ -53,7 +58,8 @@ class TaskService {
         access.lock(userId, todoListId, Action.CHANGE_TASKS);
         long position =
                 TaskPositions.between(tasks.findLastPosition(todoListId), null).orElseThrow();
-        return toApi(tasks.save(new TaskEntity(todoListId, title, position)));
+        return publishing(
+                TypeEnum.TASK_CREATED, toApi(tasks.save(new TaskEntity(todoListId, title, position))), todoListId);
     }
 
     @Transactional(readOnly = true)
@@ -69,21 +75,21 @@ class TaskService {
             throw editConflict("The Task has changed since that version.");
         }
         task.change(details.getTitle(), details.getDescription(), details.getDueDate(), details.getPriority());
-        return flushedToApi(task);
+        return publishing(TypeEnum.TASK_UPDATED, flushedToApi(task), todoListId);
     }
 
     @Transactional
     Task complete(long userId, long todoListId, long taskId) {
         TaskEntity task = reachable(userId, todoListId, taskId, Action.CHANGE_TASKS);
         task.complete();
-        return flushedToApi(task);
+        return publishing(TypeEnum.TASK_COMPLETED, flushedToApi(task), todoListId);
     }
 
     @Transactional
     Task uncomplete(long userId, long todoListId, long taskId) {
         TaskEntity task = reachable(userId, todoListId, taskId, Action.CHANGE_TASKS);
         task.uncomplete();
-        return flushedToApi(task);
+        return publishing(TypeEnum.TASK_UNCOMPLETED, flushedToApi(task), todoListId);
     }
 
     /**
@@ -113,7 +119,7 @@ class TaskService {
             long[] renumbered = TaskPositions.renumbered(others.size());
             for (int i = 0; i < others.size(); i++) others.get(i).moveTo(renumbered[i]);
         }
-        return flushedToApi(task);
+        return publishing(TypeEnum.TASK_MOVED, flushedToApi(task), todoListId);
     }
 
     private static int indexOf(List<TaskEntity> tasks, long taskId) {
@@ -126,6 +132,7 @@ class TaskService {
     @Transactional
     void delete(long userId, long todoListId, long taskId) {
         tasks.delete(reachable(userId, todoListId, taskId, Action.CHANGE_TASKS));
+        events.publishEvent(TodoListChange.taskDeleted(todoListId, taskId));
     }
 
     /**
@@ -136,6 +143,15 @@ class TaskService {
         access.require(userId, todoListId, action);
         return tasks.findByIdAndTodoListId(taskId, todoListId)
                 .orElseThrow(() -> problem(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "No such Task."));
+    }
+
+    /**
+     * Publishes the change to the Task, to go out on its Todo List's events stream once saved, and
+     * returns the Task as changed.
+     */
+    private Task publishing(TypeEnum type, Task task, long todoListId) {
+        events.publishEvent(TodoListChange.ofTask(type, todoListId, task));
+        return task;
     }
 
     /** The changed Task as the API shows it, with the version saving the change made. */

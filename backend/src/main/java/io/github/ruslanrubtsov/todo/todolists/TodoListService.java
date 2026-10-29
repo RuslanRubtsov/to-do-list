@@ -5,9 +5,11 @@ import static io.github.ruslanrubtsov.todo.web.error.Problems.editConflict;
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import io.github.ruslanrubtsov.todo.api.model.TodoListRename;
 import io.github.ruslanrubtsov.todo.api.model.TodoListRole;
+import io.github.ruslanrubtsov.todo.events.TodoListChange;
 import io.github.ruslanrubtsov.todo.todolists.TodoListAccess.Action;
 import io.github.ruslanrubtsov.todo.todolists.TodoListRepository.TodoListSummary;
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +18,12 @@ class TodoListService {
 
     private final TodoListRepository todoLists;
     private final TodoListAccess access;
+    private final ApplicationEventPublisher events;
 
-    TodoListService(TodoListRepository todoLists, TodoListAccess access) {
+    TodoListService(TodoListRepository todoLists, TodoListAccess access, ApplicationEventPublisher events) {
         this.todoLists = todoLists;
         this.access = access;
+        this.events = events;
     }
 
     /** Those the User owns and those Shared with them. */
@@ -52,6 +56,7 @@ class TodoListService {
         todoList.rename(rename.getName());
         // So the response carries the version saving the rename makes
         todoLists.flush();
+        events.publishEvent(TodoListChange.renamed(todoListId, todoList.getName(), todoList.getVersion()));
         return summary(userId, todoListId);
     }
 
@@ -59,6 +64,7 @@ class TodoListService {
     @Transactional
     void delete(long userId, long todoListId) {
         todoLists.delete(access.todoList(userId, todoListId, Action.DELETE));
+        events.publishEvent(TodoListChange.deleted(todoListId));
     }
 
     private TodoList summary(long userId, long todoListId) {

@@ -44,6 +44,9 @@ tags:
     description: |
       What needs attention across every Todo List the User can access: those they own and those
       Shared with them.
+  - name: Events
+    description: |
+      Live updates: what changes in a Todo List, as it happens, for everyone who has it open.
   - name: Tasks
     description: |
       The Tasks of a Todo List. A Task is reached only through its own Todo List: one in another
@@ -483,6 +486,35 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/ShareNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}/events:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+    get:
+      tags: [Events]
+      operationId: getTodoListEvents
+      summary: Follow a Todo List's changes as they happen
+      description: |
+        A Server-Sent Events stream of the Todo List's changes, each a `TodoListEvent` as JSON in
+        an event's `data`, sent once the change is saved. Comment lines (`:`) are heartbeats that
+        keep the stream open. Only Users who can still read the Todo List receive its events: one
+        whose Share is revoked, or who leaves, receives `SHARE_REVOKED` and the stream ends; when
+        the Todo List is deleted, everyone receives `TODO_LIST_DELETED` and the stream ends. The
+        stream also ends now and then on its own: clients connect again, and read the Todo List
+        again for what they missed meanwhile.
+      responses:
+        '200':
+          description: The stream of the Todo List's events.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-Sent Events, each with a `TodoListEvent` as its data.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
         default:
           $ref: '#/components/responses/Problem'
   /api/v1/todo-lists/{todoListId}/tasks:
@@ -1060,6 +1092,46 @@ components:
           example: Groceries
         role:
           $ref: '#/components/schemas/TodoListRole'
+    TodoListEvent:
+      type: object
+      description: |
+        A change to a Todo List, in its events stream. Which fields it has depends on its type:
+        the Task changed for `TASK_*` events but `TASK_DELETED`, which has the `taskId`; the
+        new `name` and `version` for `TODO_LIST_RENAMED`; the `userId` whose access ended for
+        `SHARE_REVOKED`, sent when the Owner revokes a Share or its User leaves.
+      required: [type, todoListId]
+      properties:
+        type:
+          type: string
+          enum:
+            - TASK_CREATED
+            - TASK_UPDATED
+            - TASK_COMPLETED
+            - TASK_UNCOMPLETED
+            - TASK_MOVED
+            - TASK_DELETED
+            - TODO_LIST_RENAMED
+            - TODO_LIST_DELETED
+            - SHARE_REVOKED
+        todoListId:
+          type: integer
+          format: int64
+          example: 7
+        task:
+          $ref: '#/components/schemas/Task'
+        taskId:
+          type: integer
+          format: int64
+          example: 21
+        name:
+          type: string
+          example: Shopping
+        version:
+          $ref: '#/components/schemas/Version'
+        userId:
+          type: integer
+          format: int64
+          example: 12
     TodoListRole:
       type: string
       description: |
