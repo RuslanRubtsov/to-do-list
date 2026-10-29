@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, LOCALE_ID, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { TodoList, TodoListsService } from '@api';
+import { SharingService, TodoList, TodoListsService } from '@api';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { isNotFound } from '../http/problems';
 import { UndoableDeletes } from '../undo/undoable-deletes';
@@ -13,6 +13,7 @@ import { UndoableDeletes } from '../undo/undoable-deletes';
 @Injectable()
 export class TodoLists {
   private readonly api = inject(TodoListsService);
+  private readonly sharing = inject(SharingService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly collator = new Intl.Collator(inject(LOCALE_ID));
   private readonly deletes = inject(UndoableDeletes);
@@ -58,6 +59,11 @@ export class TodoLists {
     );
   }
 
+  /** Ends the User's Share of the Todo List; once the backend has, no longer shows it. */
+  leave(todoList: TodoList): Observable<void> {
+    return this.sharing.leaveTodoList(todoList.id).pipe(map(() => this.forget(todoList.id)));
+  }
+
   /**
    * Hides the Todo List at once and offers Undo, holding the delete back meanwhile (see
    * {@link UndoableDeletes}). A failed delete brings the Todo List back.
@@ -91,7 +97,8 @@ export class TodoLists {
     );
   }
 
-  private forget(id: number): void {
+  /** No longer shows the Todo List, now gone or no longer Shared with the User. */
+  forget(id: number): void {
     this.change((todoLists) => todoLists.filter((todoList) => todoList.id !== id));
     this.setPending(id, false);
   }

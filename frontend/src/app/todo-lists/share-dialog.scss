@@ -1,0 +1,39 @@
+.shares-heading {
+  margin: 16px 0 8px;
+  font: var(--mat-sys-title-small);
+}
+
+.shares {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-block: 4px;
+  }
+}
+
+.who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.email {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.role {
+  width: 9rem;
+}
+
+.none {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}

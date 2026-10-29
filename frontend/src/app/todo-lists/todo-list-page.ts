@@ -2,9 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
+  linkedSignal,
   numberAttribute,
+  untracked,
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,6 +21,7 @@ import { tap } from 'rxjs';
 import { isNotFound, isUnreachable } from '../http/problems';
 import { TaskList } from '../tasks/task-list';
 import { DeleteTodoListDialog } from './delete-todo-list-dialog';
+import { LeaveTodoListDialog } from './leave-todo-list-dialog';
 import { ShareDialog } from './share-dialog';
 import { TodoListNameDialog, TodoListNameDialogData } from './todo-list-name-dialog';
 import { TodoLists } from './todo-lists';
@@ -48,7 +52,40 @@ export class TodoListPage {
     stream: ({ params: id }) => this.api.getTodoList(id),
   });
   protected readonly notFound = computed(() => isNotFound(this.todoList.error()));
+  /** Whether the Todo List shown has since gone, or is no longer Shared with the User. */
+  protected readonly lost = linkedSignal({ source: this.todoListId, computation: () => false });
+  /** Whether the Todo List is being read again, to tell whether it is gone. */
+  private rechecking = false;
   protected readonly unreachable = computed(() => isUnreachable(this.todoList.error()));
+
+  constructor() {
+    // One the User can't reach is no longer theirs to have in the drawer
+    effect(() => {
+      if (this.notFound()) untracked(() => this.todoLists.forget(this.todoListId()));
+    });
+  }
+
+  /**
+   * Reads the Todo List again once a change to it found something gone, to tell whether the
+   * Todo List itself is: if so, says so and drops it from the drawer.
+   */
+  protected recheck(todoList: TodoList): void {
+    // Once is enough, however many changes find something gone meanwhile
+    if (this.lost() || this.rechecking) return;
+    this.rechecking = true;
+    this.todoLists.refresh(todoList.id).subscribe({
+      next: (read) => {
+        this.rechecking = false;
+        this.todoList.set(read);
+      },
+      error: (error: unknown) => {
+        this.rechecking = false;
+        if (!isNotFound(error)) return;
+        this.lost.set(true);
+        this.todoLists.forget(todoList.id);
+      },
+    });
+  }
 
   protected rename(todoList: TodoList): void {
     // The version the rename is based on
@@ -84,6 +121,30 @@ export class TodoListPage {
           $localize`:Message after Sharing a Todo List with a User, named by their display name:Shared “${todoList.name}:todoList:” with ${share.displayName}:user:.`,
           $localize`:Dismisses a message:OK`,
         );
+      });
+  }
+
+  /** Once confirmed and done, goes to the start page; a failure stays and says so. */
+  protected leave(todoList: TodoList): void {
+    this.dialogs
+      .open<LeaveTodoListDialog, TodoList, boolean>(LeaveTodoListDialog, { data: todoList })
+      .afterClosed()
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.todoLists.leave(todoList).subscribe({
+          next: () => {
+            void this.router.navigateByUrl('/');
+            this.snackBar.open(
+              $localize`:Message after the User left a Todo List Shared with them:You left “${todoList.name}:name:”.`,
+              $localize`:Dismisses a message:OK`,
+            );
+          },
+          error: () =>
+            this.snackBar.open(
+              $localize`:Message when leaving a Todo List fails:Couldn’t leave “${todoList.name}:name:”. Check your connection and try again.`,
+              $localize`:Dismisses a message:OK`,
+            ),
+        });
       });
   }
 

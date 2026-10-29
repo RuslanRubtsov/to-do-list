@@ -565,15 +565,6 @@
         <target>Видалити список справ</target>
       </segment>
     </unit>
-    <unit id="5842667474521024459">
-      <notes>
-        <note category="description">Todo List page: message for a Todo List that doesn&apos;t exist or isn&apos;t the User&apos;s</note>
-      </notes>
-      <segment state="translated">
-        <source>This Todo List isn’t available. It may have been deleted, or it isn’t yours.</source>
-        <target>Цей список справ недоступний. Можливо, його видалено, або він не ваш.</target>
-      </segment>
-    </unit>
     <unit id="5754879811372410703">
       <notes>
         <note category="description">Link back to the start page</note>
@@ -1205,6 +1196,125 @@
       <segment state="translated">
         <source>Shared “<ph id="0" equiv="todoList" disp="todoList.name"/>” with <ph id="1" equiv="user" disp="share.displayName"/>.</source>
         <target><ph id="1" equiv="user" disp="share.displayName"/> тепер має доступ до «<ph id="0" equiv="todoList" disp="todoList.name"/>».</target>
+      </segment>
+    </unit>
+    <unit id="1486678307036836838">
+      <notes>
+        <note category="description">Dialog heading: confirming that the User leaves a Todo List</note>
+      </notes>
+      <segment state="translated">
+        <source> Leave “<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.name }}"/>”?
+</source>
+        <target>Вийти зі списку «<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.name }}"/>»?</target>
+      </segment>
+    </unit>
+    <unit id="7222028171418216727">
+      <notes>
+        <note category="description">Dialog text: what leaving a Todo List Shared with the User does</note>
+      </notes>
+      <segment state="translated">
+        <source> You’ll no longer see it or its Tasks, unless <ph id="0" equiv="INTERPOLATION" disp="{{ todoList.ownerDisplayName }}"/> Shares it with you again. </source>
+        <target>Ви більше не бачитимете його та його завдань, доки <ph id="0" equiv="INTERPOLATION" disp="{{ todoList.ownerDisplayName }}"/> знову не надасть вам доступ.</target>
+      </segment>
+    </unit>
+    <unit id="8555249280807936920">
+      <notes>
+        <note category="description">Button: confirm leaving</note>
+      </notes>
+      <segment state="translated">
+        <source> Leave </source>
+        <target>Вийти</target>
+      </segment>
+    </unit>
+    <unit id="1145943357758405871">
+      <notes>
+        <note category="description">Share dialog: heading above whom the Todo List is Shared with</note>
+      </notes>
+      <segment state="translated">
+        <source> Shared with </source>
+        <target>Мають доступ</target>
+      </segment>
+    </unit>
+    <unit id="4791521496273457766">
+      <notes>
+        <note category="description">Share dialog: shown when the Todo List isn&apos;t Shared with anyone</note>
+      </notes>
+      <segment state="translated">
+        <source> It isn’t Shared with anyone yet. </source>
+        <target>Доступу до нього ще ні в кого немає.</target>
+      </segment>
+    </unit>
+    <unit id="7032616879717491895">
+      <notes>
+        <note category="description">Accessible label for the role a Share gives a User, named by their display name</note>
+      </notes>
+      <segment state="translated">
+        <source>Role of <ph id="0" equiv="name" disp="share.displayName"/></source>
+        <target>Роль: <ph id="0" equiv="name" disp="share.displayName"/></target>
+      </segment>
+    </unit>
+    <unit id="10494889760006030">
+      <notes>
+        <note category="description">Button that revokes the Share of a User, named by their display name</note>
+      </notes>
+      <segment state="translated">
+        <source>Stop sharing with <ph id="0" equiv="name" disp="share.displayName"/></source>
+        <target>Скасувати доступ для <ph id="0" equiv="name" disp="share.displayName"/></target>
+      </segment>
+    </unit>
+    <unit id="7081052245341891319">
+      <notes>
+        <note category="description">Todo List page: message once the Todo List open is gone, or no longer Shared with the User</note>
+      </notes>
+      <segment state="translated">
+        <source>“<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.value().name }}"/>” is no longer available to you. Its Owner may have stopped Sharing it with you, or deleted it.</source>
+        <target>Список «<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.value().name }}"/>» вам більше не доступний. Можливо, власник скасував ваш доступ або видалив його.</target>
+      </segment>
+    </unit>
+    <unit id="208523502401712631">
+      <notes>
+        <note category="description">Button that leaves the Todo List being shown, Shared with the User</note>
+      </notes>
+      <segment state="translated">
+        <source>Leave Todo List</source>
+        <target>Вийти зі списку справ</target>
+      </segment>
+    </unit>
+    <unit id="2273088133016853024">
+      <notes>
+        <note category="description">Button: leave a Todo List Shared with the User</note>
+      </notes>
+      <segment state="translated">
+        <source>Leave</source>
+        <target>Вийти</target>
+      </segment>
+    </unit>
+    <unit id="7767196002266500668">
+      <notes>
+        <note category="description">Todo List page: message for a Todo List that doesn&apos;t exist, or that the User has no access
+        to</note>
+      </notes>
+      <segment state="translated">
+        <source>This Todo List isn’t available. It may have been deleted, or it isn’t Shared with you.</source>
+        <target>Цей список справ недоступний. Можливо, його видалено, або вам не надано до нього доступу.</target>
+      </segment>
+    </unit>
+    <unit id="6273576366849636673">
+      <notes>
+        <note category="description">Message after the User left a Todo List Shared with them</note>
+      </notes>
+      <segment state="translated">
+        <source>You left “<ph id="0" equiv="name" disp="todoList.name"/>”.</source>
+        <target>Ви вийшли зі списку «<ph id="0" equiv="name" disp="todoList.name"/>».</target>
+      </segment>
+    </unit>
+    <unit id="1902614695311384819">
+      <notes>
+        <note category="description">Message when leaving a Todo List fails</note>
+      </notes>
+      <segment state="translated">
+        <source>Couldn’t leave “<ph id="0" equiv="name" disp="todoList.name"/>”. Check your connection and try again.</source>
+        <target>Не вдалося вийти зі списку «<ph id="0" equiv="name" disp="todoList.name"/>». Перевірте з’єднання і спробуйте ще раз.</target>
       </segment>
     </unit>
   </file>

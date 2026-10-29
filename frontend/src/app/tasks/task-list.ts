@@ -9,6 +9,7 @@ import {
   inject,
   input,
   linkedSignal,
+  output,
   ResourceRef,
   signal,
   untracked,
@@ -85,6 +86,11 @@ export class TaskList {
   readonly todoListId = input.required<number>();
   /** Whether the User may change the Tasks, as an Owner or Editor; a Viewer may only read them. */
   readonly canChange = input.required<boolean>();
+  /**
+   * A change found the Task, or the whole Todo List, gone: its Owner may have deleted it or
+   * stopped Sharing it with the User. The Tasks reload meanwhile.
+   */
+  readonly lost = output<void>();
 
   protected readonly view = toSignal(this.route.queryParamMap.pipe(map(viewFrom)), {
     requireSync: true,
@@ -142,6 +148,10 @@ export class TaskList {
   protected readonly addFailure = signal<'unreachable' | 'unexpected' | null>(null);
 
   constructor() {
+    // Querying the Tasks again, as filtering or paging does, may find the Todo List gone too
+    effect(() => {
+      if (isNotFound(this.main.error())) untracked(() => this.lost.emit());
+    });
     effect(() => {
       const title = this.form.controls.title;
       if (this.canChange()) title.enable();
@@ -183,6 +193,7 @@ export class TaskList {
         },
         error: (error: unknown) => {
           this.adding.set(false);
+          if (this.handledAsLost(error)) return;
           if (!showFieldErrors(this.form, problemOf(error))) {
             this.addFailure.set(isUnreachable(error) ? 'unreachable' : 'unexpected');
           }
@@ -218,8 +229,9 @@ export class TaskList {
     const putBack = this.takeOut(from, task);
     request.subscribe({
       next: () => showInOther(),
-      error: () => {
+      error: (error: unknown) => {
         putBack();
+        if (this.handledAsLost(error)) return;
         this.snackBar.open(
           $localize`:Message when completing a Task, or taking that back, fails:Couldn’t change “${task.title}:title:”. Check your connection and try again.`,
           $localize`:Dismisses a message:OK`,
@@ -244,12 +256,13 @@ export class TaskList {
       .moveTask(this.todoListId(), task.id, { placement, relativeTo: relativeTo.id })
       .subscribe({
         next: (moved) => this.replace(moved),
-        error: () => {
+        error: (error: unknown) => {
           // Back in the order from before the move; any Task added since stays at the end
           const placeBefore = (each: Task) => placesBefore.get(each.id) ?? placesBefore.size;
           this.changeIn(this.main, (tasks) =>
             [...tasks].sort((a, b) => placeBefore(a) - placeBefore(b)),
           );
+          if (this.handledAsLost(error)) return;
           this.snackBar.open(
             $localize`:Message when moving a Task to another place in its Todo List fails:Couldn’t move “${task.title}:title:”. Check your connection and try again.`,
             $localize`:Dismisses a message:OK`,
@@ -326,9 +339,10 @@ export class TaskList {
     return this.api.deleteTask(todoListId, task.id).pipe(
       map(() => this.forget(task.id)),
       catchError((error: unknown) => {
-        // Already gone is as good as deleted
+        // Already gone is as good as deleted, though the Todo List may have gone with it
         if (isNotFound(error)) {
           this.forget(task.id);
+          this.lost.emit();
         } else {
           this.setPending(task.id, false);
           this.snackBar.open(
@@ -339,6 +353,18 @@ export class TaskList {
         return of(undefined);
       }),
     );
+  }
+
+  /**
+   * If the change failed for finding something gone, says so and reloads the Tasks, and returns
+   * `true`; otherwise returns `false`.
+   */
+  private handledAsLost(error: unknown): boolean {
+    if (!isNotFound(error)) return false;
+    this.lost.emit();
+    this.main.reload();
+    this.completedSection.reload();
+    return true;
   }
 
   private forget(id: number): void {

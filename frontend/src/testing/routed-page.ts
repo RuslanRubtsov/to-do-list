@@ -70,20 +70,27 @@ export async function renderRoute(
     }
     return found;
   };
-  /** The list labelled by the heading with this text. */
+  /** The list labelled by the heading with this text, on the page or in an overlay. */
   const findList = (label: string) =>
-    Array.from(root().querySelectorAll<HTMLElement>('ul[aria-labelledby]')).find((candidate) => {
-      const heading = document.getElementById(candidate.getAttribute('aria-labelledby') ?? '');
-      return heading !== null && accessibleName(heading) === label;
-    });
+    Array.from(document.body.querySelectorAll<HTMLElement>('ul[aria-labelledby]')).find(
+      (candidate) => {
+        const heading = document.getElementById(candidate.getAttribute('aria-labelledby') ?? '');
+        return heading !== null && accessibleName(heading) === label;
+      },
+    );
   const loader = TestbedHarnessEnvironment.loader(harness.fixture);
   /** Also finds components in overlays, such as the form fields of a dialog. */
   const documentLoader = TestbedHarnessEnvironment.documentRootLoader(harness.fixture);
-  /** The select of the form field with this label. */
+  /** The select of the form field with this label, or else the select with this aria-label. */
   const selectIn = async (label: string): Promise<MatSelectHarness> => {
-    const field = await documentLoader.getHarness(
+    const field = await documentLoader.getHarnessOrNull(
       MatFormFieldHarness.with({ floatingLabelText: label }),
     );
+    if (!field) {
+      return documentLoader.getHarness(
+        MatSelectHarness.with({ selector: `[aria-label="${label}"]` }),
+      );
+    }
     const select = await field.getControl(MatSelectHarness);
     if (!select) throw new Error(`The "${label}" field has no select`);
     return select;

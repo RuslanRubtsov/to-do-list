@@ -33,10 +33,13 @@ tags:
       | See the Todo List and its Tasks | yes | yes | yes |
       | Add, change, complete, move or delete Tasks | yes | yes | no |
       | Rename or delete the Todo List | yes | no | no |
-      | Share the Todo List | yes | no | no |
+      | Share the Todo List, see and change its Shares | yes | no | no |
+      | Leave the Todo List | no | yes | yes |
   - name: Sharing
     description: |
-      Sharing a Todo List with other Users, as Viewers or Editors. Only its Owner Shares it.
+      Sharing a Todo List with other Users, as Viewers or Editors. Only its Owner Shares it, sees
+      whom it is Shared with, changes their roles and revokes their Shares; a User it is Shared
+      with may leave it.
   - name: Tasks
     description: |
       The Tasks of a Todo List. A Task is reached only through its own Todo List: one in another
@@ -325,6 +328,28 @@ paths:
   /api/v1/todo-lists/{todoListId}/shares:
     parameters:
       - $ref: '#/components/parameters/TodoListId'
+    get:
+      tags: [Sharing]
+      operationId: getShares
+      summary: List whom a Todo List is Shared with
+      description: Every Share of the Todo List, by display name. Only its Owner sees them.
+      responses:
+        '200':
+          description: The Todo List's Shares.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Share'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
     post:
       tags: [Sharing]
       operationId: createShare
@@ -361,6 +386,78 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}/shares/me:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+    delete:
+      tags: [Sharing]
+      operationId: leaveTodoList
+      summary: Leave a Todo List Shared with the current User
+      description: |
+        Ends the current User's own Share, with immediate effect: the Todo List is no longer among
+        theirs. Its Owner can't leave it (`403`).
+      responses:
+        '204':
+          description: Left.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/TodoListNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}/shares/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+      - name: userId
+        in: path
+        required: true
+        description: The User the Todo List is Shared with.
+        schema:
+          type: integer
+          format: int64
+    patch:
+      tags: [Sharing]
+      operationId: changeShare
+      summary: Change the role a Share gives
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareChange'
+      responses:
+        '200':
+          description: The changed Share.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Share'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ShareNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Sharing]
+      operationId: revokeShare
+      summary: Revoke a Share
+      description: With immediate effect, the User no longer has the Todo List among theirs.
+      responses:
+        '204':
+          description: Revoked.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ShareNotFound'
         default:
           $ref: '#/components/responses/Problem'
   /api/v1/todo-lists/{todoListId}/tasks:
@@ -712,6 +809,14 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
+    ShareNotFound:
+      description: |
+        The Todo List isn't Shared with that User, or there is no such Todo List, or the current
+        User has no access to it (`NOT_FOUND`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
     EditConflict:
       description: |
         Someone else changed it since the `version` sent was read (`EDIT_CONFLICT`). Nothing was
@@ -886,6 +991,12 @@ components:
           maxLength: 254
           description: The email of the registered User to Share with, ignoring letter case.
           example: taras@example.com
+        role:
+          $ref: '#/components/schemas/ShareRole'
+    ShareChange:
+      type: object
+      required: [role]
+      properties:
         role:
           $ref: '#/components/schemas/ShareRole'
     Share:
