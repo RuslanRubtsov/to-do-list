@@ -7,11 +7,13 @@ import io.github.ruslanrubtsov.todo.api.model.ErrorCode;
 import io.github.ruslanrubtsov.todo.api.model.Share;
 import io.github.ruslanrubtsov.todo.api.model.ShareDraft;
 import io.github.ruslanrubtsov.todo.api.model.ShareRole;
+import io.github.ruslanrubtsov.todo.events.TodoListChange;
 import io.github.ruslanrubtsov.todo.todolists.TodoListAccess;
 import io.github.ruslanrubtsov.todo.todolists.TodoListAccess.Action;
 import io.github.ruslanrubtsov.todo.users.UserEntity;
 import io.github.ruslanrubtsov.todo.users.UserRepository;
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +24,14 @@ class SharingService {
     private final ShareRepository shares;
     private final UserRepository users;
     private final TodoListAccess access;
+    private final ApplicationEventPublisher events;
 
-    SharingService(ShareRepository shares, UserRepository users, TodoListAccess access) {
+    SharingService(
+            ShareRepository shares, UserRepository users, TodoListAccess access, ApplicationEventPublisher events) {
         this.shares = shares;
         this.users = users;
         this.access = access;
+        this.events = events;
     }
 
     /**
@@ -74,6 +79,7 @@ class SharingService {
     void revoke(long userId, long todoListId, long sharedWithId) {
         access.require(userId, todoListId, Action.SHARE);
         shares.delete(existing(todoListId, sharedWithId));
+        publishRevoked(todoListId, sharedWithId);
     }
 
     /** Ends the User's own Share of the Todo List. */
@@ -81,6 +87,12 @@ class SharingService {
     void leave(long userId, long todoListId) {
         access.require(userId, todoListId, Action.LEAVE);
         shares.delete(existing(todoListId, userId));
+        publishRevoked(todoListId, userId);
+    }
+
+    /** Tells those following the Todo List, the User whose access ended among them. */
+    private void publishRevoked(long todoListId, long sharedWithId) {
+        events.publishEvent(TodoListChange.shareRevoked(todoListId, sharedWithId));
     }
 
     private ShareEntity existing(long todoListId, long sharedWithId) {

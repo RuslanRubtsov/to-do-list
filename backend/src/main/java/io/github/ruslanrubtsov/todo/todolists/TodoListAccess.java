@@ -4,6 +4,7 @@ import static io.github.ruslanrubtsov.todo.web.error.Problems.problem;
 
 import io.github.ruslanrubtsov.todo.api.model.ErrorCode;
 import io.github.ruslanrubtsov.todo.api.model.TodoListRole;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.ErrorResponseException;
@@ -52,14 +53,16 @@ public class TodoListAccess {
      * {@code 403} when their role doesn't allow it.
      */
     public TodoListRole require(long userId, long todoListId, Action action) {
-        TodoListRole role = todoLists
-                .findRole(userId, todoListId)
-                .map(TodoListRole::fromValue)
-                .orElseThrow(TodoListAccess::notFound);
+        TodoListRole role = roleOf(userId, todoListId).orElseThrow(TodoListAccess::notFound);
         if (!allows(role, action)) {
             throw problem(HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN, "Your role on this Todo List doesn't allow that.");
         }
         return role;
+    }
+
+    /** The User's role on the Todo List; none when they can't reach it, or there is no such Todo List. */
+    public Optional<TodoListRole> roleOf(long userId, long todoListId) {
+        return todoLists.findRole(userId, todoListId).map(TodoListRole::fromValue);
     }
 
     /**

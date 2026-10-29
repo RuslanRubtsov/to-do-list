@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { answerEvents } from '../../testing/events';
 import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute, snackBarText } from '../../testing/routed-page';
 import { LAZY_ROUTE_WAIT } from '../../testing/session';
@@ -41,6 +42,7 @@ describe('Tasks', () => {
     await vi
       .waitFor(() => page.http.expectOne(todoListRequest('GET', 5)), LAZY_ROUTE_WAIT)
       .then((request) => request.flush(GROCERIES));
+    await answerEvents(page.http, 5);
     await vi
       .waitFor(() => page.http.expectOne(tasksQuery(5, { completed: 'false' })))
       .then((request) => request.error(new ProgressEvent('error'), { status: 0 }));
