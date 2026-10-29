@@ -9,11 +9,12 @@ import {
   inject,
   input,
   linkedSignal,
+  ResourceRef,
   signal,
   untracked,
   viewChild,
 } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroupDirective, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -23,18 +24,32 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Placement, Task, TasksService } from '@api';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Placement, Task, TaskPage, TaskSort, TasksService } from '@api';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { isNotFound, isUnreachable, problemOf, showFieldErrors } from '../http/problems';
 import { TodoLists } from '../todo-lists/todo-lists';
 import { UndoableDeletes } from '../undo/undoable-deletes';
 import { RelativeDatePipe } from './relative-date.pipe';
 import type { TaskDetailsDialog, TaskDetailsDialogData } from './task-details-dialog';
+import { TaskFilters } from './task-filters';
 import { TASK_TITLE_MAX_LENGTH, taskTitleValidators } from './task-title';
+import {
+  isFiltered,
+  queryParamsOf,
+  sameFilters,
+  showsAllOpen,
+  TaskView,
+  viewFrom,
+} from './task-view';
+
+/** How many Tasks a page shows. */
+const PAGE_SIZE = 50;
 
 /**
- * A Todo List's Tasks with their details: adding and changing them, open ones first, then a section of the Completed ones. Keeps
- * the navigation drawer's count of open Tasks in step with what it shows.
+ * A Todo List's Tasks with their details: adding, changing, moving and finding them. Shows a page
+ * of the open Tasks the view in the URL asks for, then a section of the Completed ones; or a page
+ * of only one or the other. Keeps the navigation drawer's count of open Tasks in step.
  */
 @Component({
   selector: 'app-task-list',
@@ -52,6 +67,7 @@ import { TASK_TITLE_MAX_LENGTH, taskTitleValidators } from './task-title';
     NgTemplateOutlet,
     ReactiveFormsModule,
     RelativeDatePipe,
+    TaskFilters,
   ],
   templateUrl: './task-list.html',
   styleUrl: './task-list.scss',
@@ -63,14 +79,37 @@ export class TaskList {
   private readonly deletes = inject(UndoableDeletes);
   private readonly todoLists = inject(TodoLists);
   private readonly dialogs = inject(MatDialog);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly todoListId = input.required<number>();
 
-  protected readonly tasks = rxResource({
-    params: () => this.todoListId(),
-    stream: ({ params: id }) => this.api.getTasks(id),
+  protected readonly view = toSignal(this.route.queryParamMap.pipe(map(viewFrom)), {
+    requireSync: true,
   });
-  protected readonly unreachable = computed(() => isUnreachable(this.tasks.error()));
+  /** The view apart from its page, which only the first list pages through. */
+  private readonly filters = computed(() => ({ ...this.view(), page: 0 }), { equal: sameFilters });
+  /** While any filter, sort or search is on, dragging Tasks into place is off: it would be ambiguous. */
+  protected readonly filtered = computed(() => isFiltered(this.view()));
+  /** Whether the first list holds Completed Tasks, as it does when only those are shown. */
+  protected readonly mainIsCompleted = computed(() => this.view().show === 'completed');
+  /** Whether open and Completed Tasks are both shown, each in a list of their own. */
+  private readonly showsBoth = computed(() => this.view().show === undefined);
+
+  /** The page of Tasks shown first: open ones, unless only Completed ones are shown. */
+  protected readonly main = rxResource({
+    params: () => ({ todoListId: this.todoListId(), view: this.view() }),
+    stream: ({ params }) =>
+      this.query(params.todoListId, params.view, params.view.show === 'completed'),
+  });
+  /** When open and Completed Tasks are both shown, the first page of the Completed ones. */
+  protected readonly completedSection = rxResource({
+    // Not on paging through the open ones: it reads only what changes the Completed ones
+    params: () =>
+      this.showsBoth() ? { todoListId: this.todoListId(), view: this.filters() } : undefined,
+    stream: ({ params }) => this.query(params.todoListId, params.view, true),
+  });
+  protected readonly unreachable = computed(() => isUnreachable(this.main.error()));
   /** Deleted, but with the delete not sent yet: Undo can still bring them back. */
   private readonly pendingDeletes = signal<ReadonlySet<number>>(new Set());
   /** What ends the Undo offer of each pending delete, which sends it. */
@@ -78,19 +117,17 @@ export class TaskList {
   /** Whether the page has gone, as it may while a dialog is still loading. */
   private destroyed = false;
 
-  /** In their manual order, without those deleted; `undefined` until loaded. */
-  private readonly shown = computed(() => {
-    if (!this.tasks.hasValue()) return undefined;
-    const pending = this.pendingDeletes();
-    return this.tasks.value().filter((task) => !pending.has(task.id));
-  });
-  protected readonly open = computed(() => this.shown()?.filter((task) => !task.completedAt));
-  protected readonly completed = computed(
-    () => this.shown()?.filter((task) => task.completedAt) ?? [],
+  /** The first list's Tasks, without those deleted; `undefined` until loaded. */
+  protected readonly mainTasks = computed(() => this.shownIn(this.main));
+  protected readonly totalPages = computed(() => this.main.value()?.totalPages ?? 0);
+  protected readonly completed = computed(() => this.shownIn(this.completedSection) ?? []);
+  /** How many Completed Tasks match in all, not only those on the section's page. */
+  protected readonly completedCount = computed(
+    () => this.countIn(this.completedSection, this.completed()) ?? 0,
   );
   /** Collapsed whenever the section appears, so open work stays in focus. */
   protected readonly showCompleted = linkedSignal({
-    source: () => this.completed().length > 0,
+    source: () => this.completedCount() > 0,
     computation: () => false,
   });
 
@@ -104,10 +141,13 @@ export class TaskList {
 
   constructor() {
     effect(() => {
-      const open = this.open();
+      const open = this.mainTasks();
+      const count = open && showsAllOpen(this.view()) ? this.countIn(this.main, open) : undefined;
       const todoListId = this.todoListId();
       // Depends only on what this page shows, not on the drawer it writes to
-      if (open) untracked(() => this.todoLists.setOpenTaskCount(todoListId, open.length));
+      if (count !== undefined) {
+        untracked(() => this.todoLists.setOpenTaskCount(todoListId, count));
+      }
     });
     // Undo is offered for what this page shows; leaving it ends the offers, sending the deletes.
     // Just after, as ending one changes the snack bar, which mustn't happen mid-render.
@@ -128,7 +168,10 @@ export class TaskList {
       .subscribe({
         next: (added) => {
           this.adding.set(false);
-          this.change((tasks) => [...tasks, added]);
+          // At the end of the manual order: on the last page, unless a filter or sort places it
+          const page = this.main.value();
+          if (this.filtered() || (page && page.page < page.totalPages - 1)) this.main.reload();
+          else this.changeIn(this.main, (tasks) => [...tasks, added]);
           this.formDirective().resetForm();
         },
         error: (error: unknown) => {
@@ -140,28 +183,36 @@ export class TaskList {
       });
   }
 
+  /** Takes the open Task out of the open ones at once; the Completed ones then show it. */
   protected complete(task: Task): void {
-    this.changeCompletion(
-      task,
-      new Date().toISOString(),
-      this.api.completeTask(this.todoListId(), task.id),
+    this.changeCompletion(task, this.main, this.api.completeTask(this.todoListId(), task.id), () =>
+      this.completedSection.reload(),
     );
   }
 
+  /** Takes the Completed Task out of the Completed ones at once; the open ones then show it. */
   protected uncomplete(task: Task): void {
-    this.changeCompletion(task, null, this.api.uncompleteTask(this.todoListId(), task.id));
+    const from = this.mainIsCompleted() ? this.main : this.completedSection;
+    this.changeCompletion(task, from, this.api.uncompleteTask(this.todoListId(), task.id), () => {
+      if (from === this.completedSection) this.main.reload();
+    });
   }
 
   /**
-   * Shows the Task as changed at once, then as the backend has it. A failure takes the change back
-   * and says so.
+   * Takes the Task out of the list it's in at once, then lets the other list show it as the
+   * backend has it, in its place there. A failure puts it back and says so.
    */
-  private changeCompletion(task: Task, completedAt: string | null, request: Observable<Task>) {
-    this.replace({ ...task, completedAt });
+  private changeCompletion(
+    task: Task,
+    from: ResourceRef<TaskPage | undefined>,
+    request: Observable<Task>,
+    showInOther: () => void,
+  ) {
+    const putBack = this.takeOut(from, task);
     request.subscribe({
-      next: (changed) => this.replace(changed),
+      next: () => showInOther(),
       error: () => {
-        this.replace(task);
+        putBack();
         this.snackBar.open(
           $localize`:Message when completing a Task, or taking that back, fails:Couldn’t change “${task.title}:title:”. Check your connection and try again.`,
           $localize`:Dismisses a message:OK`,
@@ -180,8 +231,8 @@ export class TaskList {
     const task = open[previousIndex];
     const relativeTo = open[currentIndex];
     const placement = currentIndex < previousIndex ? Placement.BEFORE : Placement.AFTER;
-    const placesBefore = new Map(this.tasks.value()?.map((each, index) => [each.id, index]));
-    this.change((tasks) => placed(tasks, task, placement, relativeTo));
+    const placesBefore = new Map(this.main.value()?.items.map((each, index) => [each.id, index]));
+    this.changeIn(this.main, (tasks) => placed(tasks, task, placement, relativeTo));
     this.api
       .moveTask(this.todoListId(), task.id, { placement, relativeTo: relativeTo.id })
       .subscribe({
@@ -189,7 +240,9 @@ export class TaskList {
         error: () => {
           // Back in the order from before the move; any Task added since stays at the end
           const placeBefore = (each: Task) => placesBefore.get(each.id) ?? placesBefore.size;
-          this.change((tasks) => [...tasks].sort((a, b) => placeBefore(a) - placeBefore(b)));
+          this.changeIn(this.main, (tasks) =>
+            [...tasks].sort((a, b) => placeBefore(a) - placeBefore(b)),
+          );
           this.snackBar.open(
             $localize`:Message when moving a Task to another place in its Todo List fails:Couldn’t move “${task.title}:title:”. Check your connection and try again.`,
             $localize`:Dismisses a message:OK`,
@@ -225,7 +278,10 @@ export class TaskList {
       })
       .afterClosed()
       .subscribe((changed) => {
-        if (changed) this.replace(changed);
+        if (!changed) return;
+        // Changed details may change whether the Task matches, or where it sorts
+        if (this.filtered()) this.main.reload();
+        else this.replace(changed);
       });
   }
 
@@ -279,7 +335,7 @@ export class TaskList {
   }
 
   private forget(id: number): void {
-    this.change((tasks) => tasks.filter((task) => task.id !== id));
+    this.changeEverywhere((tasks) => tasks.filter((task) => task.id !== id));
     this.setPending(id, false);
   }
 
@@ -292,12 +348,70 @@ export class TaskList {
     });
   }
 
-  private replace(task: Task): void {
-    this.change((tasks) => tasks.map((each) => (each.id === task.id ? task : each)));
+  /** Shows the Tasks of another view: other filters, sort, search or page. */
+  protected show(view: TaskView): void {
+    void this.router.navigate([], { relativeTo: this.route, queryParams: queryParamsOf(view) });
   }
 
-  private change(apply: (tasks: Task[]) => Task[]): void {
-    if (this.tasks.hasValue()) this.tasks.set(apply(this.tasks.value()));
+  protected goToPage(page: number): void {
+    this.show({ ...this.view(), page });
+  }
+
+  private query(todoListId: number, view: TaskView, completed: boolean): Observable<TaskPage> {
+    // Only the parameters that differ from the backend's defaults
+    return this.api.getTasks(
+      todoListId,
+      view.page,
+      PAGE_SIZE,
+      view.sort === TaskSort.POSITION ? undefined : view.sort,
+      completed,
+      view.priorities.length ? view.priorities : undefined,
+      view.dueFrom,
+      view.dueTo,
+      view.overdueOnly || undefined,
+      view.search || undefined,
+    );
+  }
+
+  private shownIn(list: ResourceRef<TaskPage | undefined>): Task[] | undefined {
+    if (!list.hasValue()) return undefined;
+    const pending = this.pendingDeletes();
+    return list.value().items.filter((task) => !pending.has(task.id));
+  }
+
+  /** How many Tasks match in all, apart from those deleted from the page shown. */
+  private countIn(list: ResourceRef<TaskPage | undefined>, shown: Task[]): number | undefined {
+    const page = list.value();
+    return page && page.totalItems - (page.items.length - shown.length);
+  }
+
+  /** Takes the Task out of the list; what's returned puts it back where it was. */
+  private takeOut(list: ResourceRef<TaskPage | undefined>, task: Task): () => void {
+    const index = list.value()?.items.findIndex((each) => each.id === task.id) ?? -1;
+    this.changeIn(list, (tasks) => tasks.filter((each) => each.id !== task.id));
+    return () =>
+      this.changeIn(list, (tasks) =>
+        tasks.some((each) => each.id === task.id)
+          ? tasks
+          : [...tasks.slice(0, index), task, ...tasks.slice(index)],
+      );
+  }
+
+  private replace(task: Task): void {
+    this.changeEverywhere((tasks) => tasks.map((each) => (each.id === task.id ? task : each)));
+  }
+
+  private changeEverywhere(apply: (tasks: Task[]) => Task[]): void {
+    this.changeIn(this.main, apply);
+    this.changeIn(this.completedSection, apply);
+  }
+
+  /** Changes the Tasks of a list, counting any it gains or loses among those that match. */
+  private changeIn(list: ResourceRef<TaskPage | undefined>, apply: (tasks: Task[]) => Task[]) {
+    if (!list.hasValue()) return;
+    const page = list.value();
+    const items = apply(page.items);
+    list.set({ ...page, items, totalItems: page.totalItems + items.length - page.items.length });
   }
 }
 

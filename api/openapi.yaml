@@ -310,19 +310,83 @@ paths:
     get:
       tags: [Tasks]
       operationId: getTasks
-      summary: List a Todo List's Tasks
+      summary: Query a Todo List's Tasks, a page at a time
       description: |
-        Completed or not, in their manual order: added Tasks go to the end, and moving a Task
-        changes its place. Completing a Task keeps its place.
+        The Tasks matching every filter given, a page at a time. By default all of them, Completed
+        or not, in their manual order: added Tasks go to the end, and moving a Task changes its
+        place. Completing a Task keeps its place.
+      parameters:
+        - name: page
+          in: query
+          description: Which page, counting from 0.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: How many Tasks a page holds.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: sort
+          in: query
+          schema:
+            $ref: '#/components/schemas/TaskSort'
+        - name: completed
+          in: query
+          description: Only Completed Tasks when `true`, only open ones when `false`.
+          schema:
+            type: boolean
+        - name: priority
+          in: query
+          description: Only Tasks of any of these Priorities.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Priority'
+        - name: dueFrom
+          in: query
+          description: Only Tasks due on this date or later.
+          schema:
+            type: string
+            format: date
+        - name: dueTo
+          in: query
+          description: Only Tasks due on this date or earlier.
+          schema:
+            type: string
+            format: date
+        - name: overdue
+          in: query
+          description: Only Overdue Tasks when `true`, only Tasks that aren't when `false`.
+          schema:
+            type: boolean
+        - name: q
+          in: query
+          description: |
+            Only Tasks with this text in their title or description, ignoring letter case. At most
+            200 characters (`SIZE` otherwise).
+          schema:
+            type: string
+            maxLength: 200
       responses:
         '200':
-          description: The Todo List's Tasks.
+          description: A page of the matching Tasks.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Task'
+                $ref: '#/components/schemas/TaskPage'
+        '400':
+          description: A query parameter is invalid (`VALIDATION_FAILED`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '404':
@@ -809,6 +873,38 @@ components:
           example: '2026-10-28T14:05:00Z'
         version:
           $ref: '#/components/schemas/Version'
+    TaskSort:
+      type: string
+      description: |
+        The order Tasks are listed in, each Task on a page keeping it across pages:
+        `POSITION`, the manual order (the default); `DUE_DATE`, soonest first, then those with
+        none; `PRIORITY`, High first; `TITLE`, alphabetically; `CREATED`, newest first. Tasks
+        that tie keep their manual order.
+      enum: [POSITION, DUE_DATE, PRIORITY, TITLE, CREATED]
+    TaskPage:
+      type: object
+      required: [items, page, size, totalItems, totalPages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        page:
+          type: integer
+          description: Which page this is, counting from 0.
+          example: 0
+        size:
+          type: integer
+          description: How many Tasks a page holds; the last may hold fewer.
+          example: 50
+        totalItems:
+          type: integer
+          format: int64
+          description: How many Tasks match, on all pages.
+          example: 3
+        totalPages:
+          type: integer
+          example: 1
     TaskMove:
       type: object
       required: [placement, relativeTo]

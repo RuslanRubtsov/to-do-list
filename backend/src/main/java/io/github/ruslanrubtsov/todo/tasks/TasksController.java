@@ -1,12 +1,17 @@
 package io.github.ruslanrubtsov.todo.tasks;
 
 import io.github.ruslanrubtsov.todo.api.TasksApi;
+import io.github.ruslanrubtsov.todo.api.model.Priority;
 import io.github.ruslanrubtsov.todo.api.model.Task;
 import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
 import io.github.ruslanrubtsov.todo.api.model.TaskDraft;
 import io.github.ruslanrubtsov.todo.api.model.TaskMove;
+import io.github.ruslanrubtsov.todo.api.model.TaskPage;
+import io.github.ruslanrubtsov.todo.api.model.TaskSort;
 import io.github.ruslanrubtsov.todo.auth.CurrentUser;
+import java.time.LocalDate;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -21,8 +26,26 @@ class TasksController implements TasksApi {
     }
 
     @Override
-    public ResponseEntity<List<Task>> getTasks(Long todoListId) {
-        return ResponseEntity.ok(taskService.list(CurrentUser.id(), todoListId));
+    public ResponseEntity<TaskPage> getTasks(
+            Long todoListId,
+            Integer page,
+            Integer size,
+            @Nullable TaskSort sort,
+            @Nullable Boolean completed,
+            @Nullable List<Priority> priority,
+            @Nullable LocalDate dueFrom,
+            @Nullable LocalDate dueTo,
+            @Nullable Boolean overdue,
+            @Nullable String q) {
+        TaskQuery query = new TaskQuery(
+                completed,
+                priority == null ? List.of() : priority,
+                dueFrom,
+                dueTo,
+                overdue,
+                q,
+                sort == null ? TaskSort.POSITION : sort);
+        return ResponseEntity.ok(taskService.query(CurrentUser.id(), todoListId, query, page, size));
     }
 
     @Override

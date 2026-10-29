@@ -9,6 +9,7 @@ import io.github.ruslanrubtsov.todo.api.model.Priority;
 import io.github.ruslanrubtsov.todo.api.model.Task;
 import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
 import io.github.ruslanrubtsov.todo.api.model.TaskMove;
+import io.github.ruslanrubtsov.todo.api.model.TaskPage;
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -605,6 +606,209 @@ class TasksApiTest extends ApiTest {
     }
 
     @Nested
+    class Querying {
+
+        private LoggedIn user;
+        private TodoList todoList;
+
+        /** Added in this order, so in this manual order. */
+        @BeforeEach
+        void addFiveTasks() {
+            user = newLoggedInUser();
+            todoList = createTodoList(user, "Chores");
+            add("Buy milk", Priority.HIGH, today().plusDays(2), null);
+            add("Buy bread", Priority.LOW, today().minusDays(1), null);
+            add("Call plumber", Priority.MEDIUM, null, "About the leaking TAP");
+            Task rent = add("Pay rent", Priority.HIGH, today().minusDays(1), null);
+            completing(user, todoList.getId(), rent.getId());
+            add("Water plants", Priority.MEDIUM, today().plusDays(7), null);
+        }
+
+        @Test
+        void listsEveryTaskInManualOrderByDefault() {
+            TaskPage page = query("");
+
+            assertThat(titlesOf(page))
+                    .containsExactly("Buy milk", "Buy bread", "Call plumber", "Pay rent", "Water plants");
+            assertThat(page.getPage()).isZero();
+            assertThat(page.getSize()).isEqualTo(50);
+            assertThat(page.getTotalItems()).isEqualTo(5);
+            assertThat(page.getTotalPages()).isEqualTo(1);
+        }
+
+        @Test
+        void pagesThroughTheTasks() {
+            TaskPage first = query("?size=2");
+            TaskPage last = query("?size=2&page=2");
+
+            assertThat(titlesOf(first)).containsExactly("Buy milk", "Buy bread");
+            assertThat(titles("?size=2&page=1")).containsExactly("Call plumber", "Pay rent");
+            assertThat(titlesOf(last)).containsExactly("Water plants");
+            assertThat(last.getPage()).isEqualTo(2);
+            assertThat(last.getTotalItems()).isEqualTo(5);
+            assertThat(last.getTotalPages()).isEqualTo(3);
+            assertThat(titles("?size=2&page=3")).isEmpty();
+        }
+
+        @Test
+        void filtersByWhetherTasksAreCompleted() {
+            assertThat(titles("?completed=true")).containsExactly("Pay rent");
+            assertThat(titles("?completed=false"))
+                    .containsExactly("Buy milk", "Buy bread", "Call plumber", "Water plants");
+        }
+
+        @Test
+        void filtersByAnyOfSeveralPriorities() {
+            assertThat(titles("?priority=HIGH")).containsExactly("Buy milk", "Pay rent");
+            assertThat(titles("?priority=HIGH&priority=LOW")).containsExactly("Buy milk", "Buy bread", "Pay rent");
+        }
+
+        @Test
+        void filtersByDueDateRangeIncludingBothEnds() {
+            String today = today().toString();
+            String nextWeek = today().plusDays(7).toString();
+
+            assertThat(titles("?dueFrom=" + today + "&dueTo=" + nextWeek)).containsExactly("Buy milk", "Water plants");
+            assertThat(titles("?dueFrom=" + nextWeek)).containsExactly("Water plants");
+            assertThat(titles("?dueTo=" + today)).containsExactly("Buy bread", "Pay rent");
+        }
+
+        @Test
+        void filtersByOverdueAsOfToday() {
+            assertThat(titles("?overdue=true")).containsExactly("Buy bread");
+            assertThat(titles("?overdue=false"))
+                    .containsExactly("Buy milk", "Call plumber", "Pay rent", "Water plants");
+        }
+
+        @Test
+        void searchesTitlesAndDescriptionsIgnoringLetterCase() {
+            assertThat(titles("?q=BUY")).containsExactly("Buy milk", "Buy bread");
+            assertThat(titles("?q=tap")).containsExactly("Call plumber");
+            assertThat(titles("?q=nothing")).isEmpty();
+        }
+
+        @Test
+        void searchesForWildcardsAsPlainText() {
+            add("Save 100% more", Priority.MEDIUM, null, null);
+            add("snake_case", Priority.MEDIUM, null, null);
+
+            // As a URI variable, so that it is encoded once
+            TaskPage percent = Objects.requireNonNull(api.get()
+                    .uri("/api/v1/todo-lists/{todoListId}/tasks?q={q}", todoList.getId(), "%")
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .exchange()
+                    .expectStatus()
+                    .isOk()
+                    .expectBody(TaskPage.class)
+                    .returnResult()
+                    .getResponseBody());
+
+            assertThat(titlesOf(percent)).containsExactly("Save 100% more");
+            assertThat(titles("?q=_")).containsExactly("snake_case");
+        }
+
+        @Test
+        void composesFiltersAndSearch() {
+            assertThat(titles("?completed=false&priority=HIGH&priority=LOW&q=buy&overdue=false"))
+                    .containsExactly("Buy milk");
+        }
+
+        @Test
+        void sortsByDueDateSoonestFirstWithNoneLast() {
+            assertThat(titles("?sort=DUE_DATE"))
+                    .containsExactly("Buy bread", "Pay rent", "Buy milk", "Water plants", "Call plumber");
+        }
+
+        @Test
+        void sortsByPriorityHighFirstKeepingManualOrderWithin() {
+            assertThat(titles("?sort=PRIORITY"))
+                    .containsExactly("Buy milk", "Pay rent", "Call plumber", "Water plants", "Buy bread");
+        }
+
+        @Test
+        void sortsByTitle() {
+            add("apples", Priority.MEDIUM, null, null);
+
+            assertThat(titles("?sort=TITLE"))
+                    .containsExactly("apples", "Buy bread", "Buy milk", "Call plumber", "Pay rent", "Water plants");
+        }
+
+        @Test
+        void sortsByCreationNewestFirst() {
+            assertThat(titles("?sort=CREATED"))
+                    .containsExactly("Water plants", "Pay rent", "Call plumber", "Buy bread", "Buy milk");
+        }
+
+        @Test
+        void sortsByManualOrderAsMoved() {
+            List<Task> tasks = listing(user, todoList.getId());
+            read(moving(
+                    user,
+                    todoList.getId(),
+                    tasks.get(4).getId(),
+                    Placement.BEFORE,
+                    tasks.get(0).getId()));
+
+            assertThat(titles("?sort=POSITION"))
+                    .containsExactly("Water plants", "Buy milk", "Buy bread", "Call plumber", "Pay rent");
+        }
+
+        @Test
+        void pagesThroughSortedAndFilteredTasks() {
+            TaskPage page = query("?sort=TITLE&completed=false&size=2&page=1");
+
+            assertThat(titlesOf(page)).containsExactly("Call plumber", "Water plants");
+            assertThat(page.getTotalItems()).isEqualTo(4);
+            assertThat(page.getTotalPages()).isEqualTo(2);
+        }
+
+        @Test
+        void neverListsTasksOfAnotherTodoList() {
+            TodoList other = createTodoList(user, "Groceries");
+            TasksApiTest.this.add(user, other.getId(), "Buy milk too");
+
+            assertThat(titles("?q=milk")).containsExactly("Buy milk");
+        }
+
+        @Test
+        void refusesInvalidParameters() {
+            refusesField(queryingFor(user, todoList.getId(), "?size=101"), "size", "MAX");
+            refusesField(queryingFor(user, todoList.getId(), "?size=0"), "size", "MIN");
+            refusesField(queryingFor(user, todoList.getId(), "?page=-1"), "page", "MIN");
+            refusesField(queryingFor(user, todoList.getId(), "?q=" + "x".repeat(201)), "q", "SIZE");
+            queryingFor(user, todoList.getId(), "?sort=SOMETIMES")
+                    .expectStatus()
+                    .isBadRequest()
+                    .expectBody()
+                    .jsonPath("$.code")
+                    .isEqualTo("MALFORMED_REQUEST");
+        }
+
+        private Task add(String title, Priority priority, LocalDate dueDate, String description) {
+            Task task = TasksApiTest.this.add(user, todoList.getId(), title);
+            return read(updating(
+                    user,
+                    todoList.getId(),
+                    task.getId(),
+                    new TaskDetails(title, priority, task.getVersion())
+                            .dueDate(dueDate)
+                            .description(description)));
+        }
+
+        private TaskPage query(String query) {
+            return querying(user, todoList.getId(), query);
+        }
+
+        private List<String> titles(String query) {
+            return titlesOf(query(query));
+        }
+
+        private static List<String> titlesOf(TaskPage page) {
+            return page.getItems().stream().map(Task::getTitle).toList();
+        }
+    }
+
+    @Nested
     class InAnotherUsersTodoList {
 
         private LoggedIn owner;
@@ -622,10 +826,8 @@ class TasksApiTest extends ApiTest {
 
         @Test
         void tasksCannotBeListed() {
-            isNotFound(api.get()
-                    .uri("/api/v1/todo-lists/{todoListId}/tasks", todoList.getId())
-                    .headers(headers -> headers.setBearerAuth(stranger.accessToken()))
-                    .exchange());
+            isNotFound(queryingFor(stranger, todoList.getId(), ""));
+            isNotFound(queryingFor(stranger, todoList.getId(), "?q=Secret"));
         }
 
         @Test
@@ -712,16 +914,26 @@ class TasksApiTest extends ApiTest {
                 .getResponseBody());
     }
 
+    /** The first page of the Todo List's Tasks, unfiltered and in their manual order. */
     private List<Task> listing(LoggedIn user, long todoListId) {
-        return api.get()
-                .uri("/api/v1/todo-lists/{todoListId}/tasks", todoListId)
-                .headers(headers -> headers.setBearerAuth(user.accessToken()))
-                .exchange()
+        return querying(user, todoListId, "").getItems();
+    }
+
+    /** A page of the Todo List's Tasks, for a query string such as {@code "?completed=true"}. */
+    private TaskPage querying(LoggedIn user, long todoListId, String query) {
+        return Objects.requireNonNull(queryingFor(user, todoListId, query)
                 .expectStatus()
                 .isOk()
-                .expectBody(new ParameterizedTypeReference<List<Task>>() {})
+                .expectBody(TaskPage.class)
                 .returnResult()
-                .getResponseBody();
+                .getResponseBody());
+    }
+
+    private RestTestClient.ResponseSpec queryingFor(LoggedIn user, long todoListId, String query) {
+        return api.get()
+                .uri("/api/v1/todo-lists/" + todoListId + "/tasks" + query)
+                .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                .exchange();
     }
 
     private RestTestClient.ResponseSpec reading(LoggedIn user, long todoListId, long taskId) {

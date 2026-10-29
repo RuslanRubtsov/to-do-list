@@ -1,0 +1,133 @@
+<form
+  class="search"
+  role="search"
+  (submit)="$event.preventDefault(); change({ search: search.value.trim() })"
+>
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label i18n="Field for text to look for in the Tasks' titles and descriptions"
+      >Search Tasks</mat-label
+    >
+    <input #search matInput type="search" [value]="view().search" autocomplete="off" />
+  </mat-form-field>
+  <button
+    matIconButton
+    type="submit"
+    aria-label="Search"
+    i18n-aria-label="Button that looks for the text typed in the Tasks"
+  >
+    <mat-icon aria-hidden="true">search</mat-icon>
+  </button>
+</form>
+
+<div class="filters">
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label i18n="Field choosing whether open Tasks, Completed ones or both are shown"
+      >Show</mat-label
+    >
+    <mat-select [value]="view().show ?? 'all'" (selectionChange)="showing($event.value)">
+      <mat-option value="all" i18n="Option: show open and Completed Tasks">All Tasks</mat-option>
+      <mat-option value="open" i18n="Option: show only the Tasks not Completed"
+        >Open Tasks</mat-option
+      >
+      <mat-option value="completed" i18n="Option: show only the Completed Tasks"
+        >Completed Tasks</mat-option
+      >
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label i18n="Field choosing the Priorities of the Tasks shown, any number of them"
+      >Priorities</mat-label
+    >
+    <mat-select
+      multiple
+      [value]="view().priorities"
+      (selectionChange)="change({ priorities: $event.value })"
+    >
+      @for (priority of priorities; track priority) {
+        <mat-option [value]="priority">
+          @switch (priority) {
+            @case ('LOW') {
+              <ng-container i18n="Priority option: Low">Low</ng-container>
+            }
+            @case ('MEDIUM') {
+              <ng-container i18n="Priority option: Medium">Medium</ng-container>
+            }
+            @case ('HIGH') {
+              <ng-container i18n="Priority option: High">High</ng-container>
+            }
+          }
+        </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label i18n="Field for the first Due Date of the Tasks shown">Due from</mat-label>
+    <input
+      matInput
+      type="date"
+      [value]="view().dueFrom ?? ''"
+      (change)="change({ dueFrom: dateIn($event) })"
+    />
+  </mat-form-field>
+
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label i18n="Field for the last Due Date of the Tasks shown">Due to</mat-label>
+    <input
+      matInput
+      type="date"
+      [value]="view().dueTo ?? ''"
+      (change)="change({ dueTo: dateIn($event) })"
+    />
+  </mat-form-field>
+
+  <mat-form-field subscriptSizing="dynamic">
+    <mat-label i18n="Field for the order Tasks are shown in">Sort by</mat-label>
+    <mat-select [value]="view().sort" (selectionChange)="change({ sort: $event.value })">
+      @for (sort of sorts; track sort) {
+        <mat-option [value]="sort">
+          @switch (sort) {
+            @case ('POSITION') {
+              <ng-container i18n="Sort option: the order the Tasks were put in by hand"
+                >Manual order</ng-container
+              >
+            }
+            @case ('DUE_DATE') {
+              <ng-container i18n="Sort option: by Due Date, soonest first">Due Date</ng-container>
+            }
+            @case ('PRIORITY') {
+              <ng-container i18n="Sort option: by Priority, High first">Priority</ng-container>
+            }
+            @case ('TITLE') {
+              <ng-container i18n="Sort option: by title, alphabetically">Title</ng-container>
+            }
+            @case ('CREATED') {
+              <ng-container i18n="Sort option: by when the Tasks were added, newest first"
+                >Newest first</ng-container
+              >
+            }
+          }
+        </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-checkbox
+    [checked]="view().overdueOnly"
+    (change)="change({ overdueOnly: $event.checked })"
+    i18n="Checkbox: show only the Overdue Tasks"
+    >Overdue only</mat-checkbox
+  >
+
+  @if (filtered()) {
+    <button
+      matButton
+      type="button"
+      (click)="clear()"
+      i18n="Button that clears the search, filters and sort"
+    >
+      Clear filters
+    </button>
+  }
+</div>

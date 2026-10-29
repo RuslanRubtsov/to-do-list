@@ -1,3 +1,5 @@
+<app-task-filters [view]="view()" (viewChange)="show($event)" />
+
 <form class="add" [formGroup]="form" (ngSubmit)="add()" novalidate>
   <mat-form-field subscriptSizing="dynamic">
     <mat-label i18n="Field for the title of a Task to add">New Task</mat-label>
@@ -38,30 +40,98 @@
   }
 }
 
-@if (open(); as open) {
-  <h2 id="open-tasks-heading" class="cdk-visually-hidden" i18n="Heading of the Tasks not Completed">
-    Open Tasks
-  </h2>
-  <ul
-    class="tasks"
-    aria-labelledby="open-tasks-heading"
-    cdkDropList
-    cdkDropListLockAxis="y"
-    (cdkDropListDropped)="drop(open, $event)"
-  >
-    @for (task of open; track task.id) {
-      <li cdkDrag [class.overdue]="task.overdue">
-        <div class="line">
-          <mat-checkbox [checked]="false" (change)="complete(task)">{{ task.title }}</mat-checkbox>
-          <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
-          <mat-icon cdkDragHandle class="drag-handle" aria-hidden="true">drag_indicator</mat-icon>
-        </div>
-        <ng-container *ngTemplateOutlet="details; context: { $implicit: task }" />
-      </li>
+@if (mainTasks(); as tasks) {
+  @if (mainIsCompleted()) {
+    <h2 id="main-tasks-heading" class="cdk-visually-hidden" i18n="Heading of the Completed Tasks">
+      Completed Tasks
+    </h2>
+    <ul class="tasks completed" aria-labelledby="main-tasks-heading">
+      @for (task of tasks; track task.id) {
+        <ng-container *ngTemplateOutlet="completedTask; context: { $implicit: task }" />
+      }
+    </ul>
+  } @else {
+    <h2
+      id="main-tasks-heading"
+      class="cdk-visually-hidden"
+      i18n="Heading of the Tasks not Completed"
+    >
+      Open Tasks
+    </h2>
+    @if (filtered() && tasks.length > 1) {
+      <p
+        class="hint"
+        i18n="Why Tasks can't be dragged into place while a search, filter or sort is on"
+      >
+        To drag Tasks into place, clear the search, filters and sort.
+      </p>
     }
-  </ul>
+    <ul
+      class="tasks"
+      aria-labelledby="main-tasks-heading"
+      cdkDropList
+      cdkDropListLockAxis="y"
+      [cdkDropListDisabled]="filtered()"
+      (cdkDropListDropped)="drop(tasks, $event)"
+    >
+      @for (task of tasks; track task.id) {
+        <li cdkDrag [class.overdue]="task.overdue">
+          <div class="line">
+            <mat-checkbox [checked]="false" (change)="complete(task)">{{
+              task.title
+            }}</mat-checkbox>
+            <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
+            @if (!filtered()) {
+              <mat-icon cdkDragHandle class="drag-handle" aria-hidden="true"
+                >drag_indicator</mat-icon
+              >
+            }
+          </div>
+          <ng-container *ngTemplateOutlet="details; context: { $implicit: task }" />
+        </li>
+      }
+    </ul>
+  }
 
-  @if (completed().length) {
+  @if (!tasks.length && !completedCount() && filtered()) {
+    <p class="empty" i18n="Message when no Task matches the search and filters">
+      No Tasks match the search and filters.
+    </p>
+  }
+
+  @if (totalPages() > 1) {
+    <nav
+      class="pages"
+      aria-label="Pages"
+      i18n-aria-label="Accessible label for the controls that page through Tasks"
+    >
+      <button
+        matIconButton
+        type="button"
+        [disabled]="view().page === 0"
+        (click)="goToPage(view().page - 1)"
+        aria-label="Previous page"
+        i18n-aria-label="Button that shows the previous page of Tasks"
+      >
+        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+      </button>
+      <span i18n="Which page of Tasks is shown, of how many"
+        >Page {{ view().page + 1 }} of {{ totalPages() }}</span
+      >
+      <button
+        matIconButton
+        type="button"
+        [disabled]="view().page + 1 >= totalPages()"
+        (click)="goToPage(view().page + 1)"
+        aria-label="Next page"
+        i18n-aria-label="Button that shows the next page of Tasks"
+      >
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      </button>
+    </nav>
+  }
+
+  @if (completedCount()) {
     <h2 id="completed-tasks-heading" class="completed-heading">
       <button
         matButton
@@ -74,36 +144,29 @@
           showCompleted() ? 'expand_less' : 'expand_more'
         }}</mat-icon>
         <ng-container i18n="Button that shows or hides the Completed Tasks, with how many there are"
-          >Completed ({{ completed().length }})</ng-container
+          >Completed ({{ completedCount() }})</ng-container
         >
       </button>
     </h2>
     @if (showCompleted()) {
       <ul id="completed-tasks" class="tasks completed" aria-labelledby="completed-tasks-heading">
         @for (task of completed(); track task.id) {
-          <li>
-            <div class="line">
-              <mat-checkbox [checked]="true" (change)="uncomplete(task)">{{
-                task.title
-              }}</mat-checkbox>
-              <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
-            </div>
-            <ng-container *ngTemplateOutlet="details; context: { $implicit: task }" />
-            <span
-              class="completed-at"
-              i18n="When a Completed Task was Completed: a date, then a time of day"
-              >Completed
-              <time [attr.datetime]="task.completedAt"
-                >{{ task.completedAt | date: 'mediumDate' }} at
-                {{ task.completedAt | date: 'shortTime' }}</time
-              ></span
-            >
-          </li>
+          <ng-container *ngTemplateOutlet="completedTask; context: { $implicit: task }" />
         }
       </ul>
+      @if (completedCount() > completed().length) {
+        <button
+          matButton
+          type="button"
+          (click)="show({ ...view(), show: 'completed', page: 0 })"
+          i18n="Button that shows only the Completed Tasks, a page at a time"
+        >
+          Show all Completed Tasks
+        </button>
+      }
     }
   }
-} @else if (tasks.error()) {
+} @else if (main.error()) {
   <p class="failure" role="alert">
     @if (unreachable()) {
       <ng-container i18n="Error when the backend doesn't respond"
@@ -115,7 +178,7 @@
       >
     }
   </p>
-  <button matButton type="button" (click)="tasks.reload()" i18n="Button: try loading again">
+  <button matButton type="button" (click)="main.reload()" i18n="Button: try loading again">
     Retry
   </button>
 } @else {
@@ -126,6 +189,25 @@
     i18n-aria-label="Accessible label for a loading spinner"
   />
 }
+
+<ng-template #completedTask let-task>
+  <li>
+    <div class="line">
+      <mat-checkbox [checked]="true" (change)="uncomplete(task)">{{ task.title }}</mat-checkbox>
+      <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
+    </div>
+    <ng-container *ngTemplateOutlet="details; context: { $implicit: task }" />
+    <span
+      class="completed-at"
+      i18n="When a Completed Task was Completed: a date, then a time of day"
+      >Completed
+      <time [attr.datetime]="task.completedAt"
+        >{{ task.completedAt | date: 'mediumDate' }} at
+        {{ task.completedAt | date: 'shortTime' }}</time
+      ></span
+    >
+  </li>
+</ng-template>
 
 <ng-template #actions let-task>
   <button matIconButton type="button" (click)="edit(task)" [attr.aria-label]="editLabel(task)">

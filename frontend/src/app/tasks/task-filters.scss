@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  margin-block-end: 16px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-block-start: 8px;
+
+  mat-form-field {
+    flex: 1 1 160px;
+  }
+}

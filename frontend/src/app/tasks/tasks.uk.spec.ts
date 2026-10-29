@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { EGGS, MILK } from '../../testing/tasks';
+import { BREAD, EGGS, MILK } from '../../testing/tasks';
 import { renderTodoListPage } from '../../testing/todo-list-page';
 import { GROCERIES } from '../../testing/todo-lists';
 
@@ -16,5 +16,18 @@ describe('Tasks in Ukrainian', () => {
 
     await page.text();
     expect(page.listItems('Виконані (1)')).toEqual(['Buy eggs Виконано 27 жовт. 2026 р. о 14:00']);
+  });
+
+  it('says in Ukrainian why Tasks cannot be dragged while a sort is on', async () => {
+    const page = await renderTodoListPage(GROCERIES, {
+      locale: 'uk',
+      tasks: [MILK, BREAD],
+      query: '?sort=TITLE',
+    });
+
+    expect(await page.text()).toContain(
+      'Щоб перетягувати завдання, скиньте пошук, фільтри й сортування.',
+    );
+    expect(await page.chosen('Сортувати за')).toBe('Назва');
   });
 });
