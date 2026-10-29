@@ -3,9 +3,10 @@ package io.github.ruslanrubtsov.todo.tasks;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
-interface TaskRepository extends JpaRepository<TaskEntity, Long> {
+interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpecificationExecutor<TaskEntity> {
 
     /** In their manual order; Tasks added at once may share a position, and then go in the order added. */
     List<TaskEntity> findByTodoListIdOrderByPositionAscIdAsc(long todoListId);

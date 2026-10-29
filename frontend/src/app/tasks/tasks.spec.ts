@@ -4,12 +4,16 @@ import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute, snackBarText } from '../../testing/routed-page';
 import { LAZY_ROUTE_WAIT } from '../../testing/session';
 import {
+  answerTasks,
   BREAD,
+  completedQuery,
   completionRequest,
   EGGS,
   MILK,
   openTask,
+  pageOf,
   taskRequest,
+  tasksQuery,
   tasksRequest,
 } from '../../testing/tasks';
 import { answerTodoListPage, renderTodoListPage } from '../../testing/todo-list-page';
@@ -38,12 +42,13 @@ describe('Tasks', () => {
       .waitFor(() => page.http.expectOne(todoListRequest('GET', 5)), LAZY_ROUTE_WAIT)
       .then((request) => request.flush(GROCERIES));
     await vi
-      .waitFor(() => page.http.expectOne(tasksRequest('GET', 5)))
+      .waitFor(() => page.http.expectOne(tasksQuery(5, { completed: 'false' })))
       .then((request) => request.error(new ProgressEvent('error'), { status: 0 }));
+    page.http.expectOne(completedQuery(5)).flush(pageOf([]));
 
     expect(await page.text()).toContain("Can't reach the server. Try again in a moment.");
     page.click('Retry');
-    page.http.expectOne(tasksRequest('GET', 5)).flush([MILK]);
+    page.http.expectOne(tasksQuery(5, { completed: 'false' })).flush(pageOf([MILK]));
 
     await page.text();
     expect(page.listItems('Open Tasks')).toEqual(['Buy milk']);
@@ -134,6 +139,12 @@ describe('Tasks', () => {
       page.http
         .expectOne(completionRequest('PUT', 5, MILK.id))
         .flush({ ...MILK, completedAt: '2026-10-28T08:15:00Z' });
+      await answerTasks(
+        page.http,
+        5,
+        { completed: 'true' },
+        pageOf([{ ...MILK, completedAt: '2026-10-28T08:15:00Z' }]),
+      );
 
       await page.text();
       expect(page.listItems('Open Tasks')).toEqual(['Buy bread']);
@@ -164,9 +175,9 @@ describe('Tasks', () => {
       page.click('Completed (1)');
 
       await (await page.checkbox('Buy eggs')).uncheck();
-      page.http
-        .expectOne(completionRequest('DELETE', 5, EGGS.id))
-        .flush({ ...EGGS, completedAt: null });
+      const uncompleted = { ...EGGS, completedAt: null };
+      page.http.expectOne(completionRequest('DELETE', 5, EGGS.id)).flush(uncompleted);
+      await answerTasks(page.http, 5, { completed: 'false' }, pageOf([MILK, uncompleted, BREAD]));
 
       await page.text();
       expect(page.listItems('Open Tasks')).toEqual(['Buy milk', 'Buy eggs', 'Buy bread']);
@@ -178,14 +189,14 @@ describe('Tasks', () => {
       page.click('Completed (1)');
       await page.text();
       await (await page.checkbox('Buy eggs')).uncheck();
-      page.http
-        .expectOne(completionRequest('DELETE', 5, EGGS.id))
-        .flush({ ...EGGS, completedAt: null });
+      const uncompleted = { ...EGGS, completedAt: null };
+      page.http.expectOne(completionRequest('DELETE', 5, EGGS.id)).flush(uncompleted);
+      await answerTasks(page.http, 5, { completed: 'false' }, pageOf([MILK, uncompleted]));
 
       await (await page.checkbox('Buy milk')).check();
-      page.http
-        .expectOne(completionRequest('PUT', 5, MILK.id))
-        .flush({ ...MILK, completedAt: '2026-10-28T08:15:00Z' });
+      const completed = { ...MILK, completedAt: '2026-10-28T08:15:00Z' };
+      page.http.expectOne(completionRequest('PUT', 5, MILK.id)).flush(completed);
+      await answerTasks(page.http, 5, { completed: 'true' }, pageOf([completed]));
 
       await page.text();
       expect(page.control('Completed (1)').getAttribute('aria-expanded')).toBe('false');
@@ -287,9 +298,9 @@ describe('Tasks', () => {
 
     await (await page.checkbox('Buy milk')).check();
     await vi.waitFor(() => expect(page.has('Groceries, 3 open Tasks')).toBe(true));
-    page.http
-      .expectOne(completionRequest('PUT', 5, MILK.id))
-      .flush({ ...MILK, completedAt: '2026-10-28T08:15:00Z' });
+    const completed = { ...MILK, completedAt: '2026-10-28T08:15:00Z' };
+    page.http.expectOne(completionRequest('PUT', 5, MILK.id)).flush(completed);
+    await answerTasks(page.http, 5, { completed: 'true' }, pageOf([completed]));
 
     page.click('Delete “Buy bread”');
     await vi.waitFor(() => expect(page.has('Groceries, 2 open Tasks')).toBe(true));
@@ -299,7 +310,9 @@ describe('Tasks', () => {
     page.click('Completed (1)');
     await page.text();
     await (await page.checkbox('Buy milk')).uncheck();
-    await vi.waitFor(() => expect(page.has('Groceries, 4 open Tasks')).toBe(true));
     page.http.expectOne(completionRequest('DELETE', 5, MILK.id)).flush(MILK);
+    const eggs = openTask(25, 'Buy eggs');
+    await answerTasks(page.http, 5, { completed: 'false' }, pageOf([MILK, BREAD, butter, eggs]));
+    await vi.waitFor(() => expect(page.has('Groceries, 4 open Tasks')).toBe(true));
   });
 });

@@ -4,12 +4,13 @@ import { Locale } from './locale';
 import { DESKTOP, emulateMedia } from './media';
 import { renderRoute } from './routed-page';
 import { LAZY_ROUTE_WAIT } from './session';
-import { tasksRequest } from './tasks';
+import { pageOf } from './tasks';
 import { todoListRequest } from './todo-lists';
 
 /**
  * A Todo List's own page, with `tasks` as its Tasks, and with it and `others` in the drawer.
- * Renders in English unless told otherwise.
+ * Renders in English, in the default view, unless told otherwise: `query` is the URL's query
+ * string for another view, such as `'?sort=TITLE'`.
  */
 export async function renderTodoListPage(
   todoList: TodoList,
@@ -17,10 +18,11 @@ export async function renderTodoListPage(
     others = [],
     tasks = [],
     locale,
-  }: { others?: TodoList[]; tasks?: Task[]; locale?: Locale } = {},
+    query = '',
+  }: { others?: TodoList[]; tasks?: Task[]; locale?: Locale; query?: string } = {},
 ) {
   emulateMedia(DESKTOP);
-  const page = await renderRoute(`/lists/${todoList.id}`, {
+  const page = await renderRoute(`/lists/${todoList.id}${query}`, {
     locale,
     todoLists: [todoList, ...others],
   });
@@ -45,7 +47,11 @@ export async function openDetails(
 
 const DIALOG_LOAD_WAIT = { ...LAZY_ROUTE_WAIT, timeout: 15_000 };
 
-/** Answers what a Todo List's page asks for as it opens: the Todo List, then its Tasks. */
+/**
+ * Answers what a Todo List's page asks for as it opens in a view that shows both open and
+ * Completed Tasks: the Todo List, then its open Tasks and its Completed ones, each in one page,
+ * whatever else the view asks for.
+ */
 export async function answerTodoListPage(
   http: HttpTestingController,
   todoList: TodoList,
@@ -54,7 +60,21 @@ export async function answerTodoListPage(
   await vi
     .waitFor(() => http.expectOne(todoListRequest('GET', todoList.id)), LAZY_ROUTE_WAIT)
     .then((request) => request.flush(todoList));
-  await vi
-    .waitFor(() => http.expectOne(tasksRequest('GET', todoList.id)))
-    .then((request) => request.flush(tasks));
+  const open = tasks.filter((task) => !task.completedAt);
+  const completed = tasks.filter((task) => task.completedAt);
+  for (const [completedOnes, tasksOf] of [
+    ['false', open],
+    ['true', completed],
+  ] as const) {
+    await vi
+      .waitFor(() =>
+        http.expectOne(
+          (request) =>
+            request.method === 'GET' &&
+            request.url === `/api/v1/todo-lists/${todoList.id}/tasks` &&
+            request.params.get('completed') === completedOnes,
+        ),
+      )
+      .then((request) => request.flush(pageOf(tasksOf)));
+  }
 }

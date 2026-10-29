@@ -651,8 +651,8 @@
         <note category="description">Button that shows or hides the Completed Tasks, with how many there are</note>
       </notes>
       <segment state="translated">
-        <source>Completed (<ph id="0" equiv="INTERPOLATION" disp="{{ completed().length }}"/>)</source>
-        <target>Виконані (<ph id="0" equiv="INTERPOLATION" disp="{{ completed().length }}"/>)</target>
+        <source>Completed (<ph id="0" equiv="INTERPOLATION" disp="{{ completedCount() }}"/>)</source>
+        <target>Виконані (<ph id="0" equiv="INTERPOLATION" disp="{{ completedCount() }}"/>)</target>
       </segment>
     </unit>
     <unit id="6896807212013805218">
@@ -855,6 +855,204 @@
       <segment state="translated">
         <source>Couldn’t move “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
         <target>Не вдалося перемістити «<ph id="0" equiv="title" disp="task.title"/>». Перевірте з’єднання і спробуйте ще раз.</target>
+      </segment>
+    </unit>
+    <unit id="2973994418969566345">
+      <notes>
+        <note category="description">Field for text to look for in the Tasks&apos; titles and descriptions</note>
+      </notes>
+      <segment state="translated">
+        <source>Search Tasks</source>
+        <target>Пошук завдань</target>
+      </segment>
+    </unit>
+    <unit id="4580988005648117665">
+      <notes>
+        <note category="description">Button that looks for the text typed in the Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source>Search</source>
+        <target>Шукати</target>
+      </segment>
+    </unit>
+    <unit id="8461842260159597706">
+      <notes>
+        <note category="description">Field choosing whether open Tasks, Completed ones or both are shown</note>
+      </notes>
+      <segment state="translated">
+        <source>Show</source>
+        <target>Показати</target>
+      </segment>
+    </unit>
+    <unit id="4357924051773886388">
+      <notes>
+        <note category="description">Option: show open and Completed Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source>All Tasks</source>
+        <target>Усі завдання</target>
+      </segment>
+    </unit>
+    <unit id="2480764117373347829">
+      <notes>
+        <note category="description">Option: show only the Tasks not Completed</note>
+      </notes>
+      <segment state="translated">
+        <source>Open Tasks</source>
+        <target>Невиконані завдання</target>
+      </segment>
+    </unit>
+    <unit id="4954114094319713258">
+      <notes>
+        <note category="description">Option: show only the Completed Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source>Completed Tasks</source>
+        <target>Виконані завдання</target>
+      </segment>
+    </unit>
+    <unit id="437207785382327804">
+      <notes>
+        <note category="description">Field choosing the Priorities of the Tasks shown, any number of them</note>
+      </notes>
+      <segment state="translated">
+        <source>Priorities</source>
+        <target>Пріоритети</target>
+      </segment>
+    </unit>
+    <unit id="8945520639204263818">
+      <notes>
+        <note category="description">Field for the first Due Date of the Tasks shown</note>
+      </notes>
+      <segment state="translated">
+        <source>Due from</source>
+        <target>Термін від</target>
+      </segment>
+    </unit>
+    <unit id="8535291103369196700">
+      <notes>
+        <note category="description">Field for the last Due Date of the Tasks shown</note>
+      </notes>
+      <segment state="translated">
+        <source>Due to</source>
+        <target>Термін до</target>
+      </segment>
+    </unit>
+    <unit id="7699622144571229146">
+      <notes>
+        <note category="description">Field for the order Tasks are shown in</note>
+      </notes>
+      <segment state="translated">
+        <source>Sort by</source>
+        <target>Сортувати за</target>
+      </segment>
+    </unit>
+    <unit id="7179400884251078694">
+      <notes>
+        <note category="description">Sort option: the order the Tasks were put in by hand</note>
+      </notes>
+      <segment state="translated">
+        <source>Manual order</source>
+        <target>Власний порядок</target>
+      </segment>
+    </unit>
+    <unit id="2317673285989169654">
+      <notes>
+        <note category="description">Sort option: by when the Tasks were added, newest first</note>
+      </notes>
+      <segment state="translated">
+        <source>Newest first</source>
+        <target>Спершу нові</target>
+      </segment>
+    </unit>
+    <unit id="3745942887502909164">
+      <notes>
+        <note category="description">Checkbox: show only the Overdue Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source>Overdue only</source>
+        <target>Лише прострочені</target>
+      </segment>
+    </unit>
+    <unit id="6634790566400449864">
+      <notes>
+        <note category="description">Button that clears the search, filters and sort</note>
+      </notes>
+      <segment state="translated">
+        <source> Clear filters </source>
+        <target>Скинути фільтри</target>
+      </segment>
+    </unit>
+    <unit id="5936085366383243678">
+      <notes>
+        <note category="description">Heading of the Completed Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source> Completed Tasks </source>
+        <target>Виконані завдання</target>
+      </segment>
+    </unit>
+    <unit id="695491939590028801">
+      <notes>
+        <note category="description">Why Tasks can&apos;t be dragged into place while a search, filter or sort is on</note>
+      </notes>
+      <segment state="translated">
+        <source> To drag Tasks into place, clear the search, filters and sort. </source>
+        <target>Щоб перетягувати завдання, скиньте пошук, фільтри й сортування.</target>
+      </segment>
+    </unit>
+    <unit id="8915238438321416138">
+      <notes>
+        <note category="description">Message when no Task matches the search and filters</note>
+      </notes>
+      <segment state="translated">
+        <source> No Tasks match the search and filters. </source>
+        <target>Жодне завдання не відповідає пошуку й фільтрам.</target>
+      </segment>
+    </unit>
+    <unit id="3817498941817715969">
+      <notes>
+        <note category="description">Accessible label for the controls that page through Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source>Pages</source>
+        <target>Сторінки</target>
+      </segment>
+    </unit>
+    <unit id="3629960544875360046">
+      <notes>
+        <note category="description">Button that shows the previous page of Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source>Previous page</source>
+        <target>Попередня сторінка</target>
+      </segment>
+    </unit>
+    <unit id="6453098595803131790">
+      <notes>
+        <note category="description">Which page of Tasks is shown, of how many</note>
+      </notes>
+      <segment state="translated">
+        <source>Page <ph id="0" equiv="INTERPOLATION" disp="{{ view().page + 1 }}"/> of <ph id="1" equiv="INTERPOLATION_1" disp="{{ totalPages() }}"/></source>
+        <target>Сторінка <ph id="0" equiv="INTERPOLATION" disp="{{ view().page + 1 }}"/> з <ph id="1" equiv="INTERPOLATION_1" disp="{{ totalPages() }}"/></target>
+      </segment>
+    </unit>
+    <unit id="3337301694210287595">
+      <notes>
+        <note category="description">Button that shows the next page of Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source>Next page</source>
+        <target>Наступна сторінка</target>
+      </segment>
+    </unit>
+    <unit id="3069242941168791834">
+      <notes>
+        <note category="description">Button that shows only the Completed Tasks, a page at a time</note>
+      </notes>
+      <segment state="translated">
+        <source> Show all Completed Tasks </source>
+        <target>Показати всі виконані завдання</target>
       </segment>
     </unit>
   </file>
