@@ -25,6 +25,14 @@ public class TodoListAccess {
         if (!todoLists.existsByIdAndOwnerId(todoListId, userId)) throw notFound();
     }
 
+    /**
+     * Like {@link #requireOwned}, and holds the Todo List until the transaction ends, so that changes
+     * to the order of its Tasks are made one at a time.
+     */
+    public void lockOwned(long userId, long todoListId) {
+        todoLists.findWithLockByIdAndOwnerId(todoListId, userId).orElseThrow(TodoListAccess::notFound);
+    }
+
     /** The User's own Todo List, or {@code 404} as {@link #requireOwned} reports it. */
     TodoListEntity owned(long userId, long todoListId) {
         return todoLists.findByIdAndOwnerId(todoListId, userId).orElseThrow(TodoListAccess::notFound);

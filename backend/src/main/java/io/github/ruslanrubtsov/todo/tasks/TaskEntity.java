@@ -13,6 +13,7 @@ import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import org.hibernate.annotations.OptimisticLock;
 
 /** A Task: a single piece of work inside exactly one Todo List. */
 @Entity
@@ -37,6 +38,13 @@ class TaskEntity {
 
     private Instant completedAt;
 
+    /**
+     * Its place in its Todo List's manual order (see {@link TaskPositions}). Moving makes no new
+     * version: that would make a renumbering conflict with every edit under way in the Todo List.
+     */
+    @OptimisticLock(excluded = true)
+    private long position;
+
     @Version
     private long version;
 
@@ -45,10 +53,11 @@ class TaskEntity {
 
     protected TaskEntity() {}
 
-    /** A new open Task, with Medium Priority and no Due Date. */
-    TaskEntity(long todoListId, String title) {
+    /** A new open Task at this position, with Medium Priority and no Due Date. */
+    TaskEntity(long todoListId, String title, long position) {
         this.todoListId = todoListId;
         this.title = title.strip();
+        this.position = position;
         this.priority = Priority.MEDIUM;
         this.createdAt = Instant.now();
     }
@@ -75,6 +84,14 @@ class TaskEntity {
 
     Instant getCompletedAt() {
         return completedAt;
+    }
+
+    long getPosition() {
+        return position;
+    }
+
+    void moveTo(long position) {
+        this.position = position;
     }
 
     long getVersion() {

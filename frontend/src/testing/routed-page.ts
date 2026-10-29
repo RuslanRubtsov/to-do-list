@@ -70,6 +70,12 @@ export async function renderRoute(
     }
     return found;
   };
+  /** The list labelled by the heading with this text. */
+  const findList = (label: string) =>
+    Array.from(root().querySelectorAll<HTMLElement>('ul[aria-labelledby]')).find((candidate) => {
+      const heading = document.getElementById(candidate.getAttribute('aria-labelledby') ?? '');
+      return heading !== null && accessibleName(heading) === label;
+    });
   const loader = TestbedHarnessEnvironment.loader(harness.fixture);
   /** Also finds components in overlays, such as the form fields of a dialog. */
   const documentLoader = TestbedHarnessEnvironment.documentRootLoader(harness.fixture);
@@ -129,13 +135,46 @@ export async function renderRoute(
      * `undefined` when there is no such list.
      */
     listItems(label: string): string[] | undefined {
-      const list = Array.from(root().querySelectorAll<HTMLElement>('ul[aria-labelledby]')).find(
-        (candidate) => {
-          const heading = document.getElementById(candidate.getAttribute('aria-labelledby') ?? '');
-          return heading !== null && accessibleName(heading) === label;
-        },
-      );
+      const list = findList(label);
       return list ? Array.from(list.children, (item) => readAloud(item as HTMLElement)) : undefined;
+    },
+    /**
+     * Drags the item at index `from` of the list labelled by this heading to index `to`, with the
+     * mouse, by its drag handle. jsdom lays nothing out, so the list's items first get the size
+     * they'd have as rows of a column.
+     */
+    async drag(label: string, from: number, to: number): Promise<void> {
+      const list = findList(label);
+      if (!list) throw new Error(`No list labelled "${label}"`);
+      if (from === to) throw new Error('Dragging an item onto itself moves nothing');
+      const item = list.children[from] as HTMLElement;
+      const handle = item.querySelector<HTMLElement>('.cdk-drag-handle') ?? item;
+      const at = (y: number) => ({
+        bubbles: true,
+        button: 0,
+        buttons: 1,
+        detail: 1,
+        clientX: 8,
+        clientY: y,
+      });
+      const middleOf = (index: number) => index * ROW_HEIGHT + ROW_HEIGHT / 2;
+
+      const layOut = layOutAsRows(list);
+      try {
+        handle.dispatchEvent(new MouseEvent('mousedown', at(middleOf(from))));
+        // A quarter row at a time, as a pointer passes each row, so each item makes way in turn
+        const step = (Math.sign(to - from) * ROW_HEIGHT) / 4;
+        const distance = Math.abs(middleOf(to) - middleOf(from));
+        for (let moved = Math.abs(step); moved <= distance; moved += Math.abs(step)) {
+          document.dispatchEvent(
+            new MouseEvent('mousemove', at(middleOf(from) + Math.sign(step) * moved)),
+          );
+        }
+        document.dispatchEvent(new MouseEvent('mouseup', at(middleOf(to))));
+      } finally {
+        layOut.undo();
+      }
+      await harness.fixture.whenStable();
     },
     /** The navigation landmark with this accessible name, if there is one. */
     navigation(label: string): HTMLElement | undefined {
@@ -188,6 +227,29 @@ export async function renderRoute(
       return field.getTextErrors();
     },
   };
+}
+
+const ROW_HEIGHT = 48;
+
+/**
+ * Until undone, gives a list and whatever is in it, such as the placeholder a drag puts in place of
+ * the item dragged, the places on screen they'd have as rows of a column.
+ */
+function layOutAsRows(list: HTMLElement): { undo: () => void } {
+  const prototype = HTMLElement.prototype;
+  const unstubbed = prototype.getBoundingClientRect;
+  prototype.getBoundingClientRect = function (this: HTMLElement): DOMRect {
+    const index = Array.prototype.indexOf.call(list.children, this);
+    if (this === list) return row(0, list.children.length * ROW_HEIGHT);
+    return index >= 0 ? row(index * ROW_HEIGHT, ROW_HEIGHT) : unstubbed.call(this);
+  };
+  return { undo: () => (prototype.getBoundingClientRect = unstubbed) };
+}
+
+function row(top: number, height: number): DOMRect {
+  const width = 320;
+  const rect = { x: 0, y: top, top, left: 0, width, height, right: width, bottom: top + height };
+  return { ...rect, toJSON: () => rect };
 }
 
 /** The text of the snack bar, which opens in an overlay outside the routed page. */

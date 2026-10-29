@@ -1,8 +1,10 @@
 package io.github.ruslanrubtsov.todo.todolists;
 
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 interface TodoListRepository extends JpaRepository<TodoListEntity, Long> {
@@ -10,6 +12,10 @@ interface TodoListRepository extends JpaRepository<TodoListEntity, Long> {
     Optional<TodoListEntity> findByIdAndOwnerId(long id, long ownerId);
 
     boolean existsByIdAndOwnerId(long id, long ownerId);
+
+    /** The Todo List, locked against other writers until the transaction ends. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<TodoListEntity> findWithLockByIdAndOwnerId(long id, long ownerId);
 
     /** The Owner's Todo Lists by name, each with how many of its Tasks are open. */
     @Query(nativeQuery = true, value = """

@@ -1,3 +1,4 @@
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -22,7 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Task, TasksService } from '@api';
+import { Placement, Task, TasksService } from '@api';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { isNotFound, isUnreachable, problemOf, showFieldErrors } from '../http/problems';
 import { TodoLists } from '../todo-lists/todo-lists';
@@ -38,6 +39,9 @@ import { TASK_TITLE_MAX_LENGTH, taskTitleValidators } from './task-title';
 @Component({
   selector: 'app-task-list',
   imports: [
+    CdkDrag,
+    CdkDragHandle,
+    CdkDropList,
     DatePipe,
     MatButtonModule,
     MatCheckboxModule,
@@ -74,7 +78,7 @@ export class TaskList {
   /** Whether the page has gone, as it may while a dialog is still loading. */
   private destroyed = false;
 
-  /** In the order they were added, without those deleted; `undefined` until loaded. */
+  /** In their manual order, without those deleted; `undefined` until loaded. */
   private readonly shown = computed(() => {
     if (!this.tasks.hasValue()) return undefined;
     const pending = this.pendingDeletes();
@@ -164,6 +168,34 @@ export class TaskList {
         );
       },
     });
+  }
+
+  /**
+   * Moves the open Task dragged from one place to another: just before the Task it was dropped on
+   * when dragged up, just after it when dragged down. Shows the move at once, then sends it; a
+   * failure takes it back and says so.
+   */
+  protected drop(open: Task[], { previousIndex, currentIndex }: CdkDragDrop<unknown>): void {
+    if (previousIndex === currentIndex) return;
+    const task = open[previousIndex];
+    const relativeTo = open[currentIndex];
+    const placement = currentIndex < previousIndex ? Placement.BEFORE : Placement.AFTER;
+    const placesBefore = new Map(this.tasks.value()?.map((each, index) => [each.id, index]));
+    this.change((tasks) => placed(tasks, task, placement, relativeTo));
+    this.api
+      .moveTask(this.todoListId(), task.id, { placement, relativeTo: relativeTo.id })
+      .subscribe({
+        next: (moved) => this.replace(moved),
+        error: () => {
+          // Back in the order from before the move; any Task added since stays at the end
+          const placeBefore = (each: Task) => placesBefore.get(each.id) ?? placesBefore.size;
+          this.change((tasks) => [...tasks].sort((a, b) => placeBefore(a) - placeBefore(b)));
+          this.snackBar.open(
+            $localize`:Message when moving a Task to another place in its Todo List fails:Couldn’t move “${task.title}:title:”. Check your connection and try again.`,
+            $localize`:Dismisses a message:OK`,
+          );
+        },
+      });
   }
 
   /**
@@ -267,4 +299,12 @@ export class TaskList {
   private change(apply: (tasks: Task[]) => Task[]): void {
     if (this.tasks.hasValue()) this.tasks.set(apply(this.tasks.value()));
   }
+}
+
+/** The Tasks, with one moved to just before or just after another. */
+function placed(tasks: Task[], task: Task, placement: Placement, relativeTo: Task): Task[] {
+  const others = tasks.filter((each) => each.id !== task.id);
+  const at =
+    others.findIndex((each) => each.id === relativeTo.id) + (placement === Placement.AFTER ? 1 : 0);
+  return [...others.slice(0, at), task, ...others.slice(at)];
 }

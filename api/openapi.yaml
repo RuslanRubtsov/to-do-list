@@ -311,7 +311,9 @@ paths:
       tags: [Tasks]
       operationId: getTasks
       summary: List a Todo List's Tasks
-      description: Completed or not, in the order they were added.
+      description: |
+        Completed or not, in their manual order: added Tasks go to the end, and moving a Task
+        changes its place. Completing a Task keeps its place.
       responses:
         '200':
           description: The Todo List's Tasks.
@@ -414,6 +416,45 @@ paths:
       responses:
         '204':
           description: Deleted.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/todo-lists/{todoListId}/tasks/{taskId}/move:
+    parameters:
+      - $ref: '#/components/parameters/TodoListId'
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [Tasks]
+      operationId: moveTask
+      summary: Move a Task before or after another Task
+      description: |
+        Changes the Task's place in its Todo List's manual order, the same for everyone. Needs no
+        `version`, and makes no new one: a place isn't something anyone writes over. Placing a Task
+        next to itself leaves it where it is.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskMove'
+      responses:
+        '200':
+          description: The moved Task.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: |
+            The request is invalid (`VALIDATION_FAILED`), for example because `relativeTo` is no
+            Task of this Todo List (`NOT_IN_TODO_LIST`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '404':
@@ -768,6 +809,21 @@ components:
           example: '2026-10-28T14:05:00Z'
         version:
           $ref: '#/components/schemas/Version'
+    TaskMove:
+      type: object
+      required: [placement, relativeTo]
+      properties:
+        placement:
+          $ref: '#/components/schemas/Placement'
+        relativeTo:
+          type: integer
+          format: int64
+          description: The other Task, in the same Todo List.
+          example: 13
+    Placement:
+      type: string
+      description: Whether a moved Task goes just before or just after the other Task.
+      enum: [BEFORE, AFTER]
     Priority:
       type: string
       description: How important a Task is relative to others.
@@ -843,5 +899,6 @@ components:
           type: string
           description: |
             The violated constraint in UPPER_SNAKE_CASE, derived from the Bean Validation
-            constraint name, e.g. `NOT_BLANK`, `SIZE`, `EMAIL`, `PATTERN`.
+            constraint name, e.g. `NOT_BLANK`, `SIZE`, `EMAIL`, `PATTERN`, or named for a rule
+            only the backend can check, e.g. `NOT_IN_TODO_LIST`.
           example: NOT_BLANK

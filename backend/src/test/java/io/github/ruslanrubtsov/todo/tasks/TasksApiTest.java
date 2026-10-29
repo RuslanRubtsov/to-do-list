@@ -1,16 +1,20 @@
 package io.github.ruslanrubtsov.todo.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import io.github.ruslanrubtsov.todo.ApiTest;
+import io.github.ruslanrubtsov.todo.api.model.Placement;
 import io.github.ruslanrubtsov.todo.api.model.Priority;
 import io.github.ruslanrubtsov.todo.api.model.Task;
 import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
+import io.github.ruslanrubtsov.todo.api.model.TaskMove;
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -456,6 +460,151 @@ class TasksApiTest extends ApiTest {
     }
 
     @Nested
+    class Moving {
+
+        private LoggedIn user;
+        private TodoList todoList;
+        private Task milk;
+        private Task bread;
+        private Task eggs;
+
+        @BeforeEach
+        void addThreeTasks() {
+            user = newLoggedInUser();
+            todoList = createTodoList(user, "Groceries");
+            milk = add(user, todoList.getId(), "Milk");
+            bread = add(user, todoList.getId(), "Bread");
+            eggs = add(user, todoList.getId(), "Eggs");
+        }
+
+        @Test
+        void movesATaskToTheStart() {
+            move(eggs, Placement.BEFORE, milk);
+
+            assertThat(titles()).containsExactly("Eggs", "Milk", "Bread");
+        }
+
+        @Test
+        void movesATaskToTheEnd() {
+            move(milk, Placement.AFTER, eggs);
+
+            assertThat(titles()).containsExactly("Bread", "Eggs", "Milk");
+        }
+
+        @Test
+        void movesATaskBetweenTwoOthers() {
+            move(eggs, Placement.AFTER, milk);
+            assertThat(titles()).containsExactly("Milk", "Eggs", "Bread");
+
+            move(milk, Placement.BEFORE, bread);
+            assertThat(titles()).containsExactly("Eggs", "Milk", "Bread");
+        }
+
+        @Test
+        void addsNewTasksAtTheEndAfterAMove() {
+            move(eggs, Placement.BEFORE, milk);
+            add(user, todoList.getId(), "Butter");
+
+            assertThat(titles()).containsExactly("Eggs", "Milk", "Bread", "Butter");
+        }
+
+        @Test
+        void renumbersTheTodoListOnceNoGapIsLeft() {
+            // Each move takes the place right after Milk, halving the gap there, until none is left
+            List<String> expected = new ArrayList<>(List.of("Milk", "Bread", "Eggs"));
+            for (int move = 0; move < 12; move++) {
+                Task moved = move % 2 == 0 ? eggs : bread;
+                move(moved, Placement.AFTER, milk);
+                expected.remove(moved.getTitle());
+                expected.add(1, moved.getTitle());
+
+                assertThat(titles()).containsExactlyElementsOf(expected);
+            }
+            move(milk, Placement.AFTER, eggs);
+            expected.remove("Milk");
+            expected.add(expected.indexOf("Eggs") + 1, "Milk");
+            assertThat(titles()).containsExactlyElementsOf(expected);
+        }
+
+        @Test
+        void makesNoNewVersionsEvenWhenRenumbering() {
+            for (int move = 0; move < 12; move++) {
+                move(move % 2 == 0 ? eggs : bread, Placement.AFTER, milk);
+            }
+
+            assertThat(listing(user, todoList.getId()))
+                    .extracting(Task::getId, Task::getVersion)
+                    .containsExactlyInAnyOrder(
+                            tuple(milk.getId(), milk.getVersion()),
+                            tuple(bread.getId(), bread.getVersion()),
+                            tuple(eggs.getId(), eggs.getVersion()));
+        }
+
+        @Test
+        void completedTasksKeepTheirPlace() {
+            completing(user, todoList.getId(), bread.getId());
+            move(eggs, Placement.BEFORE, milk);
+            assertThat(titles()).containsExactly("Eggs", "Milk", "Bread");
+
+            changingCompletion(HttpMethod.DELETE, user, todoList.getId(), bread.getId())
+                    .expectStatus()
+                    .isOk();
+            assertThat(titles()).containsExactly("Eggs", "Milk", "Bread");
+        }
+
+        @Test
+        void placingATaskNextToItselfLeavesItWhereItIs() {
+            Task moved = move(bread, Placement.BEFORE, bread);
+
+            assertThat(moved).isEqualTo(bread);
+            assertThat(titles()).containsExactly("Milk", "Bread", "Eggs");
+        }
+
+        @Test
+        void refusesToPlaceATaskNextToOneInAnotherTodoList() {
+            TodoList work = createTodoList(user, "Work");
+            Task report = add(user, work.getId(), "Write report");
+
+            refusesField(
+                    moving(user, todoList.getId(), milk.getId(), Placement.AFTER, report.getId()),
+                    "relativeTo",
+                    "NOT_IN_TODO_LIST");
+            assertThat(titles()).containsExactly("Milk", "Bread", "Eggs");
+        }
+
+        @Test
+        void needsAPlacement() {
+            api.post()
+                    .uri("/api/v1/todo-lists/{todoListId}/tasks/{taskId}/move", todoList.getId(), milk.getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("relativeTo", eggs.getId()))
+                    .exchange()
+                    .expectStatus()
+                    .isBadRequest()
+                    .expectBody()
+                    .jsonPath("$.errors[0].field")
+                    .isEqualTo("placement");
+        }
+
+        @Test
+        void isReachedOnlyThroughItsOwnTodoList() {
+            TodoList work = createTodoList(user, "Work");
+
+            isNotFound(moving(user, work.getId(), milk.getId(), Placement.AFTER, eggs.getId()));
+            assertThat(titles()).containsExactly("Milk", "Bread", "Eggs");
+        }
+
+        private Task move(Task task, Placement placement, Task relativeTo) {
+            return read(moving(user, todoList.getId(), task.getId(), placement, relativeTo.getId()));
+        }
+
+        private List<String> titles() {
+            return listing(user, todoList.getId()).stream().map(Task::getTitle).toList();
+        }
+    }
+
+    @Nested
     class InAnotherUsersTodoList {
 
         private LoggedIn owner;
@@ -505,6 +654,14 @@ class TasksApiTest extends ApiTest {
                     task.getId(),
                     new TaskDetails("Mine now", Priority.HIGH, task.getVersion())));
             assertThat(listing(owner, todoList.getId())).containsExactly(task);
+        }
+
+        @Test
+        void aTaskCannotBeMoved() {
+            Task other = add(owner, todoList.getId(), "Other");
+
+            isNotFound(moving(stranger, todoList.getId(), task.getId(), Placement.AFTER, other.getId()));
+            assertThat(listing(owner, todoList.getId())).containsExactly(task, other);
         }
 
         @Test
@@ -590,6 +747,16 @@ class TasksApiTest extends ApiTest {
                 .expectBody(Task.class)
                 .returnResult()
                 .getResponseBody());
+    }
+
+    private RestTestClient.ResponseSpec moving(
+            LoggedIn user, long todoListId, long taskId, Placement placement, long relativeTo) {
+        return api.post()
+                .uri("/api/v1/todo-lists/{todoListId}/tasks/{taskId}/move", todoListId, taskId)
+                .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new TaskMove(placement, relativeTo))
+                .exchange();
     }
 
     private RestTestClient.ResponseSpec deleting(LoggedIn user, long todoListId, long taskId) {

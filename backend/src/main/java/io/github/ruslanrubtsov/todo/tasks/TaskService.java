@@ -1,16 +1,21 @@
 package io.github.ruslanrubtsov.todo.tasks;
 
 import static io.github.ruslanrubtsov.todo.web.error.Problems.editConflict;
+import static io.github.ruslanrubtsov.todo.web.error.Problems.invalidField;
 import static io.github.ruslanrubtsov.todo.web.error.Problems.problem;
 
 import io.github.ruslanrubtsov.todo.api.model.ErrorCode;
+import io.github.ruslanrubtsov.todo.api.model.Placement;
 import io.github.ruslanrubtsov.todo.api.model.Task;
 import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
+import io.github.ruslanrubtsov.todo.api.model.TaskMove;
 import io.github.ruslanrubtsov.todo.todolists.TodoListAccess;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalLong;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,15 +36,18 @@ class TaskService {
     @Transactional(readOnly = true)
     List<Task> list(long userId, long todoListId) {
         access.requireOwned(userId, todoListId);
-        return tasks.findByTodoListIdOrderById(todoListId).stream()
+        return tasks.findByTodoListIdOrderByPositionAscIdAsc(todoListId).stream()
                 .map(this::toApi)
                 .toList();
     }
 
+    /** Adds the Task at the end of the Todo List, after any other being added or moved meanwhile. */
     @Transactional
     Task create(long userId, long todoListId, String title) {
-        access.requireOwned(userId, todoListId);
-        return toApi(tasks.save(new TaskEntity(todoListId, title)));
+        access.lockOwned(userId, todoListId);
+        long position =
+                TaskPositions.between(tasks.findLastPosition(todoListId), null).orElseThrow();
+        return toApi(tasks.save(new TaskEntity(todoListId, title, position)));
     }
 
     @Transactional(readOnly = true)
@@ -70,6 +78,43 @@ class TaskService {
         TaskEntity task = reachable(userId, todoListId, taskId);
         task.uncomplete();
         return flushedToApi(task);
+    }
+
+    /**
+     * Places the Task just before or after another of its Todo List, between that one and its
+     * neighbour; when no gap is left there, renumbers the whole Todo List.
+     */
+    @Transactional
+    Task move(long userId, long todoListId, long taskId, TaskMove move) {
+        // One move at a time, so that each sees the order the one before it left
+        access.lockOwned(userId, todoListId);
+        TaskEntity task = reachable(userId, todoListId, taskId);
+        if (move.getRelativeTo() == taskId) return toApi(task);
+        // In order, without the Task being moved
+        List<TaskEntity> others = new ArrayList<>(tasks.findByTodoListIdOrderByPositionAscIdAsc(todoListId));
+        others.remove(task);
+        int relativeToIndex = indexOf(others, move.getRelativeTo());
+        if (relativeToIndex < 0) throw invalidField("relativeTo", "NOT_IN_TODO_LIST");
+        int at = move.getPlacement() == Placement.BEFORE ? relativeToIndex : relativeToIndex + 1;
+
+        OptionalLong position = TaskPositions.between(
+                at > 0 ? others.get(at - 1).getPosition() : null,
+                at < others.size() ? others.get(at).getPosition() : null);
+        if (position.isPresent()) {
+            task.moveTo(position.getAsLong());
+        } else {
+            others.add(at, task);
+            long[] renumbered = TaskPositions.renumbered(others.size());
+            for (int i = 0; i < others.size(); i++) others.get(i).moveTo(renumbered[i]);
+        }
+        return flushedToApi(task);
+    }
+
+    private static int indexOf(List<TaskEntity> tasks, long taskId) {
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).getId() == taskId) return i;
+        }
+        return -1;
     }
 
     @Transactional

@@ -15,6 +15,11 @@ export function completionRequest(method: 'PUT' | 'DELETE', todoListId: number, 
   return { method, url: `/api/v1/todo-lists/${todoListId}/tasks/${taskId}/completion` };
 }
 
+/** Moving a Task before or after another. */
+export function moveRequest(todoListId: number, taskId: number) {
+  return { method: 'POST', url: `/api/v1/todo-lists/${todoListId}/tasks/${taskId}/move` };
+}
+
 /** An open Task, as the backend adds one. */
 export function openTask(id: number, title: string): Task {
   return {

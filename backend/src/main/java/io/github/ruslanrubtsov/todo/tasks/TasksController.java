@@ -4,6 +4,7 @@ import io.github.ruslanrubtsov.todo.api.TasksApi;
 import io.github.ruslanrubtsov.todo.api.model.Task;
 import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
 import io.github.ruslanrubtsov.todo.api.model.TaskDraft;
+import io.github.ruslanrubtsov.todo.api.model.TaskMove;
 import io.github.ruslanrubtsov.todo.auth.CurrentUser;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,11 @@ class TasksController implements TasksApi {
     @Override
     public ResponseEntity<Task> uncompleteTask(Long todoListId, Long taskId) {
         return ResponseEntity.ok(taskService.uncomplete(CurrentUser.id(), todoListId, taskId));
+    }
+
+    @Override
+    public ResponseEntity<Task> moveTask(Long todoListId, Long taskId, TaskMove taskMove) {
+        return ResponseEntity.ok(taskService.move(CurrentUser.id(), todoListId, taskId, taskMove));
     }
 
     @Override

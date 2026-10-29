@@ -848,5 +848,14 @@
         <target>Хтось інший змінив цей список справ, поки ви його перейменовували. Ось його найновіша назва: перейменуйте його ще раз, якщо досі бажаєте.</target>
       </segment>
     </unit>
+    <unit id="5819625064329782864">
+      <notes>
+        <note category="description">Message when moving a Task to another place in its Todo List fails</note>
+      </notes>
+      <segment state="translated">
+        <source>Couldn’t move “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
+        <target>Не вдалося перемістити «<ph id="0" equiv="title" disp="task.title"/>». Перевірте з’єднання і спробуйте ще раз.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>
