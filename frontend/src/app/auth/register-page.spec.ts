@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { answerAppInfo } from '../../testing/app-info';
+import { answerStartPage } from '../../testing/start-page';
 import { renderRoute } from '../../testing/routed-page';
 import { LOGIN, REGISTER, LOGGED_IN } from '../../testing/session';
 import { answerTodoLists } from '../../testing/todo-lists';
@@ -44,7 +44,7 @@ describe('Registration page', () => {
     const login = page.http.expectOne(LOGIN);
     expect(login.request.body).toEqual({ email: 'olena@example.com', password: 'correct-horse-7' });
     login.flush(LOGGED_IN);
-    await answerAppInfo(page.http);
+    await answerStartPage(page.http);
     await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/');
@@ -58,7 +58,7 @@ describe('Registration page', () => {
     page.click('Create account');
     page.http.expectOne(REGISTER).flush(LOGGED_IN.user, { status: 201, statusText: 'Created' });
     page.http.expectOne(LOGIN).flush(LOGGED_IN);
-    await answerAppInfo(page.http);
+    await answerStartPage(page.http);
     await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/?view=bookmarked');

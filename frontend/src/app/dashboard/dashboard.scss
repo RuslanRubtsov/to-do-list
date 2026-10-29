@@ -1,0 +1,62 @@
+:host {
+  display: block;
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: 12px 16px;
+    border-radius: var(--mat-sys-corner-medium);
+    background: var(--mat-sys-surface-container);
+    font: var(--mat-sys-title-small);
+  }
+
+  .alert {
+    color: var(--mat-sys-error);
+  }
+}
+
+h2 {
+  margin: 16px 0 4px;
+  font: var(--mat-sys-title-medium);
+}
+
+.tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    overflow-wrap: anywhere;
+  }
+
+  // In line with the title, past the checkbox
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin: 0 0 4px 40px;
+    font: var(--mat-sys-body-small);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  li.overdue .due {
+    color: var(--mat-sys-error);
+    font-weight: 500;
+  }
+}
+
+.nothing {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.failure {
+  color: var(--mat-sys-error);
+}

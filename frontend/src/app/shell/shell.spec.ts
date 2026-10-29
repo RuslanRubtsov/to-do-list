@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { answerAppInfo } from '../../testing/app-info';
+import { answerStartPage } from '../../testing/start-page';
 import { DESKTOP, emulateMedia, Media, PHONE } from '../../testing/media';
 import { renderRoute } from '../../testing/routed-page';
 import { LOGGED_IN, LOGOUT } from '../../testing/session';
@@ -64,7 +64,7 @@ describe('App shell', () => {
     async function renderShellAt(url: string) {
       emulateMedia(DESKTOP);
       const shell = await renderRoute(url);
-      await answerAppInfo(shell.http);
+      await answerStartPage(shell.http);
       return shell;
     }
 

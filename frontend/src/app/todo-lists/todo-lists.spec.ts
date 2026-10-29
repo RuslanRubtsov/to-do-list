@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { TodoList } from '@api';
-import { answerAppInfo } from '../../testing/app-info';
+import { answerStartPage } from '../../testing/start-page';
 import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute, snackBarText } from '../../testing/routed-page';
 import { LAZY_ROUTE_WAIT, LOGOUT } from '../../testing/session';
@@ -23,7 +23,7 @@ import { answerTodoListPage, renderTodoListPage } from '../../testing/todo-list-
 async function renderStart(todoLists: TodoList[]) {
   emulateMedia(DESKTOP);
   const page = await renderRoute('/', { todoLists });
-  await answerAppInfo(page.http);
+  await answerStartPage(page.http);
   await page.text();
   return page;
 }
@@ -210,7 +210,7 @@ describe('Todo Lists', () => {
       page.click('Delete Todo List');
       await page.text();
       page.click('Delete');
-      await answerAppInfo(page.http);
+      await answerStartPage(page.http);
       await page.text();
     }
 

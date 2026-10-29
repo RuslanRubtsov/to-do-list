@@ -1,6 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Language } from '@api';
+import { DASHBOARD_REQUEST, EMPTY_DASHBOARD } from '../../testing/dashboard';
 import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute } from '../../testing/routed-page';
 import { LOGGED_IN } from '../../testing/session';
@@ -15,6 +16,7 @@ describe('Session', () => {
     // renderRoute answers the refresh request the page load makes with a session
     const page = await renderRoute('/');
     page.http.expectOne('/api/v1/app-info').flush(APP_INFO);
+    page.http.expectOne(DASHBOARD_REQUEST).flush(EMPTY_DASHBOARD);
 
     expect(await page.url()).toBe('/');
     expect(await page.text()).toContain(LOGGED_IN.user.displayName);
@@ -37,6 +39,7 @@ describe('Session', () => {
   it('stays in this build when the User prefers its language', async () => {
     const page = await renderRoute('/');
     page.http.expectOne('/api/v1/app-info').flush(APP_INFO);
+    page.http.expectOne(DASHBOARD_REQUEST).flush(EMPTY_DASHBOARD);
 
     expect(page.pageLoads()).toEqual([]);
   });
@@ -47,6 +50,7 @@ describe('Session', () => {
     const appInfo = page.http.expectOne('/api/v1/app-info');
     expect(appInfo.request.headers.get('Authorization')).toBe(`Bearer ${LOGGED_IN.accessToken}`);
     appInfo.flush(APP_INFO);
+    page.http.expectOne(DASHBOARD_REQUEST).flush(EMPTY_DASHBOARD);
   });
 
   it('is required by the app: visitors are sent to log in, to come back afterwards', async () => {

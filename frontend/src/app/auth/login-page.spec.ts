@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { answerAppInfo } from '../../testing/app-info';
+import { answerStartPage } from '../../testing/start-page';
 import { renderRoute } from '../../testing/routed-page';
 import { LOGIN, LOGGED_IN } from '../../testing/session';
 import { answerTodoLists } from '../../testing/todo-lists';
@@ -22,7 +22,7 @@ describe('Login page', () => {
     const login = page.http.expectOne(LOGIN);
     expect(login.request.body).toEqual({ email: 'olena@example.com', password: 'correct-horse-7' });
     login.flush(LOGGED_IN);
-    await answerAppInfo(page.http);
+    await answerStartPage(page.http);
     await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/');
@@ -37,7 +37,7 @@ describe('Login page', () => {
     await page.fill('Password', 'correct-horse-7');
     page.click('Log in');
     page.http.expectOne(LOGIN).flush(LOGGED_IN);
-    await answerAppInfo(page.http);
+    await answerStartPage(page.http);
     await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/?view=bookmarked');
@@ -66,7 +66,7 @@ describe('Login page', () => {
     await page.fill('Password', 'correct-horse-7');
     page.click('Log in');
     page.http.expectOne(LOGIN).flush(LOGGED_IN);
-    await answerAppInfo(page.http);
+    await answerStartPage(page.http);
     await answerTodoLists(page.http);
 
     expect(await page.url()).toBe('/');
@@ -120,7 +120,7 @@ describe('Login page', () => {
 
   it('sends a User who is already logged in to the app', async () => {
     const page = await renderRoute('/login');
-    await answerAppInfo(page.http);
+    await answerStartPage(page.http);
 
     expect(await page.url()).toBe('/');
   });

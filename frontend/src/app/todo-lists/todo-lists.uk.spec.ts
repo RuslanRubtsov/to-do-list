@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { answerAppInfo } from '../../testing/app-info';
+import { answerStartPage } from '../../testing/start-page';
 import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute } from '../../testing/routed-page';
 import { renderTodoListPage } from '../../testing/todo-list-page';
@@ -25,7 +25,7 @@ describe('Todo Lists in Ukrainian', () => {
       openTaskCount,
     }));
     const page = await renderRoute('/', { locale: 'uk', todoLists });
-    await answerAppInfo(page.http);
+    await answerStartPage(page.http);
     await page.text();
     return page;
   }

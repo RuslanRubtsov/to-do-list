@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { answerAppInfo } from '../../testing/app-info';
+import { answerStartPage } from '../../testing/start-page';
 import { snackBarText } from '../../testing/routed-page';
 import { renderTodoListPage } from '../../testing/todo-list-page';
 import { GARDEN, GROCERIES } from '../../testing/todo-lists';
@@ -28,7 +28,7 @@ describe('Leaving a Todo List', () => {
     await vi
       .waitFor(() => page.http.expectOne(LEAVE))
       .then((request) => request.flush(null, { status: 204, statusText: 'No Content' }));
-    await answerAppInfo(page.http);
+    await answerStartPage(page.http);
 
     expect(await page.url()).toBe('/');
     expect(page.has('Garden, no open Tasks, Taras · Editor')).toBe(false);

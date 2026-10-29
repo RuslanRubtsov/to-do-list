@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AppInfo } from '@api';
-import { renderRoute } from '../../testing/routed-page';
+import { renderStartPage } from '../../testing/start-page';
 
 /** Locale smoke test: the start page rendered with the Ukrainian translations and locale data. */
 describe('Start page in Ukrainian', () => {
@@ -20,7 +20,7 @@ describe('Start page in Ukrainian', () => {
   async function renderBuiltDaysAgo(days: number): Promise<string> {
     const buildTime = new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
     const appInfo: AppInfo = { name: 'todo-backend', version: '1.4.2', buildTime };
-    const page = await renderRoute('/', { locale: 'uk' });
+    const page = await renderStartPage('/', { locale: 'uk' });
     page.http.expectOne('/api/v1/app-info').flush(appInfo);
     return page.text();
   }

@@ -24,6 +24,7 @@
       <notes>
         <note category="location">src/app/auth/login-page.html:21,24</note>
         <note category="location">src/app/auth/register-page.html:13,17</note>
+        <note category="location">src/app/dashboard/dashboard.html:62,65</note>
         <note category="location">src/app/profile/profile-page.html:40,43</note>
         <note category="location">src/app/tasks/task-details-dialog.html:75,79</note>
         <note category="location">src/app/tasks/task-list.html:30,34</note>
@@ -41,6 +42,7 @@
       <notes>
         <note category="location">src/app/auth/login-page.html:29,33</note>
         <note category="location">src/app/auth/register-page.html:21,27</note>
+        <note category="location">src/app/dashboard/dashboard.html:66,70</note>
         <note category="location">src/app/profile/profile-page.html:48,52</note>
         <note category="location">src/app/tasks/task-details-dialog.html:82,87</note>
         <note category="location">src/app/tasks/task-list.html:37,43</note>
@@ -269,6 +271,151 @@
         <source>Already have an account?</source>
       </segment>
     </unit>
+    <unit id="2567868871918748923">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:3</note>
+        <note category="description">Dashboard: accessible name of the counts</note>
+      </notes>
+      <segment>
+        <source>Counts</source>
+      </segment>
+    </unit>
+    <unit id="7485837287316399366">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:7,10</note>
+        <note category="description">Dashboard: how many Tasks are open, across the User&apos;s Todo Lists</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, =1 {1 open Task} other {<ph id="0" equiv="INTERPOLATION"/> open Tasks}}</source>
+      </segment>
+    </unit>
+    <unit id="5920305514843353999">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:11,15</note>
+        <note category="description">Dashboard: how many open Tasks are Overdue</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, =1 {1 Overdue Task} other {<ph id="0" equiv="INTERPOLATION"/> Overdue Tasks}}</source>
+      </segment>
+    </unit>
+    <unit id="1491259484592657584">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:17,21</note>
+        <note category="description">Dashboard: how many open Tasks are due today</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, =1 {1 Task due today} other {<ph id="0" equiv="INTERPOLATION"/> Tasks due today}}</source>
+      </segment>
+    </unit>
+    <unit id="3631774319392189196">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:25,28</note>
+        <note category="description">Dashboard: how many Tasks were Completed since Monday</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, =1 {1 Task Completed this week} other {<ph id="0" equiv="INTERPOLATION"/> Tasks Completed this week}}</source>
+      </segment>
+    </unit>
+    <unit id="8547153724791757236">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:34,36</note>
+        <note category="location">src/app/tasks/task-list.html:259,261</note>
+        <note category="description">Dashboard: heading above the Overdue Tasks</note>
+      </notes>
+      <segment>
+        <source>Overdue</source>
+      </segment>
+    </unit>
+    <unit id="6506855098610817078">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:40,42</note>
+        <note category="description">Dashboard: heading above the Tasks due today</note>
+      </notes>
+      <segment>
+        <source>Due today</source>
+      </segment>
+    </unit>
+    <unit id="121775559725494805">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:47,50</note>
+        <note category="description">Dashboard: heading above the Tasks due in the next 7 days</note>
+      </notes>
+      <segment>
+        <source> Next 7 days </source>
+      </segment>
+    </unit>
+    <unit id="4056831750784140514">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:55,59</note>
+        <note category="description">Dashboard: shown when no open Task is Overdue or due within a week</note>
+      </notes>
+      <segment>
+        <source> Nothing is Overdue or due in the next 7 days. </source>
+      </segment>
+    </unit>
+    <unit id="5171192616638755303">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:71,74</note>
+        <note category="location">src/app/shell/shell.html:121,124</note>
+        <note category="location">src/app/start/start-page.html:43,46</note>
+        <note category="location">src/app/tasks/task-list.html:182,185</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:100,103</note>
+        <note category="description">Button: try loading again</note>
+      </notes>
+      <segment>
+        <source> Retry </source>
+      </segment>
+    </unit>
+    <unit id="7619560701830330401">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:78</note>
+        <note category="location">src/app/start/start-page.html:50</note>
+        <note category="location">src/app/tasks/task-list.html:189</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:107</note>
+        <note category="description">Accessible label for a loading spinner</note>
+      </notes>
+      <segment>
+        <source>Loading</source>
+      </segment>
+    </unit>
+    <unit id="6913269017372461873">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.html:97,98</note>
+        <note category="location">src/app/tasks/task-list.html:266,268</note>
+        <note category="description">When a Task is due: a date, or a word for one close by, such as tomorrow</note>
+      </notes>
+      <segment>
+        <source>Due <ph id="0" equiv="INTERPOLATION" disp="{{ each.task.dueDate | relativeDate }}"/></source>
+      </segment>
+    </unit>
+    <unit id="8157617093372436090">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.ts:96</note>
+        <note category="location">src/app/tasks/task-list.ts:236</note>
+        <note category="description">Message when completing a Task, or taking that back, fails</note>
+      </notes>
+      <segment>
+        <source>Couldn’t change “<ph id="0" equiv="title" disp="task.task.title"/>”. Check your connection and try again.</source>
+      </segment>
+    </unit>
+    <unit id="8998179362936748717">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard.ts:97</note>
+        <note category="location">src/app/shell/shell.ts:88</note>
+        <note category="location">src/app/shell/shell.ts:103</note>
+        <note category="location">src/app/tasks/task-list.ts:237</note>
+        <note category="location">src/app/tasks/task-list.ts:268</note>
+        <note category="location">src/app/tasks/task-list.ts:350</note>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:122</note>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:139</note>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:145</note>
+        <note category="location">src/app/todo-lists/todo-lists.ts:92</note>
+        <note category="description">Dismisses a message</note>
+      </notes>
+      <segment>
+        <source>OK</source>
+      </segment>
+    </unit>
     <unit id="4915431133669985304">
       <notes>
         <note category="location">src/app/profile/profile-page.html:3,4</note>
@@ -380,18 +527,6 @@
         <source> Couldn’t load your Todo Lists. </source>
       </segment>
     </unit>
-    <unit id="5171192616638755303">
-      <notes>
-        <note category="location">src/app/shell/shell.html:121,124</note>
-        <note category="location">src/app/start/start-page.html:41,44</note>
-        <note category="location">src/app/tasks/task-list.html:182,185</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:100,103</note>
-        <note category="description">Button: try loading again</note>
-      </notes>
-      <segment>
-        <source> Retry </source>
-      </segment>
-    </unit>
     <unit id="3722967224215437913">
       <notes>
         <note category="location">src/app/shell/shell.html:142,146</note>
@@ -455,23 +590,6 @@
         <source>Couldn&apos;t switch the language. Check your connection and try again.</source>
       </segment>
     </unit>
-    <unit id="8998179362936748717">
-      <notes>
-        <note category="location">src/app/shell/shell.ts:88</note>
-        <note category="location">src/app/shell/shell.ts:103</note>
-        <note category="location">src/app/tasks/task-list.ts:237</note>
-        <note category="location">src/app/tasks/task-list.ts:268</note>
-        <note category="location">src/app/tasks/task-list.ts:350</note>
-        <note category="location">src/app/todo-lists/todo-list-page.ts:122</note>
-        <note category="location">src/app/todo-lists/todo-list-page.ts:139</note>
-        <note category="location">src/app/todo-lists/todo-list-page.ts:145</note>
-        <note category="location">src/app/todo-lists/todo-lists.ts:92</note>
-        <note category="description">Dismisses a message</note>
-      </notes>
-      <segment>
-        <source>OK</source>
-      </segment>
-    </unit>
     <unit id="4200230781799182271">
       <notes>
         <note category="location">src/app/shell/shell.ts:102</note>
@@ -483,7 +601,7 @@
     </unit>
     <unit id="1360286660327265296">
       <notes>
-        <note category="location">src/app/start/start-page.html:9,11</note>
+        <note category="location">src/app/start/start-page.html:11,13</note>
         <note category="description">Start page: label for the backend service&apos;s name</note>
       </notes>
       <segment>
@@ -492,7 +610,7 @@
     </unit>
     <unit id="2724055831234181057">
       <notes>
-        <note category="location">src/app/start/start-page.html:11,13</note>
+        <note category="location">src/app/start/start-page.html:13,15</note>
         <note category="description">Start page: label for the backend&apos;s version number</note>
       </notes>
       <segment>
@@ -501,7 +619,7 @@
     </unit>
     <unit id="1212905061360073382">
       <notes>
-        <note category="location">src/app/start/start-page.html:13,15</note>
+        <note category="location">src/app/start/start-page.html:15,17</note>
         <note category="description">Start page: label for the date the backend was built</note>
       </notes>
       <segment>
@@ -510,7 +628,7 @@
     </unit>
     <unit id="1454943198600318526">
       <notes>
-        <note category="location">src/app/start/start-page.html:18,22</note>
+        <note category="location">src/app/start/start-page.html:20,24</note>
         <note category="description">Start page: how long ago the backend was built, after its build date</note>
       </notes>
       <segment>
@@ -519,7 +637,7 @@
     </unit>
     <unit id="8787142347012521211">
       <notes>
-        <note category="location">src/app/start/start-page.html:31,34</note>
+        <note category="location">src/app/start/start-page.html:33,36</note>
         <note category="description">Start page: error when the backend doesn&apos;t respond</note>
       </notes>
       <segment>
@@ -528,22 +646,11 @@
     </unit>
     <unit id="5775044510211148825">
       <notes>
-        <note category="location">src/app/start/start-page.html:36,40</note>
+        <note category="location">src/app/start/start-page.html:38,42</note>
         <note category="description">Start page: error when the backend responds with a failure</note>
       </notes>
       <segment>
         <source>The server ran into a problem. Try again in a moment.</source>
-      </segment>
-    </unit>
-    <unit id="7619560701830330401">
-      <notes>
-        <note category="location">src/app/start/start-page.html:48</note>
-        <note category="location">src/app/tasks/task-list.html:189</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:107</note>
-        <note category="description">Accessible label for a loading spinner</note>
-      </notes>
-      <segment>
-        <source>Loading</source>
       </segment>
     </unit>
     <unit id="922482600342048186">
@@ -926,33 +1033,6 @@
       </notes>
       <segment>
         <source>Low Priority</source>
-      </segment>
-    </unit>
-    <unit id="8547153724791757236">
-      <notes>
-        <note category="location">src/app/tasks/task-list.html:259,261</note>
-        <note category="description">Marker of an Overdue Task</note>
-      </notes>
-      <segment>
-        <source>Overdue</source>
-      </segment>
-    </unit>
-    <unit id="6913269017372461873">
-      <notes>
-        <note category="location">src/app/tasks/task-list.html:266,268</note>
-        <note category="description">When a Task is due: a date, or a word for one close by, such as tomorrow</note>
-      </notes>
-      <segment>
-        <source>Due <ph id="0" equiv="INTERPOLATION" disp="{{ task.dueDate | relativeDate }}"/></source>
-      </segment>
-    </unit>
-    <unit id="8157617093372436090">
-      <notes>
-        <note category="location">src/app/tasks/task-list.ts:236</note>
-        <note category="description">Message when completing a Task, or taking that back, fails</note>
-      </notes>
-      <segment>
-        <source>Couldn’t change “<ph id="0" equiv="title" disp="task.title"/>”. Check your connection and try again.</source>
       </segment>
     </unit>
     <unit id="5819625064329782864">

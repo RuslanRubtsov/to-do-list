@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AppInfo } from '@api';
-import { renderRoute } from '../../testing/routed-page';
+import { renderStartPage } from '../../testing/start-page';
 
 const APP_INFO_REQUEST = { method: 'GET', url: '/api/v1/app-info' };
 const APP_INFO: AppInfo = {
@@ -28,7 +28,7 @@ describe('Start page', () => {
   });
 
   it('shows the backend name and version', async () => {
-    const page = await renderRoute('/');
+    const page = await renderStartPage('/');
 
     page.http.expectOne(APP_INFO_REQUEST).flush(APP_INFO);
 
@@ -38,7 +38,7 @@ describe('Start page', () => {
   });
 
   it('shows when the backend was built and how long ago', async () => {
-    const page = await renderRoute('/');
+    const page = await renderStartPage('/');
 
     page.http.expectOne(APP_INFO_REQUEST).flush(APP_INFO);
 
@@ -46,7 +46,7 @@ describe('Start page', () => {
   });
 
   it('says a backend built today was built today', async () => {
-    const page = await renderRoute('/');
+    const page = await renderStartPage('/');
 
     page.http.expectOne(APP_INFO_REQUEST).flush({ ...APP_INFO, buildTime: '2026-10-27T08:00:00Z' });
 
@@ -54,7 +54,7 @@ describe('Start page', () => {
   });
 
   it('shows an error when the backend is unreachable', async () => {
-    const page = await renderRoute('/');
+    const page = await renderStartPage('/');
 
     failAsUnreachable(page.http);
 
@@ -62,7 +62,7 @@ describe('Start page', () => {
   });
 
   it('treats a gateway error from the reverse proxy as an unreachable backend', async () => {
-    const page = await renderRoute('/');
+    const page = await renderStartPage('/');
 
     page.http
       .expectOne(APP_INFO_REQUEST)
@@ -72,7 +72,7 @@ describe('Start page', () => {
   });
 
   it('tells a server failure apart from an unreachable backend', async () => {
-    const page = await renderRoute('/');
+    const page = await renderStartPage('/');
 
     page.http
       .expectOne(APP_INFO_REQUEST)
@@ -87,7 +87,7 @@ describe('Start page', () => {
   });
 
   it('loads the app info again when retrying after an error', async () => {
-    const page = await renderRoute('/');
+    const page = await renderStartPage('/');
     failAsUnreachable(page.http);
     await page.text();
 

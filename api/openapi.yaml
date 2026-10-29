@@ -40,6 +40,10 @@ tags:
       Sharing a Todo List with other Users, as Viewers or Editors. Only its Owner Shares it, sees
       whom it is Shared with, changes their roles and revokes their Shares; a User it is Shared
       with may leave it.
+  - name: Dashboard
+    description: |
+      What needs attention across every Todo List the User can access: those they own and those
+      Shared with them.
   - name: Tasks
     description: |
       The Tasks of a Todo List. A Task is reached only through its own Todo List: one in another
@@ -210,6 +214,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/dashboard:
+    get:
+      tags: [Dashboard]
+      operationId: getDashboard
+      summary: What needs attention across the current User's Todo Lists
+      description: |
+        Counts of Tasks, and the open Tasks that are Overdue, due today, or due in the next 7 days,
+        across every Todo List the User owns or that is Shared with them. Today is reckoned in the
+        app's time zone. Each section lists at most 50 Tasks, soonest due first, then by Priority,
+        High first; the counts are of all of them.
+      responses:
+        '200':
+          description: The User's dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         default:
@@ -972,6 +997,69 @@ components:
           type: string
           description: The display name of the User who owns it.
           example: Olena
+    Dashboard:
+      type: object
+      required: [counts, overdue, dueToday, upcoming]
+      properties:
+        counts:
+          $ref: '#/components/schemas/DashboardCounts'
+        overdue:
+          type: array
+          description: Open Tasks whose Due Date has passed.
+          items:
+            $ref: '#/components/schemas/DashboardTask'
+        dueToday:
+          type: array
+          description: Open Tasks due today.
+          items:
+            $ref: '#/components/schemas/DashboardTask'
+        upcoming:
+          type: array
+          description: Open Tasks due in the next 7 days, after today.
+          items:
+            $ref: '#/components/schemas/DashboardTask'
+    DashboardCounts:
+      type: object
+      required: [open, overdue, dueToday, completedThisWeek]
+      properties:
+        open:
+          type: integer
+          description: Tasks not Completed.
+          example: 12
+        overdue:
+          type: integer
+          description: Open Tasks whose Due Date has passed.
+          example: 2
+        dueToday:
+          type: integer
+          description: Open Tasks due today.
+          example: 3
+        completedThisWeek:
+          type: integer
+          description: Tasks Completed since the start of this week, Monday.
+          example: 5
+    DashboardTask:
+      type: object
+      required: [task, todoList]
+      properties:
+        task:
+          $ref: '#/components/schemas/Task'
+        todoList:
+          $ref: '#/components/schemas/DashboardTodoList'
+    DashboardTodoList:
+      type: object
+      description: The Todo List a Task on the dashboard is in.
+      required: [id, name, role]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 7
+        name:
+          type: string
+          example: Groceries
+        role:
+          $ref: '#/components/schemas/TodoListRole'
     TodoListRole:
       type: string
       description: |

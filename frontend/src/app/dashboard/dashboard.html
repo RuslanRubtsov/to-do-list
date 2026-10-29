@@ -1,0 +1,103 @@
+@if (dashboard.value(); as dashboard) {
+  @let counts = dashboard.counts;
+  <ul class="counts" aria-label="Counts" i18n-aria-label="Dashboard: accessible name of the counts">
+    <li>
+      <ng-container
+        i18n="Dashboard: how many Tasks are open, across the User's Todo Lists"
+        >{counts.open, plural, =1 {1 open Task} other {{{ counts.open }} open Tasks}}</ng-container
+      >
+    </li>
+    <li [class.alert]="counts.overdue > 0">
+      <ng-container i18n="Dashboard: how many open Tasks are Overdue">{counts.overdue, plural,
+        =1 {1 Overdue Task}
+        other {{{ counts.overdue }} Overdue Tasks}
+      }</ng-container>
+    </li>
+    <li>
+      <ng-container i18n="Dashboard: how many open Tasks are due today">{counts.dueToday, plural,
+        =1 {1 Task due today}
+        other {{{ counts.dueToday }} Tasks due today}
+      }</ng-container>
+    </li>
+    <li>
+      <ng-container
+        i18n="Dashboard: how many Tasks were Completed since Monday"
+        >{counts.completedThisWeek, plural,
+          =1 {1 Task Completed this week}
+          other {{{ counts.completedThisWeek }} Tasks Completed this week}
+        }</ng-container
+      >
+    </li>
+  </ul>
+
+  @if (dashboard.overdue.length) {
+    <h2 id="overdue-heading" i18n="Dashboard: heading above the Overdue Tasks">Overdue</h2>
+    <ng-container
+      *ngTemplateOutlet="tasks; context: { $implicit: dashboard.overdue, section: 'overdue' }"
+    />
+  }
+  @if (dashboard.dueToday.length) {
+    <h2 id="dueToday-heading" i18n="Dashboard: heading above the Tasks due today">Due today</h2>
+    <ng-container
+      *ngTemplateOutlet="tasks; context: { $implicit: dashboard.dueToday, section: 'dueToday' }"
+    />
+  }
+  @if (dashboard.upcoming.length) {
+    <h2 id="upcoming-heading" i18n="Dashboard: heading above the Tasks due in the next 7 days">
+      Next 7 days
+    </h2>
+    <ng-container
+      *ngTemplateOutlet="tasks; context: { $implicit: dashboard.upcoming, section: 'upcoming' }"
+    />
+  }
+  @if (!anythingDue()) {
+    <p class="nothing" i18n="Dashboard: shown when no open Task is Overdue or due within a week">
+      Nothing is Overdue or due in the next 7 days.
+    </p>
+  }
+} @else if (dashboard.error()) {
+  <p class="failure" role="alert">
+    @if (unreachable()) {
+      <ng-container i18n="Error when the backend doesn't respond"
+        >Can't reach the server. Try again in a moment.</ng-container
+      >
+    } @else {
+      <ng-container i18n="Error when the backend responds with a failure"
+        >Something went wrong. Try again in a moment.</ng-container
+      >
+    }
+  </p>
+  <button matButton type="button" (click)="dashboard.reload()" i18n="Button: try loading again">
+    Retry
+  </button>
+} @else {
+  <mat-progress-spinner
+    mode="indeterminate"
+    diameter="32"
+    aria-label="Loading"
+    i18n-aria-label="Accessible label for a loading spinner"
+  />
+}
+
+<ng-template #tasks let-tasks let-section="section">
+  <ul class="tasks" [attr.aria-labelledby]="section + '-heading'">
+    @for (each of tasks; track each.task.id) {
+      <li [class.overdue]="each.task.overdue">
+        <mat-checkbox
+          [checked]="false"
+          [disabled]="!canComplete(each)"
+          (change)="complete(section, each)"
+          >{{ each.task.title }}</mat-checkbox
+        >
+        <p class="meta">
+          <a [routerLink]="['/lists', each.todoList.id]">{{ each.todoList.name }}</a>
+          <span
+            class="due"
+            i18n="When a Task is due: a date, or a word for one close by, such as tomorrow"
+            >Due {{ each.task.dueDate | relativeDate }}</span
+          >
+        </p>
+      </li>
+    }
+  </ul>
+</ng-template>
