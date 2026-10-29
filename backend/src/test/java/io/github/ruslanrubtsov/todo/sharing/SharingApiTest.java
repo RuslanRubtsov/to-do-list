@@ -9,10 +9,13 @@ import io.github.ruslanrubtsov.todo.api.model.ShareRole;
 import io.github.ruslanrubtsov.todo.api.model.TodoList;
 import io.github.ruslanrubtsov.todo.api.model.TodoListRole;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 class SharingApiTest extends ApiTest {
@@ -87,6 +90,152 @@ class SharingApiTest extends ApiTest {
         isForbidden(sharing(viewer, todoList.getId(), recipient.email(), ShareRole.VIEWER));
         isNotFound(sharing(recipient, todoList.getId(), recipient.email(), ShareRole.EDITOR));
         assertThat(listing(recipient)).isEmpty();
+    }
+
+    @Nested
+    class ManagingShares {
+
+        private LoggedIn anna;
+
+        @BeforeEach
+        void shareWithTwo() {
+            anna = newLoggedInUser("Anna");
+            share(owner, todoList, recipient, ShareRole.VIEWER);
+            share(owner, todoList, anna, ShareRole.EDITOR);
+        }
+
+        @Test
+        void theOwnerSeesWhomItIsSharedWithByName() {
+            assertThat(shares(owner))
+                    .extracting(Share::getDisplayName, Share::getEmail, Share::getRole)
+                    .containsExactly(
+                            tuple("Anna", anna.email(), ShareRole.EDITOR),
+                            tuple("Taras", recipient.email(), ShareRole.VIEWER));
+        }
+
+        @Test
+        void theOwnerChangesTheRoleAShareGives() {
+            Share changed = Objects.requireNonNull(changing(owner, recipient, ShareRole.EDITOR)
+                    .expectStatus()
+                    .isOk()
+                    .expectBody(Share.class)
+                    .returnResult()
+                    .getResponseBody());
+
+            assertThat(changed.getUserId())
+                    .isEqualTo(recipient.session().getUser().getId());
+            assertThat(changed.getRole()).isEqualTo(ShareRole.EDITOR);
+            assertThat(listing(recipient)).extracting(TodoList::getRole).containsExactly(TodoListRole.EDITOR);
+        }
+
+        @Test
+        void theOwnerRevokesAShareWithImmediateEffect() {
+            revoking(owner, recipient).expectStatus().isNoContent();
+
+            assertThat(listing(recipient)).isEmpty();
+            isNotFound(reading(recipient));
+            assertThat(shares(owner)).extracting(Share::getDisplayName).containsExactly("Anna");
+        }
+
+        @Test
+        void aRevokedUserCanBeSharedWithAgain() {
+            revoking(owner, recipient).expectStatus().isNoContent();
+
+            share(owner, todoList, recipient, ShareRole.EDITOR);
+
+            assertThat(listing(recipient)).extracting(TodoList::getRole).containsExactly(TodoListRole.EDITOR);
+        }
+
+        @Test
+        void aUserItIsSharedWithLeavesIt() {
+            leaving(recipient).expectStatus().isNoContent();
+
+            assertThat(listing(recipient)).isEmpty();
+            isNotFound(reading(recipient));
+            assertThat(shares(owner)).extracting(Share::getDisplayName).containsExactly("Anna");
+        }
+
+        @Test
+        void onlyTheOwnerSeesAndChangesShares() {
+            for (LoggedIn other : List.of(recipient, anna)) {
+                isForbidden(sharesOf(other));
+                isForbidden(changing(other, anna, ShareRole.VIEWER));
+                isForbidden(revoking(other, recipient));
+            }
+            LoggedIn stranger = newLoggedInUser();
+            isNotFound(sharesOf(stranger));
+            isNotFound(changing(stranger, anna, ShareRole.VIEWER));
+            isNotFound(revoking(stranger, anna));
+            assertThat(shares(owner)).extracting(Share::getRole).containsExactly(ShareRole.EDITOR, ShareRole.VIEWER);
+        }
+
+        @Test
+        void theOwnerCannotLeaveAndAStrangerHasNothingToLeave() {
+            isForbidden(leaving(owner));
+            isNotFound(leaving(newLoggedInUser()));
+            assertThat(shares(owner)).hasSize(2);
+        }
+
+        @Test
+        void aUserItIsNotSharedWithHasNoShareToChangeOrRevoke() {
+            LoggedIn stranger = newLoggedInUser();
+
+            isNotFound(changing(owner, stranger, ShareRole.EDITOR));
+            isNotFound(revoking(owner, stranger));
+            isNotFound(changing(owner, owner, ShareRole.EDITOR));
+        }
+
+        private List<Share> shares(LoggedIn user) {
+            return sharesOf(user)
+                    .expectStatus()
+                    .isOk()
+                    .expectBody(new ParameterizedTypeReference<List<Share>>() {})
+                    .returnResult()
+                    .getResponseBody();
+        }
+
+        private RestTestClient.ResponseSpec sharesOf(LoggedIn user) {
+            return api.get()
+                    .uri("/api/v1/todo-lists/{todoListId}/shares", todoList.getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .exchange();
+        }
+
+        private RestTestClient.ResponseSpec changing(LoggedIn user, LoggedIn sharedWith, ShareRole role) {
+            return api.patch()
+                    .uri(
+                            "/api/v1/todo-lists/{todoListId}/shares/{userId}",
+                            todoList.getId(),
+                            sharedWith.session().getUser().getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("role", role.getValue()))
+                    .exchange();
+        }
+
+        private RestTestClient.ResponseSpec revoking(LoggedIn user, LoggedIn sharedWith) {
+            return api.delete()
+                    .uri(
+                            "/api/v1/todo-lists/{todoListId}/shares/{userId}",
+                            todoList.getId(),
+                            sharedWith.session().getUser().getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .exchange();
+        }
+
+        private RestTestClient.ResponseSpec leaving(LoggedIn user) {
+            return api.delete()
+                    .uri("/api/v1/todo-lists/{todoListId}/shares/me", todoList.getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .exchange();
+        }
+
+        private RestTestClient.ResponseSpec reading(LoggedIn user) {
+            return api.get()
+                    .uri("/api/v1/todo-lists/{todoListId}", todoList.getId())
+                    .headers(headers -> headers.setBearerAuth(user.accessToken()))
+                    .exchange();
+        }
     }
 
     private static void refusesEmail(RestTestClient.ResponseSpec response, String code) {

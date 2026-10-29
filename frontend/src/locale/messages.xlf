@@ -28,9 +28,9 @@
         <note category="location">src/app/tasks/task-details-dialog.html:75,79</note>
         <note category="location">src/app/tasks/task-list.html:30,34</note>
         <note category="location">src/app/tasks/task-list.html:173,176</note>
-        <note category="location">src/app/todo-lists/share-dialog.html:70,74</note>
+        <note category="location">src/app/todo-lists/share-dialog.html:108,112</note>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:36,40</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:59,62</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:90,93</note>
         <note category="description">Error when the backend doesn&apos;t respond</note>
       </notes>
       <segment>
@@ -45,9 +45,9 @@
         <note category="location">src/app/tasks/task-details-dialog.html:82,87</note>
         <note category="location">src/app/tasks/task-list.html:37,43</note>
         <note category="location">src/app/tasks/task-list.html:177,181</note>
-        <note category="location">src/app/todo-lists/share-dialog.html:77,82</note>
+        <note category="location">src/app/todo-lists/share-dialog.html:115,120</note>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:43,48</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:64,68</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:95,99</note>
         <note category="description">Error when the backend responds with a failure</note>
       </notes>
       <segment>
@@ -385,7 +385,7 @@
         <note category="location">src/app/shell/shell.html:121,124</note>
         <note category="location">src/app/start/start-page.html:41,44</note>
         <note category="location">src/app/tasks/task-list.html:182,185</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:69,72</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:100,103</note>
         <note category="description">Button: try loading again</note>
       </notes>
       <segment>
@@ -422,7 +422,7 @@
     <unit id="6937416908801031496">
       <notes>
         <note category="location">src/app/shell/shell.html:189</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:41,42</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:64,65</note>
       </notes>
       <segment>
         <source>{VAR_SELECT, select, EDITOR {Editor} VIEWER {Viewer} other {}}</source>
@@ -459,11 +459,13 @@
       <notes>
         <note category="location">src/app/shell/shell.ts:88</note>
         <note category="location">src/app/shell/shell.ts:103</note>
-        <note category="location">src/app/tasks/task-list.ts:225</note>
-        <note category="location">src/app/tasks/task-list.ts:255</note>
-        <note category="location">src/app/tasks/task-list.ts:336</note>
-        <note category="location">src/app/todo-lists/todo-list-page.ts:85</note>
-        <note category="location">src/app/todo-lists/todo-lists.ts:86</note>
+        <note category="location">src/app/tasks/task-list.ts:237</note>
+        <note category="location">src/app/tasks/task-list.ts:268</note>
+        <note category="location">src/app/tasks/task-list.ts:350</note>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:122</note>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:139</note>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:145</note>
+        <note category="location">src/app/todo-lists/todo-lists.ts:92</note>
         <note category="description">Dismisses a message</note>
       </notes>
       <segment>
@@ -537,7 +539,7 @@
       <notes>
         <note category="location">src/app/start/start-page.html:48</note>
         <note category="location">src/app/tasks/task-list.html:189</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:76</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:107</note>
         <note category="description">Accessible label for a loading spinner</note>
       </notes>
       <segment>
@@ -654,7 +656,8 @@
       <notes>
         <note category="location">src/app/tasks/task-details-dialog.html:90,92</note>
         <note category="location">src/app/todo-lists/delete-todo-list-dialog.html:17,21</note>
-        <note category="location">src/app/todo-lists/share-dialog.html:85,88</note>
+        <note category="location">src/app/todo-lists/leave-todo-list-dialog.html:18,20</note>
+        <note category="location">src/app/todo-lists/share-dialog.html:123,126</note>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:51,53</note>
         <note category="description">Button: close a dialog without saving</note>
       </notes>
@@ -945,7 +948,7 @@
     </unit>
     <unit id="8157617093372436090">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:224</note>
+        <note category="location">src/app/tasks/task-list.ts:236</note>
         <note category="description">Message when completing a Task, or taking that back, fails</note>
       </notes>
       <segment>
@@ -954,7 +957,7 @@
     </unit>
     <unit id="5819625064329782864">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:254</note>
+        <note category="location">src/app/tasks/task-list.ts:267</note>
         <note category="description">Message when moving a Task to another place in its Todo List fails</note>
       </notes>
       <segment>
@@ -963,7 +966,7 @@
     </unit>
     <unit id="2278548297710434106">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:296</note>
+        <note category="location">src/app/tasks/task-list.ts:309</note>
         <note category="description">Button that opens a Task&apos;s details to change them, naming the Task by its title</note>
       </notes>
       <segment>
@@ -972,7 +975,7 @@
     </unit>
     <unit id="6497479702796639197">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:300</note>
+        <note category="location">src/app/tasks/task-list.ts:313</note>
         <note category="description">Button that deletes a Task, named by its title</note>
       </notes>
       <segment>
@@ -981,7 +984,7 @@
     </unit>
     <unit id="8747164780378056534">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:311</note>
+        <note category="location">src/app/tasks/task-list.ts:324</note>
         <note category="description">Message after deleting a Task, which can still be undone</note>
       </notes>
       <segment>
@@ -990,7 +993,7 @@
     </unit>
     <unit id="7720034565258600534">
       <notes>
-        <note category="location">src/app/tasks/task-list.ts:335</note>
+        <note category="location">src/app/tasks/task-list.ts:349</note>
         <note category="description">Message when deleting a Task fails</note>
       </notes>
       <segment>
@@ -1023,6 +1026,34 @@
       </notes>
       <segment>
         <source> Delete </source>
+      </segment>
+    </unit>
+    <unit id="1486678307036836838">
+      <notes>
+        <note category="location">src/app/todo-lists/leave-todo-list-dialog.html:2,4</note>
+        <note category="description">Dialog heading: confirming that the User leaves a Todo List</note>
+      </notes>
+      <segment>
+        <source> Leave “<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.name }}"/>”?
+</source>
+      </segment>
+    </unit>
+    <unit id="7222028171418216727">
+      <notes>
+        <note category="location">src/app/todo-lists/leave-todo-list-dialog.html:6,9</note>
+        <note category="description">Dialog text: what leaving a Todo List Shared with the User does</note>
+      </notes>
+      <segment>
+        <source> You’ll no longer see it or its Tasks, unless <ph id="0" equiv="INTERPOLATION" disp="{{ todoList.ownerDisplayName }}"/> Shares it with you again. </source>
+      </segment>
+    </unit>
+    <unit id="8555249280807936920">
+      <notes>
+        <note category="location">src/app/todo-lists/leave-todo-list-dialog.html:21,23</note>
+        <note category="description">Button: confirm leaving</note>
+      </notes>
+      <segment>
+        <source> Leave </source>
       </segment>
     </unit>
     <unit id="4747621853948549181">
@@ -1088,9 +1119,45 @@
         <source>Role</source>
       </segment>
     </unit>
+    <unit id="6069058108103045770">
+      <notes>
+        <note category="location">src/app/todo-lists/share-dialog.html:53,57</note>
+        <note category="description">Share dialog: what the roles allow</note>
+      </notes>
+      <segment>
+        <source>Viewers only read it; Editors also change its Tasks.</source>
+      </segment>
+    </unit>
+    <unit id="1145943357758405871">
+      <notes>
+        <note category="location">src/app/todo-lists/share-dialog.html:63,66</note>
+        <note category="description">Share dialog: heading above whom the Todo List is Shared with</note>
+      </notes>
+      <segment>
+        <source> Shared with </source>
+      </segment>
+    </unit>
+    <unit id="4791521496273457766">
+      <notes>
+        <note category="location">src/app/todo-lists/share-dialog.html:99,105</note>
+        <note category="description">Share dialog: shown when the Todo List isn&apos;t Shared with anyone</note>
+      </notes>
+      <segment>
+        <source> It isn’t Shared with anyone yet. </source>
+      </segment>
+    </unit>
+    <unit id="6045033980459732148">
+      <notes>
+        <note category="location">src/app/todo-lists/share-dialog.html:131,136</note>
+        <note category="description">Button: Share a Todo List with the User whose email was entered</note>
+      </notes>
+      <segment>
+        <source> Share </source>
+      </segment>
+    </unit>
     <unit id="6239936537351977310">
       <notes>
-        <note category="location">src/app/todo-lists/share-dialog.html:50,52</note>
+        <note category="location">src/app/todo-lists/share-dialog.html:139,142</note>
         <note category="description">Role option: may only read the Todo List</note>
       </notes>
       <segment>
@@ -1099,35 +1166,35 @@
     </unit>
     <unit id="3742657416068781599">
       <notes>
-        <note category="location">src/app/todo-lists/share-dialog.html:54,58</note>
+        <note category="location">src/app/todo-lists/share-dialog.html:142,146</note>
         <note category="description">Role option: may also change the Todo List&apos;s Tasks</note>
       </notes>
       <segment>
         <source>Editor</source>
       </segment>
     </unit>
-    <unit id="6069058108103045770">
+    <unit id="7032616879717491895">
       <notes>
-        <note category="location">src/app/todo-lists/share-dialog.html:62,66</note>
-        <note category="description">Share dialog: what the roles allow</note>
+        <note category="location">src/app/todo-lists/share-dialog.ts:94</note>
+        <note category="description">Accessible label for the role a Share gives a User, named by their display name</note>
       </notes>
       <segment>
-        <source>Viewers only read it; Editors also change its Tasks.</source>
+        <source>Role of <ph id="0" equiv="name" disp="share.displayName"/></source>
       </segment>
     </unit>
-    <unit id="6045033980459732148">
+    <unit id="10494889760006030">
       <notes>
-        <note category="location">src/app/todo-lists/share-dialog.html:93,97</note>
-        <note category="description">Button: Share a Todo List with the User whose email was entered</note>
+        <note category="location">src/app/todo-lists/share-dialog.ts:98</note>
+        <note category="description">Button that revokes the Share of a User, named by their display name</note>
       </notes>
       <segment>
-        <source> Share </source>
+        <source>Stop sharing with <ph id="0" equiv="name" disp="share.displayName"/></source>
       </segment>
     </unit>
     <unit id="3625289092285717883">
       <notes>
         <note category="location">src/app/todo-lists/todo-list-name-dialog.html:4,6</note>
-        <note category="location">src/app/todo-lists/todo-list-page.html:19,20</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:31,32</note>
         <note category="description">Dialog heading: renaming a Todo List</note>
       </notes>
       <segment>
@@ -1180,9 +1247,28 @@
         <source>Create</source>
       </segment>
     </unit>
+    <unit id="7081052245341891319">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.html:8,9</note>
+        <note category="description">Todo List page: message once the Todo List open is gone, or no longer Shared with the User</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.value().name }}"/>” is no longer available to you. Its Owner may have stopped Sharing it with you, or deleted it.</source>
+      </segment>
+    </unit>
+    <unit id="5754879811372410703">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.html:12,14</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:84,86</note>
+        <note category="description">Link back to the start page</note>
+      </notes>
+      <segment>
+        <source>Go to the start page</source>
+      </segment>
+    </unit>
     <unit id="8882230058839195366">
       <notes>
-        <note category="location">src/app/todo-lists/todo-list-page.html:10,11</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:22,23</note>
         <note category="description">Button that Shares the Todo List being shown with another User</note>
       </notes>
       <segment>
@@ -1191,52 +1277,80 @@
     </unit>
     <unit id="5716808069425072351">
       <notes>
-        <note category="location">src/app/todo-lists/todo-list-page.html:28,29</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:40,41</note>
         <note category="description">Button that deletes the Todo List being shown</note>
       </notes>
       <segment>
         <source>Delete Todo List</source>
       </segment>
     </unit>
+    <unit id="208523502401712631">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.html:53,54</note>
+        <note category="description">Button that leaves the Todo List being shown, Shared with the User</note>
+      </notes>
+      <segment>
+        <source>Leave Todo List</source>
+      </segment>
+    </unit>
+    <unit id="2273088133016853024">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.html:57,60</note>
+        <note category="description">Button: leave a Todo List Shared with the User</note>
+      </notes>
+      <segment>
+        <source>Leave</source>
+      </segment>
+    </unit>
     <unit id="5751858694690046586">
       <notes>
-        <note category="location">src/app/todo-lists/todo-list-page.html:40,44</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:63,67</note>
         <note category="description">Todo List page: who Shared the Todo List with the User, and their role</note>
       </notes>
       <segment>
         <source> Shared by <ph id="0" equiv="INTERPOLATION" disp="{{ current.ownerDisplayName }}"/> · <ph id="1" equiv="ICU" disp="{current.role, select, EDITOR {Editor} VIEWER {Viewer} other {}}" subFlows="6937416908801031496"/> </source>
       </segment>
     </unit>
-    <unit id="5842667474521024459">
+    <unit id="7767196002266500668">
       <notes>
-        <note category="location">src/app/todo-lists/todo-list-page.html:50,53</note>
-        <note category="description">Todo List page: message for a Todo List that doesn&apos;t exist or isn&apos;t the User&apos;s</note>
+        <note category="location">src/app/todo-lists/todo-list-page.html:80,84</note>
+        <note category="description">Todo List page: message for a Todo List that doesn&apos;t exist, or that the User has no access
+        to</note>
       </notes>
       <segment>
-        <source>This Todo List isn’t available. It may have been deleted, or it isn’t yours.</source>
-      </segment>
-    </unit>
-    <unit id="5754879811372410703">
-      <notes>
-        <note category="location">src/app/todo-lists/todo-list-page.html:53,55</note>
-        <note category="description">Link back to the start page</note>
-      </notes>
-      <segment>
-        <source>Go to the start page</source>
+        <source>This Todo List isn’t available. It may have been deleted, or it isn’t Shared with you.</source>
       </segment>
     </unit>
     <unit id="2215718754298844971">
       <notes>
-        <note category="location">src/app/todo-lists/todo-list-page.ts:84</note>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:121</note>
         <note category="description">Message after Sharing a Todo List with a User, named by their display name</note>
       </notes>
       <segment>
         <source>Shared “<ph id="0" equiv="todoList" disp="todoList.name"/>” with <ph id="1" equiv="user" disp="share.displayName"/>.</source>
       </segment>
     </unit>
+    <unit id="6273576366849636673">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:138</note>
+        <note category="description">Message after the User left a Todo List Shared with them</note>
+      </notes>
+      <segment>
+        <source>You left “<ph id="0" equiv="name" disp="todoList.name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="1902614695311384819">
+      <notes>
+        <note category="location">src/app/todo-lists/todo-list-page.ts:144</note>
+        <note category="description">Message when leaving a Todo List fails</note>
+      </notes>
+      <segment>
+        <source>Couldn’t leave “<ph id="0" equiv="name" disp="todoList.name"/>”. Check your connection and try again.</source>
+      </segment>
+    </unit>
     <unit id="6437004822452922232">
       <notes>
-        <note category="location">src/app/todo-lists/todo-lists.ts:68</note>
+        <note category="location">src/app/todo-lists/todo-lists.ts:74</note>
         <note category="description">Message after deleting a Todo List, which can still be undone</note>
       </notes>
       <segment>
@@ -1245,7 +1359,7 @@
     </unit>
     <unit id="652378484617821492">
       <notes>
-        <note category="location">src/app/todo-lists/todo-lists.ts:85</note>
+        <note category="location">src/app/todo-lists/todo-lists.ts:91</note>
         <note category="description">Message when deleting a Todo List fails</note>
       </notes>
       <segment>

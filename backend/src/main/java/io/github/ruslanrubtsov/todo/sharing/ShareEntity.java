@@ -41,7 +41,15 @@ class ShareEntity {
         this.createdAt = Instant.now();
     }
 
+    long getUserId() {
+        return userId;
+    }
+
     ShareRole getRole() {
         return role;
+    }
+
+    void changeRole(ShareRole role) {
+        this.role = role;
     }
 }

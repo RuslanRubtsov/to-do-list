@@ -1,4 +1,16 @@
-@if (todoList.hasValue()) {
+@if (lost() && todoList.hasValue()) {
+  <p class="missing">
+    <mat-icon aria-hidden="true">link_off</mat-icon>
+    <ng-container
+      i18n="
+        Todo List page: message once the Todo List open is gone, or no longer Shared with the User
+      "
+      >“{{ todoList.value().name }}” is no longer available to you. Its Owner may have stopped
+      Sharing it with you, or deleted it.</ng-container
+    >
+  </p>
+  <a matButton routerLink="/" i18n="Link back to the start page">Go to the start page</a>
+} @else if (todoList.hasValue()) {
   @let current = todoList.value();
   <header>
     <h1>{{ current.name }}</h1>
@@ -33,6 +45,17 @@
     }
   </header>
   @if (current.role !== 'OWNER') {
+    <button
+      class="leave"
+      matButton
+      type="button"
+      (click)="leave(current)"
+      aria-label="Leave Todo List"
+      i18n-aria-label="Button that leaves the Todo List being shown, Shared with the User"
+    >
+      <mat-icon aria-hidden="true">logout</mat-icon>
+      <ng-container i18n="Button: leave a Todo List Shared with the User">Leave</ng-container>
+    </button>
     <p
       class="shared-by"
       i18n="Todo List page: who Shared the Todo List with the User, and their role"
@@ -41,13 +64,21 @@
       {current.role, select, EDITOR {Editor} VIEWER {Viewer} other {}}
     </p>
   }
-  <app-task-list [todoListId]="current.id" [canChange]="current.role !== 'VIEWER'" />
+  <app-task-list
+    [todoListId]="current.id"
+    [canChange]="current.role !== 'VIEWER'"
+    (lost)="recheck(current)"
+  />
 } @else if (notFound()) {
   <p class="missing">
     <mat-icon aria-hidden="true">search_off</mat-icon>
     <ng-container
-      i18n="Todo List page: message for a Todo List that doesn't exist or isn't the User's"
-      >This Todo List isn’t available. It may have been deleted, or it isn’t yours.</ng-container
+      i18n="
+        Todo List page: message for a Todo List that doesn't exist, or that the User has no access
+        to
+      "
+      >This Todo List isn’t available. It may have been deleted, or it isn’t Shared with
+      you.</ng-container
     >
   </p>
   <a matButton routerLink="/" i18n="Link back to the start page">Go to the start page</a>

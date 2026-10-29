@@ -45,16 +45,7 @@
       <mat-select formControlName="role">
         @for (role of roles; track role) {
           <mat-option [value]="role">
-            @switch (role) {
-              @case ('VIEWER') {
-                <ng-container i18n="Role option: may only read the Todo List">Viewer</ng-container>
-              }
-              @case ('EDITOR') {
-                <ng-container i18n="Role option: may also change the Todo List's Tasks"
-                  >Editor</ng-container
-                >
-              }
-            }
+            <ng-container *ngTemplateOutlet="roleName; context: { $implicit: role }" />
           </mat-option>
         }
       </mat-select>
@@ -62,6 +53,53 @@
         >Viewers only read it; Editors also change its Tasks.</mat-hint
       >
     </mat-form-field>
+
+    @if (shares.hasValue()) {
+      <h3
+        id="shares-heading"
+        class="shares-heading"
+        i18n="Share dialog: heading above whom the Todo List is Shared with"
+      >
+        Shared with
+      </h3>
+      @if (shares.value().length) {
+        <ul class="shares" aria-labelledby="shares-heading">
+          @for (share of shares.value(); track share.userId) {
+            <li>
+              <span class="who">
+                <span class="name">{{ share.displayName }}</span>
+                <span class="email">{{ share.email }}</span>
+              </span>
+              <mat-form-field class="role" subscriptSizing="dynamic">
+                <mat-select
+                  [value]="share.role"
+                  [aria-label]="roleLabel(share)"
+                  (selectionChange)="changeRole(share, $event.value)"
+                >
+                  @for (role of roles; track role) {
+                    <mat-option [value]="role">
+                      <ng-container *ngTemplateOutlet="roleName; context: { $implicit: role }" />
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <button
+                matIconButton
+                type="button"
+                (click)="revoke(share)"
+                [attr.aria-label]="revokeLabel(share)"
+              >
+                <mat-icon aria-hidden="true">person_remove</mat-icon>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="none" i18n="Share dialog: shown when the Todo List isn't Shared with anyone">
+          It isn’t Shared with anyone yet.
+        </p>
+      }
+    }
 
     @switch (failure()) {
       @case ('unreachable') {
@@ -94,3 +132,14 @@
     </button>
   </mat-dialog-actions>
 </form>
+
+<ng-template #roleName let-role>
+  @switch (role) {
+    @case ('VIEWER') {
+      <ng-container i18n="Role option: may only read the Todo List">Viewer</ng-container>
+    }
+    @case ('EDITOR') {
+      <ng-container i18n="Role option: may also change the Todo List's Tasks">Editor</ng-container>
+    }
+  }
+</ng-template>

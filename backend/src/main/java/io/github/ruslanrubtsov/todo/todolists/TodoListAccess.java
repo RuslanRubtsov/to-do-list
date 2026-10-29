@@ -21,7 +21,10 @@ public class TodoListAccess {
         CHANGE_TASKS,
         RENAME,
         DELETE,
-        SHARE
+        /** Share it, see whom it is Shared with, change their roles and revoke their Shares. */
+        SHARE,
+        /** End one's own Share of it. */
+        LEAVE
     }
 
     private final TodoListRepository todoLists;
@@ -30,12 +33,16 @@ public class TodoListAccess {
         this.todoLists = todoLists;
     }
 
-    /** The permission matrix: Viewers only read, Editors also change Tasks, the Owner does anything. */
+    /**
+     * The permission matrix: Viewers only read, Editors also change Tasks, the Owner does anything
+     * else. Those it is Shared with may leave it; its Owner can't.
+     */
     static boolean allows(TodoListRole role, Action action) {
         return switch (action) {
             case READ -> true;
             case CHANGE_TASKS -> role != TodoListRole.VIEWER;
             case RENAME, DELETE, SHARE -> role == TodoListRole.OWNER;
+            case LEAVE -> role != TodoListRole.OWNER;
         };
     }
 

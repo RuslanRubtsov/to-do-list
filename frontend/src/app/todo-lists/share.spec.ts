@@ -6,6 +6,12 @@ import { renderTodoListPage } from '../../testing/todo-list-page';
 import { failFieldAsInvalid, GROCERIES } from '../../testing/todo-lists';
 
 const SHARES = { method: 'POST', url: `/api/v1/todo-lists/${GROCERIES.id}/shares` };
+const SHARES_LIST = { method: 'GET', url: SHARES.url };
+
+/** Changing the role a Share gives, or revoking it. */
+function shareRequest(method: 'PATCH' | 'DELETE', userId: number) {
+  return { method, url: `${SHARES.url}/${userId}` };
+}
 
 const TARAS: Share = {
   userId: 9,
@@ -13,16 +19,96 @@ const TARAS: Share = {
   displayName: 'Taras',
   role: ShareRole.EDITOR,
 };
+const ANNA: Share = {
+  userId: 10,
+  email: 'anna@example.com',
+  displayName: 'Anna',
+  role: ShareRole.EDITOR,
+};
+const VIEWING_TARAS: Share = { ...TARAS, role: ShareRole.VIEWER };
 
 describe('Sharing a Todo List', () => {
   afterEach(() => TestBed.inject(HttpTestingController).verify());
 
-  async function openShareDialog() {
+  /** Opens the sharing dialog, answering whom the Todo List is Shared with already. */
+  async function openShareDialog(shares: Share[] = []) {
     const page = await renderTodoListPage(GROCERIES);
     page.click('Share Todo List');
+    await vi
+      .waitFor(() => page.http.expectOne(SHARES_LIST))
+      .then((request) => request.flush(shares));
     await page.text();
     return page;
   }
+
+  describe('whom it is Shared with', () => {
+    it('lists them by name, with their emails and roles', async () => {
+      const page = await openShareDialog([ANNA, VIEWING_TARAS]);
+
+      expect(page.listItems('Shared with')).toEqual([
+        'Anna anna@example.com Editor',
+        'Taras taras@example.com Viewer',
+      ]);
+    });
+
+    it('says when it is Shared with no one yet', async () => {
+      const page = await openShareDialog();
+
+      expect(page.listItems('Shared with')).toBeUndefined();
+      expect(document.body.textContent).toContain('It isn’t Shared with anyone yet.');
+    });
+
+    it('changes the role a Share gives', async () => {
+      const page = await openShareDialog([ANNA, VIEWING_TARAS]);
+
+      const chosen = page.choose('Role of Taras', 'Editor');
+      const change = await vi.waitFor(() =>
+        page.http.expectOne(shareRequest('PATCH', TARAS.userId)),
+      );
+      expect(change.request.body).toEqual({ role: 'EDITOR' });
+      change.flush(TARAS);
+      await chosen;
+
+      expect(await page.chosen('Role of Taras')).toBe('Editor');
+    });
+
+    it('puts the role back, and says so, when changing it fails', async () => {
+      const page = await openShareDialog([VIEWING_TARAS]);
+
+      const chosen = page.choose('Role of Taras', 'Editor');
+      await vi
+        .waitFor(() => page.http.expectOne(shareRequest('PATCH', TARAS.userId)))
+        .then((request) => request.error(new ProgressEvent('error'), { status: 0 }));
+      await chosen;
+
+      expect(await page.chosen('Role of Taras')).toBe('Viewer');
+      expect(await page.alerts()).toContain("Can't reach the server. Try again in a moment.");
+    });
+
+    it('revokes a Share', async () => {
+      const page = await openShareDialog([ANNA, VIEWING_TARAS]);
+
+      page.click('Stop sharing with Taras');
+      page.http
+        .expectOne(shareRequest('DELETE', TARAS.userId))
+        .flush(null, { status: 204, statusText: 'No Content' });
+
+      await page.text();
+      expect(page.listItems('Shared with')).toEqual(['Anna anna@example.com Editor']);
+    });
+
+    it('keeps the Share, and says so, when revoking it fails', async () => {
+      const page = await openShareDialog([VIEWING_TARAS]);
+
+      page.click('Stop sharing with Taras');
+      page.http
+        .expectOne(shareRequest('DELETE', TARAS.userId))
+        .error(new ProgressEvent('error'), { status: 0 });
+
+      expect(await page.alerts()).toContain("Can't reach the server. Try again in a moment.");
+      expect(page.listItems('Shared with')).toEqual(['Taras taras@example.com Viewer']);
+    });
+  });
 
   it('Shares it with a registered User by email, as a Viewer unless told otherwise', async () => {
     const page = await openShareDialog();

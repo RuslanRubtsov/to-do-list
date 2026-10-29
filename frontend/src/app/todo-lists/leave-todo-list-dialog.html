@@ -1,0 +1,23 @@
+<h2 mat-dialog-title i18n="Dialog heading: confirming that the User leaves a Todo List">
+  Leave “{{ todoList.name }}”?
+</h2>
+<mat-dialog-content>
+  <p i18n="Dialog text: what leaving a Todo List Shared with the User does">
+    You’ll no longer see it or its Tasks, unless {{ todoList.ownerDisplayName }} Shares it with you
+    again.
+  </p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button
+    matButton
+    type="button"
+    mat-dialog-close
+    cdkFocusInitial
+    i18n="Button: close a dialog without saving"
+  >
+    Cancel
+  </button>
+  <button matButton="filled" type="button" [mat-dialog-close]="true" i18n="Button: confirm leaving">
+    Leave
+  </button>
+</mat-dialog-actions>

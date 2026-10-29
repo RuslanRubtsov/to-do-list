@@ -38,6 +38,19 @@ describe('Todo Lists in Ukrainian', () => {
     expect(await page.text()).toContain('Доступні мені');
   });
 
+  it('asks in Ukrainian before leaving a Shared Todo List', async () => {
+    const page = await renderTodoListPage(GARDEN, { locale: 'uk' });
+
+    page.click('Вийти зі списку справ');
+    await page.text();
+
+    expect(document.body.textContent).toContain('Вийти зі списку «Garden»?');
+    expect(document.body.textContent).toContain(
+      'Ви більше не бачитимете його та його завдань, доки Taras знову не надасть вам доступ.',
+    );
+    page.click('Скасувати');
+  });
+
   it('counts open Tasks with the Ukrainian plural forms', async () => {
     const page = await renderStart([0, 1, 3, 5, 21]);
 
