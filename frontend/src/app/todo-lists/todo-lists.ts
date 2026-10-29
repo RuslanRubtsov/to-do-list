@@ -52,6 +52,15 @@ export class TodoLists {
     return this.api.getTodoList(id).pipe(tap((read) => this.replace(read)));
   }
 
+  /** Counts one open Task fewer in the Todo List, as one of them was Completed elsewhere. */
+  countCompleted(id: number): void {
+    this.change((todoLists) =>
+      todoLists.map((todoList) =>
+        todoList.id === id ? { ...todoList, openTaskCount: todoList.openTaskCount - 1 } : todoList,
+      ),
+    );
+  }
+
   /** Shows how many of the Todo List's Tasks are open, as the page showing them knows it. */
   setOpenTaskCount(id: number, openTaskCount: number): void {
     this.change((todoLists) =>

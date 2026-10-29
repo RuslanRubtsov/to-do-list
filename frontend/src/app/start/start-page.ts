@@ -6,11 +6,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AppInfoService } from '@api';
+import { DashboardView } from '../dashboard/dashboard';
 import { isUnreachable } from '../http/problems';
 
 @Component({
   selector: 'app-start-page',
   imports: [
+    DashboardView,
     DatePipe,
     DecimalPipe,
     MatButtonModule,

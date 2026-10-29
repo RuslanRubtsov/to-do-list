@@ -1317,5 +1317,77 @@
         <target>Не вдалося вийти зі списку «<ph id="0" equiv="name" disp="todoList.name"/>». Перевірте з’єднання і спробуйте ще раз.</target>
       </segment>
     </unit>
+    <unit id="2567868871918748923">
+      <notes>
+        <note category="description">Dashboard: accessible name of the counts</note>
+      </notes>
+      <segment state="translated">
+        <source>Counts</source>
+        <target>Підсумки</target>
+      </segment>
+    </unit>
+    <unit id="7485837287316399366">
+      <notes>
+        <note category="description">Dashboard: how many Tasks are open, across the User&apos;s Todo Lists</note>
+      </notes>
+      <segment state="translated">
+        <source>{VAR_PLURAL, plural, =1 {1 open Task} other {<ph id="0" equiv="INTERPOLATION"/> open Tasks}}</source>
+        <target>{VAR_PLURAL, plural, =1 {1 невиконане завдання} one {<ph id="0" equiv="INTERPOLATION"/> невиконане завдання} few {<ph id="0" equiv="INTERPOLATION"/> невиконані завдання} many {<ph id="0" equiv="INTERPOLATION"/> невиконаних завдань} other {<ph id="0" equiv="INTERPOLATION"/> невиконаного завдання}}</target>
+      </segment>
+    </unit>
+    <unit id="5920305514843353999">
+      <notes>
+        <note category="description">Dashboard: how many open Tasks are Overdue</note>
+      </notes>
+      <segment state="translated">
+        <source>{VAR_PLURAL, plural, =1 {1 Overdue Task} other {<ph id="0" equiv="INTERPOLATION"/> Overdue Tasks}}</source>
+        <target>{VAR_PLURAL, plural, =1 {1 прострочене завдання} one {<ph id="0" equiv="INTERPOLATION"/> прострочене завдання} few {<ph id="0" equiv="INTERPOLATION"/> прострочені завдання} many {<ph id="0" equiv="INTERPOLATION"/> прострочених завдань} other {<ph id="0" equiv="INTERPOLATION"/> простроченого завдання}}</target>
+      </segment>
+    </unit>
+    <unit id="1491259484592657584">
+      <notes>
+        <note category="description">Dashboard: how many open Tasks are due today</note>
+      </notes>
+      <segment state="translated">
+        <source>{VAR_PLURAL, plural, =1 {1 Task due today} other {<ph id="0" equiv="INTERPOLATION"/> Tasks due today}}</source>
+        <target>{VAR_PLURAL, plural, =1 {1 завдання на сьогодні} one {<ph id="0" equiv="INTERPOLATION"/> завдання на сьогодні} few {<ph id="0" equiv="INTERPOLATION"/> завдання на сьогодні} many {<ph id="0" equiv="INTERPOLATION"/> завдань на сьогодні} other {<ph id="0" equiv="INTERPOLATION"/> завдання на сьогодні}}</target>
+      </segment>
+    </unit>
+    <unit id="3631774319392189196">
+      <notes>
+        <note category="description">Dashboard: how many Tasks were Completed since Monday</note>
+      </notes>
+      <segment state="translated">
+        <source>{VAR_PLURAL, plural, =1 {1 Task Completed this week} other {<ph id="0" equiv="INTERPOLATION"/> Tasks Completed this week}}</source>
+        <target>{VAR_PLURAL, plural, =1 {1 завдання виконано цього тижня} one {<ph id="0" equiv="INTERPOLATION"/> завдання виконано цього тижня} few {<ph id="0" equiv="INTERPOLATION"/> завдання виконано цього тижня} many {<ph id="0" equiv="INTERPOLATION"/> завдань виконано цього тижня} other {<ph id="0" equiv="INTERPOLATION"/> завдання виконано цього тижня}}</target>
+      </segment>
+    </unit>
+    <unit id="6506855098610817078">
+      <notes>
+        <note category="description">Dashboard: heading above the Tasks due today</note>
+      </notes>
+      <segment state="translated">
+        <source>Due today</source>
+        <target>Сьогодні</target>
+      </segment>
+    </unit>
+    <unit id="121775559725494805">
+      <notes>
+        <note category="description">Dashboard: heading above the Tasks due in the next 7 days</note>
+      </notes>
+      <segment state="translated">
+        <source> Next 7 days </source>
+        <target>Наступні 7 днів</target>
+      </segment>
+    </unit>
+    <unit id="4056831750784140514">
+      <notes>
+        <note category="description">Dashboard: shown when no open Task is Overdue or due within a week</note>
+      </notes>
+      <segment state="translated">
+        <source> Nothing is Overdue or due in the next 7 days. </source>
+        <target>Немає ні прострочених завдань, ні завдань на найближчі 7 днів.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

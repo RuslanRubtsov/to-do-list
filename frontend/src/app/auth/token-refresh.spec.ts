@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { AuthSession, User, UsersService } from '@api';
 import { firstValueFrom } from 'rxjs';
 import { APP_INFO, APP_INFO_REQUEST } from '../../testing/app-info';
+import { DASHBOARD_REQUEST, EMPTY_DASHBOARD } from '../../testing/dashboard';
 import { DESKTOP, emulateMedia } from '../../testing/media';
 import { renderRoute } from '../../testing/routed-page';
 import { Router } from '@angular/router';
@@ -39,6 +40,8 @@ async function renderWithPendingRequest(url = '/') {
   const http = page.http;
   const appInfo = http.expectOne(APP_INFO_REQUEST);
   expect(bearerOf(appInfo)).toBe(`Bearer ${LOGGED_IN.accessToken}`);
+  // The page's other request, answered at once: the app info is the one these tests follow
+  http.expectOne(DASHBOARD_REQUEST).flush(EMPTY_DASHBOARD);
   return {
     page,
     appInfo,
