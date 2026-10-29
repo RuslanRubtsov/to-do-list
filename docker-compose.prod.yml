@@ -1,0 +1,45 @@
+# The public demo (docs/deployment.md): Caddy in front, serving HTTPS for $DOMAIN, and nothing
+# else reachable from outside. Used together with docker-compose.yml, which the COMPOSE_FILE in
+# .env arranges on the server (see .env.example), or explicitly:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Passwords and the domain come from .env too; a missing one stops Compose.
+
+services:
+  mysql:
+    environment:
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set it in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set it in .env}
+    restart: unless-stopped
+
+  backend:
+    environment:
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?set it in .env}
+    ports: !reset []
+    restart: unless-stopped
+
+  frontend:
+    ports: !reset []
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.11-alpine
+    environment:
+      DOMAIN: ${DOMAIN:?set it in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # The certificate and its account key: kept, so a restart doesn't ask Let's Encrypt again
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,18 @@
+# The public demo's front door (docs/deployment.md). Caddy obtains and renews the Let's Encrypt
+# certificate for $DOMAIN by itself, and redirects HTTP to HTTPS.
+
+{
+	# HTTP/3 would need UDP 443 open as well; HTTP/1.1 and HTTP/2 need only the TCP ports
+	servers {
+		protocols h1 h2
+	}
+}
+
+{$DOMAIN} {
+	# Everything goes to the frontend's nginx, which serves the app and proxies the API. Caddy sets
+	# X-Forwarded-Proto and X-Forwarded-For from the browser's connection, for the backend.
+	reverse_proxy frontend:80 {
+		# Pass each live-update event on as it comes (Caddy has no response timeout to cut streams)
+		flush_interval -1
+	}
+}

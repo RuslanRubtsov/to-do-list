@@ -73,9 +73,19 @@ jobs:
         run: npm run build
 
   docker:
-    name: Docker images
-    runs-on: ubuntu-latest
+    name: Docker images (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          # The public demo's server is an Arm VM (docs/deployment.md)
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7
       - name: Build images
         run: docker compose build
+      - name: Check the production configuration
+        run: docker compose --env-file .env.example -f docker-compose.yml -f docker-compose.prod.yml config --quiet
