@@ -83,6 +83,8 @@ export class TaskList {
   private readonly router = inject(Router);
 
   readonly todoListId = input.required<number>();
+  /** Whether the User may change the Tasks, as an Owner or Editor; a Viewer may only read them. */
+  readonly canChange = input.required<boolean>();
 
   protected readonly view = toSignal(this.route.queryParamMap.pipe(map(viewFrom)), {
     requireSync: true,
@@ -140,6 +142,11 @@ export class TaskList {
   protected readonly addFailure = signal<'unreachable' | 'unexpected' | null>(null);
 
   constructor() {
+    effect(() => {
+      const title = this.form.controls.title;
+      if (this.canChange()) title.enable();
+      else title.disable();
+    });
     effect(() => {
       const open = this.mainTasks();
       const count = open && showsAllOpen(this.view()) ? this.countIn(this.main, open) : undefined;

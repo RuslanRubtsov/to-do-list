@@ -11,16 +11,21 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, RouterLink } from '@angular/router';
-import { TodoList, TodoListsService } from '@api';
+import { Share, TodoList, TodoListsService } from '@api';
 import { tap } from 'rxjs';
 import { isNotFound, isUnreachable } from '../http/problems';
 import { TaskList } from '../tasks/task-list';
 import { DeleteTodoListDialog } from './delete-todo-list-dialog';
+import { ShareDialog } from './share-dialog';
 import { TodoListNameDialog, TodoListNameDialogData } from './todo-list-name-dialog';
 import { TodoLists } from './todo-lists';
 
-/** One Todo List and its Tasks, as its Owner sees them. */
+/**
+ * One Todo List and its Tasks. Its Owner may also rename, delete and Share it; a User it was
+ * Shared with sees who owns it, and changes its Tasks only as an Editor.
+ */
 @Component({
   selector: 'app-todo-list-page',
   imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule, RouterLink, TaskList],
@@ -33,6 +38,7 @@ export class TodoListPage {
   private readonly todoLists = inject(TodoLists);
   private readonly dialogs = inject(MatDialog);
   private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
 
   /** From the route, `/lists/:todoListId`. */
   readonly todoListId = input.required({ transform: numberAttribute });
@@ -64,6 +70,20 @@ export class TodoListPage {
       .afterClosed()
       .subscribe((renamed) => {
         if (renamed) this.todoList.set(renamed);
+      });
+  }
+
+  /** Once Shared, says with whom. */
+  protected share(todoList: TodoList): void {
+    this.dialogs
+      .open<ShareDialog, TodoList, Share>(ShareDialog, { data: todoList })
+      .afterClosed()
+      .subscribe((share) => {
+        if (!share) return;
+        this.snackBar.open(
+          $localize`:Message after Sharing a Todo List with a User, named by their display name:Shared “${todoList.name}:todoList:” with ${share.displayName}:user:.`,
+          $localize`:Dismisses a message:OK`,
+        );
       });
   }
 

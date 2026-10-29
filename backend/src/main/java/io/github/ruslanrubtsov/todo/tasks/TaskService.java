@@ -11,6 +11,7 @@ import io.github.ruslanrubtsov.todo.api.model.TaskDetails;
 import io.github.ruslanrubtsov.todo.api.model.TaskMove;
 import io.github.ruslanrubtsov.todo.api.model.TaskPage;
 import io.github.ruslanrubtsov.todo.todolists.TodoListAccess;
+import io.github.ruslanrubtsov.todo.todolists.TodoListAccess.Action;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -39,7 +40,7 @@ class TaskService {
     /** A page of the Todo List's Tasks that match the query, Overdue or not as of today. */
     @Transactional(readOnly = true)
     TaskPage query(long userId, long todoListId, TaskQuery query, int page, int size) {
-        access.requireOwned(userId, todoListId);
+        access.require(userId, todoListId, Action.READ);
         Page<TaskEntity> found =
                 tasks.findAll(query.inTodoList(todoListId, LocalDate.now(clock)), PageRequest.of(page, size));
         return new TaskPage(
@@ -49,7 +50,7 @@ class TaskService {
     /** Adds the Task at the end of the Todo List, after any other being added or moved meanwhile. */
     @Transactional
     Task create(long userId, long todoListId, String title) {
-        access.lockOwned(userId, todoListId);
+        access.lock(userId, todoListId, Action.CHANGE_TASKS);
         long position =
                 TaskPositions.between(tasks.findLastPosition(todoListId), null).orElseThrow();
         return toApi(tasks.save(new TaskEntity(todoListId, title, position)));
@@ -57,13 +58,13 @@ class TaskService {
 
     @Transactional(readOnly = true)
     Task get(long userId, long todoListId, long taskId) {
-        return toApi(reachable(userId, todoListId, taskId));
+        return toApi(reachable(userId, todoListId, taskId, Action.READ));
     }
 
     /** Refused if someone else changed the Task since the version the details are based on. */
     @Transactional
     Task change(long userId, long todoListId, long taskId, TaskDetails details) {
-        TaskEntity task = reachable(userId, todoListId, taskId);
+        TaskEntity task = reachable(userId, todoListId, taskId, Action.CHANGE_TASKS);
         if (task.getVersion() != details.getVersion()) {
             throw editConflict("The Task has changed since that version.");
         }
@@ -73,14 +74,14 @@ class TaskService {
 
     @Transactional
     Task complete(long userId, long todoListId, long taskId) {
-        TaskEntity task = reachable(userId, todoListId, taskId);
+        TaskEntity task = reachable(userId, todoListId, taskId, Action.CHANGE_TASKS);
         task.complete();
         return flushedToApi(task);
     }
 
     @Transactional
     Task uncomplete(long userId, long todoListId, long taskId) {
-        TaskEntity task = reachable(userId, todoListId, taskId);
+        TaskEntity task = reachable(userId, todoListId, taskId, Action.CHANGE_TASKS);
         task.uncomplete();
         return flushedToApi(task);
     }
@@ -92,8 +93,8 @@ class TaskService {
     @Transactional
     Task move(long userId, long todoListId, long taskId, TaskMove move) {
         // One move at a time, so that each sees the order the one before it left
-        access.lockOwned(userId, todoListId);
-        TaskEntity task = reachable(userId, todoListId, taskId);
+        access.lock(userId, todoListId, Action.CHANGE_TASKS);
+        TaskEntity task = reachable(userId, todoListId, taskId, Action.CHANGE_TASKS);
         if (move.getRelativeTo() == taskId) return toApi(task);
         // In order, without the Task being moved
         List<TaskEntity> others = new ArrayList<>(tasks.findByTodoListIdOrderByPositionAscIdAsc(todoListId));
@@ -124,15 +125,15 @@ class TaskService {
 
     @Transactional
     void delete(long userId, long todoListId, long taskId) {
-        tasks.delete(reachable(userId, todoListId, taskId));
+        tasks.delete(reachable(userId, todoListId, taskId, Action.CHANGE_TASKS));
     }
 
     /**
-     * The Task, reached through its own Todo List. One in another Todo List, or in one the User can't
-     * reach, is reported as missing.
+     * The Task, reached through its own Todo List, if the User's role on it allows the action. One in
+     * another Todo List, or in one the User can't reach, is reported as missing.
      */
-    private TaskEntity reachable(long userId, long todoListId, long taskId) {
-        access.requireOwned(userId, todoListId);
+    private TaskEntity reachable(long userId, long todoListId, long taskId, Action action) {
+        access.require(userId, todoListId, action);
         return tasks.findByIdAndTodoListId(taskId, todoListId)
                 .orElseThrow(() -> problem(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "No such Task."));
     }

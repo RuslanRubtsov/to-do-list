@@ -16,7 +16,7 @@
   <button
     matIconButton
     type="submit"
-    [disabled]="adding()"
+    [disabled]="adding() || !canChange()"
     aria-label="Add Task"
     i18n-aria-label="Button that adds the Task typed in"
   >
@@ -58,7 +58,7 @@
     >
       Open Tasks
     </h2>
-    @if (filtered() && tasks.length > 1) {
+    @if (filtered() && canChange() && tasks.length > 1) {
       <p
         class="hint"
         i18n="Why Tasks can't be dragged into place while a search, filter or sort is on"
@@ -71,17 +71,17 @@
       aria-labelledby="main-tasks-heading"
       cdkDropList
       cdkDropListLockAxis="y"
-      [cdkDropListDisabled]="filtered()"
+      [cdkDropListDisabled]="filtered() || !canChange()"
       (cdkDropListDropped)="drop(tasks, $event)"
     >
       @for (task of tasks; track task.id) {
         <li cdkDrag [class.overdue]="task.overdue">
           <div class="line">
-            <mat-checkbox [checked]="false" (change)="complete(task)">{{
+            <mat-checkbox [checked]="false" [disabled]="!canChange()" (change)="complete(task)">{{
               task.title
             }}</mat-checkbox>
             <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
-            @if (!filtered()) {
+            @if (!filtered() && canChange()) {
               <mat-icon cdkDragHandle class="drag-handle" aria-hidden="true"
                 >drag_indicator</mat-icon
               >
@@ -193,7 +193,9 @@
 <ng-template #completedTask let-task>
   <li>
     <div class="line">
-      <mat-checkbox [checked]="true" (change)="uncomplete(task)">{{ task.title }}</mat-checkbox>
+      <mat-checkbox [checked]="true" [disabled]="!canChange()" (change)="uncomplete(task)">{{
+        task.title
+      }}</mat-checkbox>
       <ng-container *ngTemplateOutlet="actions; context: { $implicit: task }" />
     </div>
     <ng-container *ngTemplateOutlet="details; context: { $implicit: task }" />
@@ -210,10 +212,22 @@
 </ng-template>
 
 <ng-template #actions let-task>
-  <button matIconButton type="button" (click)="edit(task)" [attr.aria-label]="editLabel(task)">
+  <button
+    matIconButton
+    type="button"
+    [disabled]="!canChange()"
+    (click)="edit(task)"
+    [attr.aria-label]="editLabel(task)"
+  >
     <mat-icon aria-hidden="true">edit</mat-icon>
   </button>
-  <button matIconButton type="button" (click)="delete(task)" [attr.aria-label]="deleteLabel(task)">
+  <button
+    matIconButton
+    type="button"
+    [disabled]="!canChange()"
+    (click)="delete(task)"
+    [attr.aria-label]="deleteLabel(task)"
+  >
     <mat-icon aria-hidden="true">delete</mat-icon>
   </button>
 </ng-template>

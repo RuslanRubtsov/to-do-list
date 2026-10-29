@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -8,7 +9,7 @@ import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Language, TodoList } from '@api';
+import { Language, TodoList, TodoListRole } from '@api';
 import { Session } from '../auth/session';
 import { LANGUAGE_NAMES, Languages } from '../i18n/languages';
 import { TodoListNameDialog, TodoListNameDialogData } from '../todo-lists/todo-list-name-dialog';
@@ -22,6 +23,7 @@ import { ThemeService } from './theme';
 @Component({
   selector: 'app-shell',
   imports: [
+    NgTemplateOutlet,
     MatButtonModule,
     MatDividerModule,
     MatIconModule,
@@ -45,6 +47,14 @@ export class Shell {
   protected readonly languages = inject(Languages);
   protected readonly languageNames = LANGUAGE_NAMES;
   protected readonly todoLists = inject(TodoLists);
+  /** The User's own Todo Lists; `undefined` until loaded. */
+  protected readonly owned = computed(() =>
+    this.todoLists.all()?.filter((todoList) => todoList.role === TodoListRole.OWNER),
+  );
+  /** Those other Users Shared with the User, listed apart. */
+  protected readonly shared = computed(() =>
+    this.todoLists.all()?.filter((todoList) => todoList.role !== TodoListRole.OWNER),
+  );
   private readonly deletes = inject(UndoableDeletes);
   private readonly dialogs = inject(MatDialog);
   private readonly router = inject(Router);

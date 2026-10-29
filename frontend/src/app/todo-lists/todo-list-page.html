@@ -2,26 +2,46 @@
   @let current = todoList.value();
   <header>
     <h1>{{ current.name }}</h1>
-    <button
-      matIconButton
-      type="button"
-      (click)="rename(current)"
-      aria-label="Rename Todo List"
-      i18n-aria-label="Button that renames the Todo List being shown"
-    >
-      <mat-icon aria-hidden="true">edit</mat-icon>
-    </button>
-    <button
-      matIconButton
-      type="button"
-      (click)="delete(current)"
-      aria-label="Delete Todo List"
-      i18n-aria-label="Button that deletes the Todo List being shown"
-    >
-      <mat-icon aria-hidden="true">delete</mat-icon>
-    </button>
+    @if (current.role === 'OWNER') {
+      <button
+        matIconButton
+        type="button"
+        (click)="share(current)"
+        aria-label="Share Todo List"
+        i18n-aria-label="Button that Shares the Todo List being shown with another User"
+      >
+        <mat-icon aria-hidden="true">person_add</mat-icon>
+      </button>
+      <button
+        matIconButton
+        type="button"
+        (click)="rename(current)"
+        aria-label="Rename Todo List"
+        i18n-aria-label="Button that renames the Todo List being shown"
+      >
+        <mat-icon aria-hidden="true">edit</mat-icon>
+      </button>
+      <button
+        matIconButton
+        type="button"
+        (click)="delete(current)"
+        aria-label="Delete Todo List"
+        i18n-aria-label="Button that deletes the Todo List being shown"
+      >
+        <mat-icon aria-hidden="true">delete</mat-icon>
+      </button>
+    }
   </header>
-  <app-task-list [todoListId]="current.id" />
+  @if (current.role !== 'OWNER') {
+    <p
+      class="shared-by"
+      i18n="Todo List page: who Shared the Todo List with the User, and their role"
+    >
+      Shared by {{ current.ownerDisplayName }} ·
+      {current.role, select, EDITOR {Editor} VIEWER {Viewer} other {}}
+    </p>
+  }
+  <app-task-list [todoListId]="current.id" [canChange]="current.role !== 'VIEWER'" />
 } @else if (notFound()) {
   <p class="missing">
     <mat-icon aria-hidden="true">search_off</mat-icon>

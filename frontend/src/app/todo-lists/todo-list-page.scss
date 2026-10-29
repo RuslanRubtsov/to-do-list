@@ -31,3 +31,9 @@ h1 {
 .error {
   color: var(--mat-sys-error);
 }
+
+.shared-by {
+  margin-block: 0 16px;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}

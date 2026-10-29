@@ -9,31 +9,50 @@ import org.springframework.data.jpa.repository.Query;
 
 interface TodoListRepository extends JpaRepository<TodoListEntity, Long> {
 
-    Optional<TodoListEntity> findByIdAndOwnerId(long id, long ownerId);
-
-    boolean existsByIdAndOwnerId(long id, long ownerId);
+    /**
+     * The User's role on the Todo List: {@code OWNER}, or the role a Share gives them; none when they
+     * have neither, or there is no such Todo List.
+     */
+    @Query(nativeQuery = true, value = """
+            SELECT CASE WHEN l.owner_id = :userId THEN 'OWNER' ELSE s.role END
+            FROM todo_lists l
+            LEFT JOIN shares s ON s.todo_list_id = l.id AND s.user_id = :userId
+            WHERE l.id = :todoListId
+            """)
+    Optional<String> findRole(long userId, long todoListId);
 
     /** The Todo List, locked against other writers until the transaction ends. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<TodoListEntity> findWithLockByIdAndOwnerId(long id, long ownerId);
+    Optional<TodoListEntity> findWithLockById(long id);
 
-    /** The Owner's Todo Lists by name, each with how many of its Tasks are open. */
-    @Query(nativeQuery = true, value = """
-            SELECT l.id, l.name, l.version,
-                   (SELECT COUNT(*) FROM tasks t WHERE t.todo_list_id = l.id AND t.completed_at IS NULL)
-                       AS openTaskCount
-            FROM todo_lists l
-            WHERE l.owner_id = :ownerId
+    /**
+     * The Todo Lists the User owns or that are Shared with them, by name, each with how many of its
+     * Tasks are open, the User's role on it and its Owner's display name.
+     */
+    @Query(nativeQuery = true, value = SUMMARIES + """
+            WHERE l.owner_id = :userId OR s.user_id IS NOT NULL
             ORDER BY l.name, l.id
             """)
-    List<TodoListSummary> findSummariesByOwnerId(long ownerId);
+    List<TodoListSummary> findSummaries(long userId);
 
-    @Query(nativeQuery = true, value = """
-            SELECT COUNT(*) FROM tasks WHERE todo_list_id = :todoListId AND completed_at IS NULL
+    /** One Todo List as {@link #findSummaries} has it, whatever the User's access to it. */
+    @Query(nativeQuery = true, value = SUMMARIES + """
+            WHERE l.id = :todoListId
             """)
-    int countOpenTasks(long todoListId);
+    Optional<TodoListSummary> findSummary(long userId, long todoListId);
 
-    /** A Todo List as the API shows it. */
+    String SUMMARIES = """
+            SELECT l.id, l.name, l.version,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.todo_list_id = l.id AND t.completed_at IS NULL)
+                       AS openTaskCount,
+                   CASE WHEN l.owner_id = :userId THEN 'OWNER' ELSE s.role END AS role,
+                   u.display_name AS ownerDisplayName
+            FROM todo_lists l
+            JOIN users u ON u.id = l.owner_id
+            LEFT JOIN shares s ON s.todo_list_id = l.id AND s.user_id = :userId
+            """;
+
+    /** A Todo List as the API shows it to one User. */
     interface TodoListSummary {
         long getId();
 
@@ -42,5 +61,9 @@ interface TodoListRepository extends JpaRepository<TodoListEntity, Long> {
         long getVersion();
 
         int getOpenTaskCount();
+
+        String getRole();
+
+        String getOwnerDisplayName();
     }
 }

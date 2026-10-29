@@ -1055,5 +1055,157 @@
         <target>Показати всі виконані завдання</target>
       </segment>
     </unit>
+    <unit id="6661995132020382151">
+      <notes>
+        <note category="description">Navigation: heading above the Todo Lists other Users Shared with the User</note>
+      </notes>
+      <segment state="translated">
+        <source> Shared with me </source>
+        <target>Доступні мені</target>
+      </segment>
+    </unit>
+    <unit id="1475325989703808506">
+      <notes>
+        <note category="description">Navigation: who owns a Todo List Shared with the User, and the User&apos;s role on it</note>
+      </notes>
+      <segment state="translated">
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ todoList.ownerDisplayName }}"/> · <ph id="1" equiv="ICU" disp="{todoList.role, select, EDITOR {Editor} VIEWER {Viewer} other {}}" subFlows="6937416908801031496"/></source>
+        <target><ph id="0" equiv="INTERPOLATION" disp="{{ todoList.ownerDisplayName }}"/> · <ph id="1" equiv="ICU" disp="{todoList.role, select, EDITOR {Editor} VIEWER {Viewer} other {}}" subFlows="6937416908801031496"/></target>
+      </segment>
+    </unit>
+    <unit id="6937416908801031496">
+      <notes>
+      </notes>
+      <segment state="translated">
+        <source>{VAR_SELECT, select, EDITOR {Editor} VIEWER {Viewer} other {}}</source>
+        <target>{VAR_SELECT, select, EDITOR {Редактор} VIEWER {Читач} other {}}</target>
+      </segment>
+    </unit>
+    <unit id="4747621853948549181">
+      <notes>
+        <note category="description">Dialog heading: Sharing a Todo List, named by its name</note>
+      </notes>
+      <segment state="translated">
+        <source> Share “<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.name }}"/>” </source>
+        <target>Надати доступ до «<ph id="0" equiv="INTERPOLATION" disp="{{ todoList.name }}"/>»</target>
+      </segment>
+    </unit>
+    <unit id="3152114586938273874">
+      <notes>
+        <note category="description">Share dialog: what Sharing does</note>
+      </notes>
+      <segment state="translated">
+        <source> Whoever you Share it with sees it in their Todo Lists at once. </source>
+        <target>Той, кому ви надасте доступ, одразу побачить цей список справ серед своїх.</target>
+      </segment>
+    </unit>
+    <unit id="2640768211225134169">
+      <notes>
+        <note category="description">Share dialog: error when the email is empty</note>
+      </notes>
+      <segment state="translated">
+        <source>Enter an email address.</source>
+        <target>Введіть адресу електронної пошти.</target>
+      </segment>
+    </unit>
+    <unit id="7049799394218361111">
+      <notes>
+        <note category="description">Share dialog: error when no User has the email</note>
+      </notes>
+      <segment state="translated">
+        <source>No one has registered with this email. Ask them to register first.</source>
+        <target>З цією адресою ніхто не зареєстрований. Попросіть спершу зареєструватися.</target>
+      </segment>
+    </unit>
+    <unit id="7138324577848193698">
+      <notes>
+        <note category="description">Share dialog: error when the Owner enters their own email</note>
+      </notes>
+      <segment state="translated">
+        <source>That’s your own email.</source>
+        <target>Це ваша власна адреса.</target>
+      </segment>
+    </unit>
+    <unit id="3207885038403832465">
+      <notes>
+        <note category="description">Share dialog: error when the Todo List is already Shared with the User</note>
+      </notes>
+      <segment state="translated">
+        <source>This Todo List is already Shared with them.</source>
+        <target>Цей список справ уже доступний цьому користувачеві.</target>
+      </segment>
+    </unit>
+    <unit id="4145496584631696119">
+      <notes>
+        <note category="description">Share dialog: field for the role the Share gives</note>
+      </notes>
+      <segment state="translated">
+        <source>Role</source>
+        <target>Роль</target>
+      </segment>
+    </unit>
+    <unit id="6239936537351977310">
+      <notes>
+        <note category="description">Role option: may only read the Todo List</note>
+      </notes>
+      <segment state="translated">
+        <source>Viewer</source>
+        <target>Читач</target>
+      </segment>
+    </unit>
+    <unit id="3742657416068781599">
+      <notes>
+        <note category="description">Role option: may also change the Todo List&apos;s Tasks</note>
+      </notes>
+      <segment state="translated">
+        <source>Editor</source>
+        <target>Редактор</target>
+      </segment>
+    </unit>
+    <unit id="6069058108103045770">
+      <notes>
+        <note category="description">Share dialog: what the roles allow</note>
+      </notes>
+      <segment state="translated">
+        <source>Viewers only read it; Editors also change its Tasks.</source>
+        <target>Читачі лише переглядають його, редактори також змінюють завдання.</target>
+      </segment>
+    </unit>
+    <unit id="6045033980459732148">
+      <notes>
+        <note category="description">Button: Share a Todo List with the User whose email was entered</note>
+      </notes>
+      <segment state="translated">
+        <source> Share </source>
+        <target>Надати доступ</target>
+      </segment>
+    </unit>
+    <unit id="8882230058839195366">
+      <notes>
+        <note category="description">Button that Shares the Todo List being shown with another User</note>
+      </notes>
+      <segment state="translated">
+        <source>Share Todo List</source>
+        <target>Надати доступ до списку справ</target>
+      </segment>
+    </unit>
+    <unit id="5751858694690046586">
+      <notes>
+        <note category="description">Todo List page: who Shared the Todo List with the User, and their role</note>
+      </notes>
+      <segment state="translated">
+        <source> Shared by <ph id="0" equiv="INTERPOLATION" disp="{{ current.ownerDisplayName }}"/> · <ph id="1" equiv="ICU" disp="{current.role, select, EDITOR {Editor} VIEWER {Viewer} other {}}" subFlows="6937416908801031496"/> </source>
+        <target>Власник: <ph id="0" equiv="INTERPOLATION" disp="{{ current.ownerDisplayName }}"/> · <ph id="1" equiv="ICU" disp="{current.role, select, EDITOR {Editor} VIEWER {Viewer} other {}}" subFlows="6937416908801031496"/></target>
+      </segment>
+    </unit>
+    <unit id="2215718754298844971">
+      <notes>
+        <note category="description">Message after Sharing a Todo List with a User, named by their display name</note>
+      </notes>
+      <segment state="translated">
+        <source>Shared “<ph id="0" equiv="todoList" disp="todoList.name"/>” with <ph id="1" equiv="user" disp="share.displayName"/>.</source>
+        <target><ph id="1" equiv="user" disp="share.displayName"/> тепер має доступ до «<ph id="0" equiv="todoList" disp="todoList.name"/>».</target>
+      </segment>
+    </unit>
   </file>
 </xliff>
