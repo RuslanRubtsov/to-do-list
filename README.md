@@ -9,6 +9,8 @@ Spring Boot REST API, MySQL; English and Ukrainian; light and dark.
 Built as a technical-interview showcase: one `docker compose up` starts everything, pre-seeded with
 two demo Users, so it can be tried in minutes.
 
+**Live demo:** <https://your-name.duckdns.org> (coming soon), with the [demo Users](#demo) below.
+
 | | |
 |---|---|
 | ![Dashboard, English, light](docs/screenshots/dashboard-en-light.png) | ![Dashboard, English, dark](docs/screenshots/dashboard-en-dark.png) |
@@ -35,6 +37,9 @@ The first start builds the images, which takes a few minutes. Then:
 
 To try authenticated calls in Swagger UI, call **login** with **Try it out**, then paste the
 `accessToken` from its response into **Authorize**.
+
+The live demo runs this same setup on a server, with HTTPS in front:
+[deploying it](docs/deployment.md).
 
 ## Demo
 
